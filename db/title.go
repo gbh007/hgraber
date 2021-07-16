@@ -36,6 +36,15 @@ func InsertTitle(name, URL string, loaded bool) (int, error) {
 	return int(id), nil
 }
 
+// UpdateTitleParsedPage обновляет информацию об обработанных страницах в тайтле
+func UpdateTitleParsedPage(id, count int, success bool) error {
+	_, err := _db.Exec(`UPDATE titles SET parsed_pages = ?, page_count = ? WHERE id = ?`, success, count, id)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
+}
+
 // InsertPage добавляет страницу тайтла
 func InsertPage(id int, name, URL string, page_number int) error {
 	_, err := _db.Exec(

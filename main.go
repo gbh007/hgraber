@@ -44,9 +44,14 @@ func handle(u string) {
 	if err != nil {
 		return
 	}
-	for _, page := range p.ParsePages() {
-		db.InsertPage(id, page.Name, page.URL, page.Number)
+	pp := true
+	pages := p.ParsePages()
+	for _, page := range pages {
+		if db.InsertPage(id, page.Name, page.URL, page.Number) != nil {
+			pp = false
+		}
 	}
+	db.UpdateTitleParsedPage(id, len(pages), pp)
 	log.Println("завершена обработка", u)
 }
 
