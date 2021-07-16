@@ -12,7 +12,7 @@ type Parser_IMHENTAI_XXX struct {
 	url      string
 }
 
-func (p Parser_IMHENTAI_XXX) Load(URL string) bool {
+func (p *Parser_IMHENTAI_XXX) Load(URL string) bool {
 	var err error
 	p.url = URL
 	p.main_raw, err = RequestString(URL)
@@ -54,16 +54,16 @@ func (p Parser_IMHENTAI_XXX) ParseTags() []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParsePages() []string {
-	result := make([]string, 0)
+func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
+	result := make([]Page, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<li class="pages">Pages: `) + `(\d+).*?` + regexp.QuoteMeta(`</li>`)
 	res := regexp.MustCompile(rp).FindStringSubmatch(p.main_raw)
 	if len(res) < 2 {
-		return []string{}
+		return []Page{}
 	}
 	count, err := strconv.Atoi(res[1])
 	if err != nil {
-		return []string{}
+		return []Page{}
 	}
 	u := strings.Replace(p.url, "gallery", "view", -1)
 	rp_img := regexp.MustCompile(`(?sm)` + regexp.QuoteMeta(`<img id="gimg" class="lazy`) + `.+?` + `src\=\"(.*?)\"`)
@@ -71,13 +71,14 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []string {
 		// символ / и так будет в конце
 		data, err := RequestString(fmt.Sprintf("%s%d", u, i))
 		if err != nil {
-			return []string{}
+			return []Page{}
 		}
 		res := rp_img.FindStringSubmatch(data)
 		if len(res) < 2 {
-			return []string{}
+			return []Page{}
 		}
-		result = append(result, res[1])
+		fnameTmp := strings.Split(res[1], "/")
+		result = append(result, Page{URL: res[1], Number: i, Name: fnameTmp[len(fnameTmp)-1]})
 	}
 	return result
 }

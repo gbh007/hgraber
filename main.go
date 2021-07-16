@@ -24,6 +24,32 @@ func escapeFileName(n string) string {
 	return n
 }
 
+func handle(u string) {
+	log.Println("начата обработка", u)
+	p := parser.Parser_IMHENTAI_XXX{}
+	ok := p.Load(u)
+	id, err := db.InsertTitle(p.ParseName(), u, ok)
+	if err != nil {
+		return
+	}
+	err = db.UpdateTitleAuthors(id, p.ParseAuthors())
+	if err != nil {
+		return
+	}
+	err = db.UpdateTitleTags(id, p.ParseTags())
+	if err != nil {
+		return
+	}
+	err = db.UpdateTitleCharacters(id, p.ParseCharacters())
+	if err != nil {
+		return
+	}
+	for _, page := range p.ParsePages() {
+		db.InsertPage(id, page.Name, page.URL, page.Number)
+	}
+	log.Println("завершена обработка", u)
+}
+
 func main() {
 	lf, err := os.Create("log.txt")
 	if err != nil {
@@ -34,22 +60,26 @@ func main() {
 
 	db.Connect()
 
-	p := parser.Parser_IMHENTAI_XXX{}
-	log.Println(p.Load("https://imhentai.xxx/gallery/692183/"))
-	log.Println(p.ParseAuthors())
-	log.Println(p.ParseCharacters())
-	log.Println(p.ParseName())
-	log.Println(p.ParsePages())
-	log.Println(p.ParseTags())
+	handle("https://imhentai.xxx/gallery/692183/")
+	/*
+		p := parser.Parser_IMHENTAI_XXX{}
+		log.Println(p.Load("https://imhentai.xxx/gallery/692183/"))
+		log.Println(p.ParseAuthors())
+		log.Println(p.ParseCharacters())
+		log.Println(p.ParseName())
+		log.Println(p.ParsePages())
+		log.Println(p.ParseTags())
 
-	log.Println(db.GetTagID("test"))
+		log.Println(db.GetTagID("test"))
 
-	id, err := db.InsertTitle("123", "https://imhentai.xxx/gallery/692183/", true)
-	log.Println(id, err)
-	log.Println(db.UpdateTitleTags(id, []string{"t1", "t2", "t3"}))
-	log.Println(db.UpdateTitleAuthors(id, []string{"a1", "a2", "a3"}))
-	log.Println(db.UpdateTitleCharacters(id, []string{"c1", "c2", "c3"}))
-
+		id, err := db.InsertTitle("123", "https://imhentai.xxx/gallery/692183/", true)
+		log.Println(id, err)
+		log.Println(db.UpdateTitleTags(id, []string{"t1", "t2", "t3"}))
+		log.Println(db.UpdateTitleAuthors(id, []string{"a1", "a2", "a3"}))
+		log.Println(db.UpdateTitleCharacters(id, []string{"c1", "c2", "c3"}))
+		log.Println(db.InsertPage(id, "1.tft", "http://", 3))
+		log.Println(db.InsertPage(id, "3.tft", "http://", 3))
+	*/
 	if true {
 		return
 	}
@@ -72,12 +102,7 @@ func main() {
 		}
 		wg.Add(1)
 		go func(u string) {
-			log.Println(p.Load(u))
-			log.Println(p.ParseAuthors())
-			log.Println(p.ParseCharacters())
-			log.Println(p.ParseName())
-			log.Println(p.ParsePages())
-			log.Println(p.ParseTags())
+			handle(u)
 			notComplete = append(notComplete, u)
 			wg.Done()
 		}(sc.Text())
