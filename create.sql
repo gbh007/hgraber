@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS titles(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    url TEXT NOT NULL,
+    url TEXT NOT NULL UNIQUE,
     page_count INT NOT NULL DEFAULT 0,
     creation_time TIMESTAMP,
     loaded BOOL DEFAULT FALSE,
@@ -18,25 +18,26 @@ CREATE TABLE IF NOT EXISTS pages(
     name TEXT NOT NULL,
     url TEXT NOT NULL,
     page_number INT NOT NULL,
-    success BOOL DEFAULT FALSE
+    success BOOL DEFAULT FALSE,
+    PRIMARY KEY(title_id, page_number)
 );
 
 -- таблица тегов
 CREATE TABLE IF NOT EXISTS tags(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE
+    name TEXT UNIQUE NOT NULL
 );
 
 -- таблица авторов
 CREATE TABLE IF NOT EXISTS authors(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE
+    name TEXT UNIQUE NOT NULL
 );
 
 -- таблица персонажей
 CREATE TABLE IF NOT EXISTS characters(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE
+    name TEXT UNIQUE NOT NULL
 );
 
 -- линковка таблицы тегов на тайтлы

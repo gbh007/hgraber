@@ -42,6 +42,14 @@ func main() {
 	log.Println(p.ParsePages())
 	log.Println(p.ParseTags())
 
+	log.Println(db.GetTagID("test"))
+
+	id, err := db.InsertTitle("123", "https://imhentai.xxx/gallery/692183/", true)
+	log.Println(id, err)
+	log.Println(db.UpdateTitleTags(id, []string{"t1", "t2", "t3"}))
+	log.Println(db.UpdateTitleAuthors(id, []string{"a1", "a2", "a3"}))
+	log.Println(db.UpdateTitleCharacters(id, []string{"c1", "c2", "c3"}))
+
 	if true {
 		return
 	}
