@@ -31,6 +31,18 @@ func InsertTitle(name, URL string, loaded bool) (int, error) {
 	return int(id), nil
 }
 
+// UpdateTitle обновляет тайтл
+func UpdateTitle(id int, name string, loaded bool) error {
+	_, err := _db.Exec(
+		`UPDATE titles SET name = ?, loaded = ? WHERE id = ?`,
+		name, loaded, id,
+	)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
+}
+
 // UpdateTitleParsedPage обновляет информацию об обработанных страницах в тайтле
 func UpdateTitleParsedPage(id, count int, success bool) error {
 	_, err := _db.Exec(`UPDATE titles SET parsed_pages = ?, page_count = ? WHERE id = ?`, success, count, id)
@@ -231,6 +243,29 @@ ORDER BY p.page_number`, id)
 			log.Println(err)
 		} else {
 			result = append(result, p)
+		}
+	}
+	return result
+}
+
+// SelectUnloadTitles выбирает из базы все недогруженые тайтлы
+func SelectUnloadTitles() []TitleShortInfo {
+	result := []TitleShortInfo{}
+	rows, err := _db.Query(`SELECT t.id, t.url FROM	titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE`)
+	if err != nil {
+		log.Println(err)
+		return result
+	}
+	for rows.Next() {
+		t := TitleShortInfo{}
+		err = rows.Scan(
+			&t.ID,
+			&t.URL,
+		)
+		if err != nil {
+			log.Println(err)
+		} else {
+			result = append(result, t)
 		}
 	}
 	return result

@@ -6,6 +6,7 @@ import (
 	"app/parser"
 	"log"
 	"sync"
+	"time"
 )
 
 // maxQueueSize максимальный размер очереди для загрузки файлов
@@ -22,6 +23,9 @@ var fileWG *sync.WaitGroup = &sync.WaitGroup{}
 
 // FileWait ожидает завершения файловых обработчиков
 func FileWait() {
+	for len(fileQueue) > 0 {
+		time.Sleep(time.Second)
+	}
 	fileWG.Wait()
 }
 
@@ -59,6 +63,43 @@ func HandleFull(u string) error {
 		return err
 	}
 	id, err := db.InsertTitle(p.ParseName(), u, ok)
+	if err != nil {
+		return err
+	}
+	if ok {
+		err = db.UpdateTitleAuthors(id, p.ParseAuthors())
+		if err != nil {
+			return err
+		}
+		err = db.UpdateTitleTags(id, p.ParseTags())
+		if err != nil {
+			return err
+		}
+		err = db.UpdateTitleCharacters(id, p.ParseCharacters())
+		if err != nil {
+			return err
+		}
+		pp := true
+		pages := p.ParsePages()
+		for _, page := range pages {
+			if db.InsertPage(id, page.Ext, page.URL, page.Number) != nil {
+				pp = false
+			}
+		}
+		db.UpdateTitleParsedPage(id, len(pages), pp)
+	}
+	log.Println("завершена обработка", u)
+	return nil
+}
+
+// UpdateFull обрабатывает данные тайтла (переобработка)
+func UpdateFull(id int, u string) error {
+	log.Println("начата обработка", u)
+	p, ok, err := parser.Load(u)
+	if err != nil {
+		return err
+	}
+	err = db.UpdateTitle(id, p.ParseName(), ok)
 	if err != nil {
 		return err
 	}
