@@ -3,7 +3,7 @@ package parser
 type Page struct {
 	URL    string
 	Number int
-	Name   string
+	Ext    string
 }
 
 // Parser интерфейс для реализации парсеров для различных сайтов

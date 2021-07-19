@@ -1,6 +1,7 @@
 package db
 
-const schemaSQL = `-- таблица тайтлов (основная информация о тайтле)
+const schemaSQL = `
+-- таблица тайтлов (основная информация о тайтле)
 CREATE TABLE IF NOT EXISTS titles(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -17,7 +18,7 @@ CREATE TABLE IF NOT EXISTS titles(
 -- таблица страниц произведения
 CREATE TABLE IF NOT EXISTS pages(
     title_id INTEGER NOT NULL REFERENCES titles(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    name TEXT NOT NULL,
+    ext TEXT NOT NULL,
     url TEXT NOT NULL,
     page_number INT NOT NULL,
     success BOOL DEFAULT FALSE,
@@ -59,5 +60,6 @@ CREATE TABLE IF NOT EXISTS link_characters_titles(
     character_id INTEGER REFERENCES characters(id) ON UPDATE CASCADE ON DELETE CASCADE,
     title_id INTEGER REFERENCES titles(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
+
 
 `

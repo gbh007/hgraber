@@ -46,12 +46,21 @@ func UpdateTitleParsedPage(id, count int, success bool) error {
 }
 
 // InsertPage добавляет страницу тайтла
-func InsertPage(id int, name, URL string, page_number int) error {
+func InsertPage(id int, ext, URL string, page_number int) error {
 	_, err := _db.Exec(
-		`INSERT INTO pages(title_id, name, url, page_number, success) VALUES(?, ?, ?, ?, ?)
-		ON CONFLICT(title_id, page_number) DO UPDATE SET name = excluded.name, url = excluded.url, success = false`,
-		id, name, URL, page_number, false,
+		`INSERT INTO pages(title_id, ext, url, page_number, success) VALUES(?, ?, ?, ?, ?)
+		ON CONFLICT(title_id, page_number) DO UPDATE SET ext = excluded.ext, url = excluded.url, success = false`,
+		id, ext, URL, page_number, false,
 	)
+	if err != nil {
+		log.Println(err)
+	}
+	return err
+}
+
+// UpdatePageSuccess обновляет информацию об успешной загрузке страницы
+func UpdatePageSuccess(id, page int, success bool) error {
+	_, err := _db.Exec(`UPDATE pages SET success = ? WHERE title_id = ? AND page_number = ?`, success, id, page)
 	if err != nil {
 		log.Println(err)
 	}

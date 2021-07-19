@@ -77,8 +77,9 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
 		if len(res) < 2 {
 			return []Page{}
 		}
-		fnameTmp := strings.Split(res[1], "/")
-		result = append(result, Page{URL: res[1], Number: i, Name: fnameTmp[len(fnameTmp)-1]})
+		fnameTmp := strings.Split(res[1], "/")                   // название файла
+		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
+		result = append(result, Page{URL: res[1], Number: i, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 	return result
 }

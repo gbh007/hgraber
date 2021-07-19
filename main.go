@@ -47,7 +47,7 @@ func handle(u string) {
 	pp := true
 	pages := p.ParsePages()
 	for _, page := range pages {
-		if db.InsertPage(id, page.Name, page.URL, page.Number) != nil {
+		if db.InsertPage(id, page.Ext, page.URL, page.Number) != nil {
 			pp = false
 		}
 	}
@@ -61,6 +61,7 @@ func main() {
 		log.Println(err)
 		return
 	}
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetOutput(io.MultiWriter(os.Stderr, lf))
 
 	db.Connect()

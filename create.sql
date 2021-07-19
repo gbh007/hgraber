@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS titles(
 -- таблица страниц произведения
 CREATE TABLE IF NOT EXISTS pages(
     title_id INTEGER NOT NULL REFERENCES titles(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    name TEXT NOT NULL,
+    ext TEXT NOT NULL,
     url TEXT NOT NULL,
     page_number INT NOT NULL,
     success BOOL DEFAULT FALSE,
