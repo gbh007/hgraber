@@ -52,25 +52,28 @@ func AddUnloadedPagesToQueue() {
 }
 
 // HandleFull обрабатывает данные тайтла (новое добавление)
-func HandleFull(u string) {
+func HandleFull(u string) error {
 	log.Println("начата обработка", u)
-	p, ok := parser.Load(u)
+	p, ok, err := parser.Load(u)
+	if err != nil {
+		return err
+	}
 	id, err := db.InsertTitle(p.ParseName(), u, ok)
 	if err != nil {
-		return
+		return err
 	}
 	if ok {
 		err = db.UpdateTitleAuthors(id, p.ParseAuthors())
 		if err != nil {
-			return
+			return err
 		}
 		err = db.UpdateTitleTags(id, p.ParseTags())
 		if err != nil {
-			return
+			return err
 		}
 		err = db.UpdateTitleCharacters(id, p.ParseCharacters())
 		if err != nil {
-			return
+			return err
 		}
 		pp := true
 		pages := p.ParsePages()
@@ -82,4 +85,5 @@ func HandleFull(u string) {
 		db.UpdateTitleParsedPage(id, len(pages), pp)
 	}
 	log.Println("завершена обработка", u)
+	return nil
 }

@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"log"
+	"fmt"
 	"strings"
 )
 
@@ -26,18 +26,24 @@ type Page struct {
 	Ext    string
 }
 
-func Load(URL string) (Parser, bool) {
-	var p Parser
+func Load(URL string) (Parser, bool, error) {
+	var (
+		p   Parser
+		err error
+		ok  bool
+	)
 	switch {
 	case strings.Index(URL, "https://imhentai.xxx/") == 0:
 		p = &Parser_IMHENTAI_XXX{}
 	case strings.Index(URL, "https://manga-online.biz/") == 0:
 		p = &Parser_MANGAONLINE_BIZ{}
 	default:
-		log.Panicln("NO PARSER")
+		err = fmt.Errorf("не корректная ссылка")
 	}
-	ok := p.Load(URL)
-	return p, ok
+	if err == nil {
+		ok = p.Load(URL)
+	}
+	return p, ok, err
 }
 
 // Parser интерфейс для реализации парсеров для различных сайтов
@@ -51,7 +57,6 @@ type Parser interface {
 }
 
 /*
-
 
 func (p *Parser) Load(URL string) bool     { return false}
 func (p Parser) ParseName() string         { return "" }
