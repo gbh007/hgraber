@@ -18,6 +18,13 @@ import (
 // 	ParsedCharacters bool
 // }
 
+type Page struct {
+	TitleID    int
+	PageNumber int
+	URL        string
+	Ext        string
+}
+
 // InsertTitle добавляет тайтл
 func InsertTitle(name, URL string, loaded bool) (int, error) {
 	result, err := _db.Exec(
@@ -65,4 +72,25 @@ func UpdatePageSuccess(id, page int, success bool) error {
 		log.Println(err)
 	}
 	return err
+}
+
+// SelectUnsuccessPages выбирает из базы не загруженные страницы
+func SelectUnsuccessPages() []Page {
+	result := []Page{}
+	rows, err := _db.Query(`SELECT p.title_id, p.page_number, p.url, p.ext FROM
+titles t INNER JOIN pages p ON t.loaded = TRUE AND t.parsed_pages = TRUE AND t.id = p.title_id AND p.success = FALSE`)
+	if err != nil {
+		log.Println(err)
+		return result
+	}
+	for rows.Next() {
+		p := Page{}
+		err = rows.Scan(&p.TitleID, &p.PageNumber, &p.URL, &p.Ext)
+		if err != nil {
+			log.Println(err)
+		} else {
+			result = append(result, p)
+		}
+	}
+	return result
 }

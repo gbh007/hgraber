@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Parser_IMHENTAI_XXX парсер для сайта https://imhentai.xxx/
 type Parser_IMHENTAI_XXX struct {
 	main_raw string
 	url      string
