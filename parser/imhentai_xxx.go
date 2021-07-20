@@ -67,7 +67,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
 		return []Page{}
 	}
 	u := strings.Replace(p.url, "gallery", "view", -1)
-	rp_img := regexp.MustCompile(`(?sm)` + regexp.QuoteMeta(`<img id="gimg" class="lazy`) + `.+?` + `src\=\"(.*?)\"`)
+	rp_img := regexp.MustCompile(regexp.QuoteMeta(`<img id="gimg" class="lazy`) + `.+?` + `src="(.+?)" alt`)
 	for i := 1; i <= count; i++ {
 		// символ / и так будет в конце
 		data, err := RequestString(fmt.Sprintf("%s%d", u, i))
