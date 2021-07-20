@@ -33,7 +33,7 @@ func requestBuffer(URL string) (bytes.Buffer, error) {
 	}
 	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		err = fmt.Errorf("ошибка %s", response.Status)
+		err = fmt.Errorf("%s ошибка %s", URL, response.Status)
 		log.Println(err)
 		return buff, err
 	}

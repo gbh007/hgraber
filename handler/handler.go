@@ -86,7 +86,7 @@ func HandleFull(u string) error {
 				pp = false
 			}
 		}
-		db.UpdateTitleParsedPage(id, len(pages), pp)
+		db.UpdateTitleParsedPage(id, len(pages), pp && (len(pages) > 0))
 	}
 	log.Println("завершена обработка", u)
 	return nil
@@ -123,7 +123,7 @@ func UpdateFull(id int, u string) error {
 				pp = false
 			}
 		}
-		db.UpdateTitleParsedPage(id, len(pages), pp)
+		db.UpdateTitleParsedPage(id, len(pages), pp && (len(pages) > 0))
 	}
 	log.Println("завершена обработка", u)
 	return nil
