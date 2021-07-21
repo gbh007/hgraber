@@ -9,11 +9,6 @@ var tmpl = template.New("")
 
 func init() {
 	var err error
-	tmpl = tmpl.Funcs(template.FuncMap{
-		"M20": func(i int) bool { return i%2 == 0 },
-		"ADD": func(i int) int { return i + 1 },
-		"SUB": func(i int) int { return i - 1 },
-	})
 	tmpl, err = tmpl.Parse(`
 {{define "main"}}
 <html>
@@ -46,7 +41,7 @@ func init() {
 		<input value="подготовить архив" name="submit" type="submit">
 	</form>
 		{{range $ind, $e := .}}
-					{{template "title-short" $e}}
+			{{template "title-short" $e}}
 		{{end}}
   </body>
 </html>
@@ -88,7 +83,7 @@ func init() {
 				"img id pgc pgp dt"
 				"img tag tag tag tag";
 			grid-template-rows: 1fr 1fr 1fr;
-			grid-template-columns: 100px 1fr 1fr 1fr 1fr;
+			grid-template-columns: 130px 1fr 1fr 1fr 1fr;
 			border-spacing: 0px;
 			max-width: 500px;
 		}
@@ -113,7 +108,11 @@ func init() {
 		<span style="grid-area: pgc;" t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</span>
 		<span style="grid-area: pgp;" t="{{if ne .Avg 100.0}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</span>
 		<span style="grid-area: dt;">{{.Created.Format "2006/01/02 15:04:05"}}</span>
-		<span style="grid-area: tag;"></span>
+		<span style="grid-area: tag;">
+		{{range .Tags}}
+			<span>{{.}}</span>
+		{{end}}
+		</span>
 	</a>
 {{end}}
 {{define "title-page"}}

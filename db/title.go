@@ -106,6 +106,7 @@ type TitleShortInfo struct {
 	Ext        string    `json:"ext"`
 	URL        string    `json:"url"`
 	Created    time.Time `json:"create"`
+	Tags       []string  `json:"tags"`
 }
 
 // SelectTitles выбирает из базы все тайтлы
@@ -164,6 +165,7 @@ ORDER BY
 		} else {
 			t.Avg = avg.Float64 * 100
 			t.Ext = ext.String
+			t.Tags = SelectTitleTagsByID(t.ID)
 			result = append(result, t)
 		}
 	}
@@ -285,6 +287,29 @@ func SelectUnloadTitles() []TitleShortInfo {
 			&t.ID,
 			&t.URL,
 		)
+		if err != nil {
+			log.Println(err)
+		} else {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
+// SelectTitleTagsByID получает теги тайтла по его ID
+func SelectTitleTagsByID(id int) []string {
+	result := []string{}
+	rows, err := _db.Query(`SELECT t.name
+FROM link_tags_titles ltt INNER JOIN tags t ON ltt.tag_id = t.id 
+WHERE ltt.title_id = ?
+ORDER BY t.name`, id)
+	if err != nil {
+		log.Println(err)
+		return result
+	}
+	for rows.Next() {
+		var t string
+		err = rows.Scan(&t)
 		if err != nil {
 			log.Println(err)
 		} else {
