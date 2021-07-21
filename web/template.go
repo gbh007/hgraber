@@ -9,6 +9,11 @@ var tmpl = template.New("")
 
 func init() {
 	var err error
+	tmpl = tmpl.Funcs(template.FuncMap{
+		"M20": func(i int) bool {
+			return i%2 == 0
+		},
+	})
 	tmpl, err = tmpl.Parse(`
 {{define "main"}}
 <html>
@@ -22,16 +27,21 @@ func init() {
 			text-align: center;
 		}
 		table#main{
-			border-spacing: 0px;
+			border-spacing: 0px, 10px;
 			display: inline-block;
 		}
-		#main tr{
+		table#title{
+			border-spacing: 0px;
+			max-width: 500px;
+			display: inline-block;
+		}
+		#title tr{
 			height: 75px;
 		}
-		#main *[t="red"]{
+		#title *[t="red"]{
 			color: red;
 		}
-		#main *[t="bred"]{
+		#title *[t="bred"]{
 			background: pink;
 		}
 	</style>
@@ -49,26 +59,9 @@ func init() {
 		<input value="" type="number" name="to" placeholder="По">
 		<input value="подготовить архив" name="submit" type="submit">
 	</form>
-    <table id="main">
-		<tbody>
-		{{range .}}
-			<tr t="{{if not .Loaded}}bred{{end}}">
-				<td rowspan="2">
-					{{if eq .Ext ""}}
-					{{else}}
-						<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100px; max-height: 150px;">
-					{{end}}
-				</td>
-				<td colspan="3" t="{{if not .Loaded}}red{{end}}">{{.Name}}</td>
-			</tr>
-			<tr t="{{if not .Loaded}}bred{{end}}">
-				<td>#{{.ID}}</td>
-				<td t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</td>
-				<td t="{{if not .ParsedPage}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</td>
-			</tr>
+		{{range $ind, $e := .}}
+					{{template "title-short" $e}}
 		{{end}}
-		<tbody>
-	</table>
   </body>
 </html>
 {{end}}
@@ -95,6 +88,27 @@ func init() {
 		<a href="/">главная</a>
   </body>
 </html>
+{{end}}
+{{define "title-short"}}
+    <table id="title">
+		<tbody>
+			<tr t="{{if not .Loaded}}bred{{end}}">
+				<td rowspan="2">
+					{{if eq .Ext ""}}
+					{{else}}
+						<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100px; max-height: 150px;">
+					{{end}}
+				</td>
+				<td colspan="4" t="{{if not .Loaded}}red{{end}}">{{.Name}}</td>
+			</tr>
+			<tr t="{{if not .Loaded}}bred{{end}}">
+				<td>#{{.ID}}</td>
+				<td t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</td>
+				<td t="{{if ne .Avg 100.0}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</td>
+				<td>{{.Created.Format "2006/01/02 15:04:05"}}</td>
+			</tr>
+		<tbody>
+	</table>
 {{end}}
 `)
 	if err != nil {

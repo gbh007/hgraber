@@ -97,14 +97,15 @@ titles t INNER JOIN pages p ON t.loaded = TRUE AND t.parsed_pages = TRUE AND t.i
 
 // TitleShortInfo информация о тайтле
 type TitleShortInfo struct {
-	ID         int     `json:"id"`
-	Name       string  `json:"name"`
-	PageCount  int     `json:"pc"`
-	Loaded     bool    `json:"loaded"`
-	ParsedPage bool    `json:"pp"`
-	Avg        float64 `json:"avg"`
-	Ext        string  `json:"ext"`
-	URL        string  `json:"url"`
+	ID         int       `json:"id"`
+	Name       string    `json:"name"`
+	PageCount  int       `json:"pc"`
+	Loaded     bool      `json:"loaded"`
+	ParsedPage bool      `json:"pp"`
+	Avg        float64   `json:"avg"`
+	Ext        string    `json:"ext"`
+	URL        string    `json:"url"`
+	Created    time.Time `json:"create"`
 }
 
 // SelectTitles выбирает из базы все тайтлы
@@ -118,7 +119,8 @@ func SelectTitles() []TitleShortInfo {
 	t2.parsed_pages,
 	a.av,
 	p2.ext,
-	t2.url
+	t2.url,
+	t2.creation_time
 FROM
 	titles t2
 LEFT JOIN
@@ -155,6 +157,7 @@ ORDER BY
 			&avg,
 			&ext,
 			&t.URL,
+			&t.Created,
 		)
 		if err != nil {
 			log.Println(err)
@@ -177,7 +180,8 @@ func SelectTitleByID(id int) (TitleShortInfo, error) {
 	t2.parsed_pages,
 	a.av,
 	p2.ext,
-	t2.url
+	t2.url,
+	t2.creation_time
 FROM
 	titles t2
 LEFT JOIN
@@ -210,6 +214,7 @@ ORDER BY
 		&avg,
 		&ext,
 		&t.URL,
+		&t.Created,
 	)
 	if err != nil {
 		log.Println(err)
