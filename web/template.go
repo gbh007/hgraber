@@ -30,20 +30,6 @@ func init() {
 			border-spacing: 0px, 10px;
 			display: inline-block;
 		}
-		table#title{
-			border-spacing: 0px;
-			max-width: 500px;
-			display: inline-block;
-		}
-		#title tr{
-			height: 75px;
-		}
-		#title *[t="red"]{
-			color: red;
-		}
-		#title *[t="bred"]{
-			background: pink;
-		}
 	</style>
 	<form method="POST" action="/new">
 		<input value="" name="url" placeholder="Загрузить новый тайтл">
@@ -90,27 +76,45 @@ func init() {
 </html>
 {{end}}
 {{define "title-short"}}
-    <table id="title">
-		<tbody>
-			<tr t="{{if not .Loaded}}bred{{end}}">
-				<td rowspan="2">
-					{{if eq .Ext ""}}
-					{{else}}
-						<a href="/title/{{.ID}}/1">
-							<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100px; max-height: 150px;">
-						</a>
-					{{end}}
-				</td>
-				<td colspan="4" t="{{if not .Loaded}}red{{end}}">{{.Name}}</td>
-			</tr>
-			<tr t="{{if not .Loaded}}bred{{end}}">
-				<td>#{{.ID}}</td>
-				<td t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</td>
-				<td t="{{if ne .Avg 100.0}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</td>
-				<td>{{.Created.Format "2006/01/02 15:04:05"}}</td>
-			</tr>
-		<tbody>
-	</table>
+	<style>
+		a#title {
+			text-decoration: none;
+			color: black;
+		}
+		#title {
+			display: inline-grid;
+			grid-template-areas:
+				"img name name name name"
+				"img id pgc pgp dt"
+				"img tag tag tag tag";
+			grid-template-rows: 1fr 1fr 1fr;
+			grid-template-columns: 100px 1fr 1fr 1fr 1fr;
+			border-spacing: 0px;
+			max-width: 500px;
+		}
+		#title * {
+			padding: 5px;
+		}
+		#title *[t="red"]{
+			color: red;
+		}
+		#title *[t="bred"]{
+			background: pink;
+		}
+	</style>
+	<a href="/title/{{.ID}}/1" id="title" t="{{if not .Loaded}}bred{{end}}">
+		{{if eq .Ext ""}}
+			<span></span>
+		{{else}}
+			<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100%; max-height: 100%; grid-area: img;">
+		{{end}}
+		<span style="grid-area: name;" t="{{if not .Loaded}}red{{end}}">{{.Name}}</span>
+		<span style="grid-area: id;">#{{.ID}}</span>
+		<span style="grid-area: pgc;" t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</span>
+		<span style="grid-area: pgp;" t="{{if ne .Avg 100.0}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</span>
+		<span style="grid-area: dt;">{{.Created.Format "2006/01/02 15:04:05"}}</span>
+		<span style="grid-area: tag;"></span>
+	</a>
 {{end}}
 {{define "title-page"}}
 <html>
