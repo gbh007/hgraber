@@ -10,9 +10,9 @@ var tmpl = template.New("")
 func init() {
 	var err error
 	tmpl = tmpl.Funcs(template.FuncMap{
-		"M20": func(i int) bool {
-			return i%2 == 0
-		},
+		"M20": func(i int) bool { return i%2 == 0 },
+		"ADD": func(i int) int { return i + 1 },
+		"SUB": func(i int) int { return i - 1 },
 	})
 	tmpl, err = tmpl.Parse(`
 {{define "main"}}
@@ -96,7 +96,9 @@ func init() {
 				<td rowspan="2">
 					{{if eq .Ext ""}}
 					{{else}}
-						<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100px; max-height: 150px;">
+						<a href="/title/{{.ID}}/1">
+							<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100px; max-height: 150px;">
+						</a>
 					{{end}}
 				</td>
 				<td colspan="4" t="{{if not .Loaded}}red{{end}}">{{.Name}}</td>
@@ -109,6 +111,56 @@ func init() {
 			</tr>
 		<tbody>
 	</table>
+{{end}}
+{{define "title-page"}}
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>HGRABER</title>
+  </head>
+  <body>
+    <script>
+      document.addEventListener("keydown", function (event) {
+        if (event.keyCode === 37) window.location.href="{{.Prev}}"
+        if (event.keyCode === 39) window.location.href="{{.Next}}"
+      });
+    </script>
+	<style>
+		body {
+		    text-align: center;
+		}
+		div.view {
+			height: 90vh;
+		}
+		a.page {
+			text-decoration: none;
+			color: black;
+		}
+		h1.page {
+			display: inline-block;
+			writing-mode: vertical-lr;
+			text-orientation: upright;
+			text-decoration: none;
+			color: black;
+			height: 100%;
+		    text-align: center;
+			border: 2px dotted black;
+			border-radius: 10px;
+		}
+	</style>
+	<div>
+		<a href="/">на главную</a>
+	</div>
+	<div class="view">
+		<a class="page" href="{{.Prev}}"><h1 class="page">Назад</h1></a>
+		<img src="{{.File}}" style="max-width: 90vw; max-height: 90vh;">
+		<a class="page" href="{{.Next}}"><h1 class="page">Вперед</h1></a>
+	<div>
+  </body>
+</html>
+{{end}}
+{{define "debug"}}
+{{printf "%+v" .}}
 {{end}}
 `)
 	if err != nil {

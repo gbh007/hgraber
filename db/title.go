@@ -253,6 +253,24 @@ ORDER BY p.page_number`, id)
 	return result
 }
 
+// SelectPagesByTitleIDAndNumber выбирает из базы все страницу из тайтла по его ид и номеру страницы
+func SelectPagesByTitleIDAndNumber(id, pageNumber int) (Page, error) {
+	row := _db.QueryRow(`SELECT p.title_id, p.page_number, p.url, p.ext
+FROM pages p
+WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber)
+	p := Page{}
+	err := row.Scan(
+		&p.TitleID,
+		&p.PageNumber,
+		&p.URL,
+		&p.Ext,
+	)
+	if err != nil {
+		log.Println(err)
+	}
+	return p, err
+}
+
 // SelectUnloadTitles выбирает из базы все недогруженые тайтлы
 func SelectUnloadTitles() []TitleShortInfo {
 	result := []TitleShortInfo{}

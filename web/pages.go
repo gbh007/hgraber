@@ -4,10 +4,12 @@ import (
 	"app/db"
 	"app/file"
 	"app/handler"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func applyTemplate(w io.Writer, name string, data interface{}) {
@@ -61,4 +63,56 @@ func SaveToZIP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	applyTemplate(w, "success", "тайтлы успешно загруженны на диск ZIP")
+}
+
+// GetTitlePage возвращает страницу из тайтла
+func GetTitlePage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(200)
+	tmp := strings.Split(r.URL.Path[1:], "/")
+	if len(tmp) != 3 || tmp[0] != "title" {
+		applyTemplate(w, "error", "ошибка адресации")
+		return
+	}
+	tid, err := strconv.Atoi(tmp[1])
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	pid, err := strconv.Atoi(tmp[2])
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	title, err := db.SelectTitleByID(tid)
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	page, err := db.SelectPagesByTitleIDAndNumber(tid, pid)
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	data := struct {
+		TitleID, PageNumber int
+		Title               db.TitleShortInfo
+		Page                db.Page
+		File, Prev, Next    string
+	}{
+		TitleID:    tid,
+		PageNumber: pid,
+		Title:      title,
+		Page:       page,
+		File:       fmt.Sprintf("/file/%d/%d.%s", page.TitleID, page.PageNumber, page.Ext),
+		Prev:       "/",
+		Next:       "/",
+	}
+	if page.PageNumber > 1 {
+		data.Prev = fmt.Sprintf("/title/%d/%d", page.TitleID, page.PageNumber-1)
+	}
+	if page.PageNumber < title.PageCount {
+		data.Next = fmt.Sprintf("/title/%d/%d", page.TitleID, page.PageNumber+1)
+	}
+	applyTemplate(w, "title-page", data)
 }
