@@ -116,3 +116,29 @@ func GetTitlePage(w http.ResponseWriter, r *http.Request) {
 	}
 	applyTemplate(w, "title-page", data)
 }
+
+// ReloadTitlePage перезагружает страницу из тайтла
+func ReloadTitlePage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(200)
+	tid, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	pid, err := strconv.Atoi(r.FormValue("page"))
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	u := r.FormValue("url")
+	ext := r.FormValue("ext")
+	db.InsertPage(tid, ext, u, pid)
+	err = file.Load(tid, pid, u, ext)
+	db.UpdatePageSuccess(tid, pid, err == nil)
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	applyTemplate(w, "success", "страница успешно перезакачана")
+}

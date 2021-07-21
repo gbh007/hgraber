@@ -16,6 +16,7 @@ func Run(addr string) <-chan struct{} {
 	mux.HandleFunc("/new", NewTitle)
 	mux.HandleFunc("/prepare", SaveToZIP)
 	mux.HandleFunc("/title/", GetTitlePage)
+	mux.HandleFunc("/reload/page", ReloadTitlePage)
 	// создание объекта сервера
 	server := &http.Server{
 		Addr:    addr,

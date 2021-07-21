@@ -21,10 +21,6 @@ func init() {
 		body{
 			text-align: center;
 		}
-		table#main{
-			border-spacing: 0px, 10px;
-			display: inline-block;
-		}
 	</style>
 	<form method="POST" action="/new">
 		<input value="" name="url" placeholder="Загрузить новый тайтл">
@@ -99,7 +95,7 @@ func init() {
 	</style>
 	<a href="/title/{{.ID}}/1" id="title" t="{{if not .Loaded}}bred{{end}}">
 		{{if eq .Ext ""}}
-			<span></span>
+			<span style="grid-area: img;"></span>
 		{{else}}
 			<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100%; max-height: 100%; grid-area: img;">
 		{{end}}
@@ -153,10 +149,20 @@ func init() {
 	</style>
 	<div>
 		<a href="/">на главную</a>
+		<details style="display: inline">
+			<summary>перезагрузить изображение</summary>
+			<form method="POST" action="/reload/page">
+				<input value="{{.Page.TitleID}}" name="id" type="hidden">
+				<input value="{{.Page.PageNumber}}" name="page" type="hidden">
+				<input value="{{.Page.URL}}" name="url" placeholder="адрес">
+				<input value="{{.Page.Ext}}" name="ext" placeholder="расширение">
+				<input value="начать" name="submit" type="submit"><br/>
+			</form>
+		</details>
 	</div>
 	<div class="view">
 		<a class="page" href="{{.Prev}}"><h1 class="page">Назад</h1></a>
-		<img src="{{.File}}" style="max-width: 90vw; max-height: 90vh;">
+		<img src="{{.File}}" style="max-width: 100%; max-height: 100%;">
 		<a class="page" href="{{.Next}}"><h1 class="page">Вперед</h1></a>
 	<div>
   </body>
