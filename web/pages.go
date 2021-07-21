@@ -69,7 +69,7 @@ func SaveToZIP(w http.ResponseWriter, r *http.Request) {
 func GetTitlePage(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(200)
-	tmp := strings.Split(r.URL.Path[1:], "/")
+	tmp := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(tmp) != 3 || tmp[0] != "title" {
 		applyTemplate(w, "error", "ошибка адресации")
 		return

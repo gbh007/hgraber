@@ -22,23 +22,27 @@ func init() {
 			text-align: center;
 		}
 	</style>
-	<form method="POST" action="/new">
-		<input value="" name="url" placeholder="Загрузить новый тайтл">
-		<input value="загрузить" name="submit" type="submit"><br/>
-		<details>
+	<div>
+		<form method="POST" action="/new" style="display: inline">
+			<input value="" name="url" placeholder="Загрузить новый тайтл">
+			<details style="display: inline">
 			<summary>Пример</summary>
-			<label>https://imhentai.xxx/gallery/653578/</label><br/>
-			<label>https://manga-online.biz/rebirth_of_the_urban_immortal_cultivator/1/401/1/</label><br/>
-		</details>
-	</form>
-	<form method="POST" action="/prepare" target="blank">
-		<input value="" type="number" name="from" placeholder="С">
-		<input value="" type="number" name="to" placeholder="По">
-		<input value="подготовить архив" name="submit" type="submit">
-	</form>
-		{{range $ind, $e := .}}
-			{{template "title-short" $e}}
-		{{end}}
+				<ol style="text-align: left">
+					<li>https://imhentai.xxx/gallery/653578/</li>
+					<li>https://manga-online.biz/rebirth_of_the_urban_immortal_cultivator/1/401/1/</li>
+				</ol>
+			</details>
+			<input value="загрузить" name="submit" type="submit">
+		</form>
+		<form method="POST" action="/prepare" target="blank" style="display: inline">
+			<input value="" type="number" name="from" placeholder="С">
+			<input value="" type="number" name="to" placeholder="По">
+			<input value="подготовить архив" name="submit" type="submit">
+		</form>
+	</div>
+	{{range $ind, $e := .}}
+		{{template "title-short" $e}}
+	{{end}}
   </body>
 </html>
 {{end}}
@@ -83,14 +87,18 @@ func init() {
 			border-spacing: 0px;
 			max-width: 500px;
 		}
-		#title * {
-			padding: 5px;
-		}
 		#title *[t="red"]{
 			color: red;
 		}
 		#title *[t="bred"]{
 			background: pink;
+		}
+		span.tag {
+			border-radius: 3px;
+			padding: 3px;
+			margin: 2px;
+			background: lightgrey;
+			display: inline-block;
 		}
 	</style>
 	<a href="/title/{{.ID}}/1" id="title" t="{{if not .Loaded}}bred{{end}}">
@@ -106,7 +114,7 @@ func init() {
 		<span style="grid-area: dt;">{{.Created.Format "2006/01/02 15:04:05"}}</span>
 		<span style="grid-area: tag;">
 		{{range .Tags}}
-			<span>{{.}}</span>
+			<span class="tag">{{.}}</span>
 		{{end}}
 		</span>
 	</a>
