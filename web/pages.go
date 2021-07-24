@@ -31,7 +31,7 @@ func NewTitle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(200)
 	u := r.FormValue("url")
-	err := handler.HandleFull(u)
+	err := handler.FirstHandle(u)
 	if err != nil {
 		applyTemplate(w, "error", err.Error())
 	} else {

@@ -4,6 +4,7 @@ import (
 	"app/db"
 	"app/handler"
 	"app/web"
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -46,32 +47,22 @@ func main() {
 		}
 	}()
 
+	go func() {
+		f, err := os.Open("task.txt")
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		sc := bufio.NewScanner(f)
+		for sc.Scan() {
+			if sc.Text() == "" {
+				continue
+			}
+			handler.FirstHandle(sc.Text())
+		}
+		f.Close()
+	}()
+
 	done := web.Run(fmt.Sprintf(":%d", *webPort))
 	<-done
-
-	// _, err = os.Stat("loads")
-	// if os.IsNotExist(err) {
-	// 	os.MkdirAll("loads", 0777)
-	// }
-	// f, err := os.Open("task.txt")
-	// if err != nil {
-	// 	log.Println(err)
-	// 	return
-	// }
-	// sc := bufio.NewScanner(f)
-	// wg := &sync.WaitGroup{}
-	// for sc.Scan() {
-	// 	if sc.Text() == "" {
-	// 		continue
-	// 	}
-	// 	wg.Add(1)
-	// 	go func(u string) {
-	// 		handler.HandleFull(u)
-	// 		wg.Done()
-	// 	}(sc.Text())
-	// }
-	// wg.Wait()
-	// f.Close()
-	// time.Sleep(time.Second)
-
 }

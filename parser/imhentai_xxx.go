@@ -45,7 +45,8 @@ func (p Parser_IMHENTAI_XXX) ParseName() string {
 	if len(res) < 1 || len(res[0]) != 2 {
 		return ""
 	}
-	return res[0][1]
+	return regexp.MustCompile(`<a.+?</a>`).ReplaceAllString(res[0][1],"")
+	// return res[0][1]
 }
 func (p Parser_IMHENTAI_XXX) ParseTags() []string {
 	if strings.Index(p.main_raw, `<span class='tags_text'>Tags:</span>`) < 0 {

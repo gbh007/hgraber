@@ -55,6 +55,21 @@ func AddUnloadedPagesToQueue() {
 	}
 }
 
+// FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
+func FirstHandle(u string) error {
+	log.Println("начата обработка", u)
+	p, ok, err := parser.Load(u)
+	if err != nil {
+		return err
+	}
+	_, err = db.InsertTitle(p.ParseName(), u, ok)
+	if err != nil {
+		return err
+	}
+	log.Println("завершена обработка", u)
+	return nil
+}
+
 // HandleFull обрабатывает данные тайтла (новое добавление)
 func HandleFull(u string) error {
 	log.Println("начата обработка", u)
