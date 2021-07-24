@@ -167,6 +167,7 @@ func init() {
 				<input value="начать" name="submit" type="submit"><br/>
 			</form>
 		</details>
+		Страница {{.Page.PageNumber}} из {{.Title.PageCount}}
 	</div>
 	<div class="view">
 		<a class="page" href="{{.Prev}}"><h1 class="page">Назад</h1></a>
