@@ -22,6 +22,16 @@ func applyTemplate(w http.ResponseWriter, name string, data interface{}) {
 
 // GetMainPage возвращает главную страницу
 func GetMainPage(w http.ResponseWriter, r *http.Request) {
+	applyTemplate(w, "main", map[string]interface{}{
+		"Count":           db.SelectTitlesCount(),
+		"UnloadCount":     db.SelectUnloadTitlesCount(),
+		"PageCount":       db.SelectPagesCount(),
+		"UnloadPageCount": db.SelectUnloadPagesCount(),
+	})
+}
+
+// GetListPage возвращает страницу со списком тайтлов
+func GetListPage(w http.ResponseWriter, r *http.Request) {
 	count := db.SelectTitlesCount()
 	offset := 0
 	page := 1
@@ -49,7 +59,7 @@ func GetMainPage(w http.ResponseWriter, r *http.Request) {
 		offset = (p - 1) * limit
 	}
 	titles := db.SelectTitles(offset, limit)
-	applyTemplate(w, "main", map[string]interface{}{
+	applyTemplate(w, "list", map[string]interface{}{
 		"Count":  count,
 		"Titles": titles,
 		"Offset": offset,

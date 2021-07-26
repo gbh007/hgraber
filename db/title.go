@@ -330,3 +330,36 @@ func SelectTitlesCount() int {
 	}
 	return c
 }
+
+// SelectUnloadTitlesCount получает количество недогруженных тайтлов в базе
+func SelectUnloadTitlesCount() int {
+	row := _db.QueryRow(`SELECT COUNT(t.id) FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE`)
+	var c int
+	err := row.Scan(&c)
+	if err != nil {
+		log.Println(err)
+	}
+	return c
+}
+
+// SelectPagesCount получает количество страниц в базе
+func SelectPagesCount() int {
+	row := _db.QueryRow(`SELECT COUNT(url) FROM pages`)
+	var c int
+	err := row.Scan(&c)
+	if err != nil {
+		log.Println(err)
+	}
+	return c
+}
+
+// SelectUnloadPagesCount получает количество недогруженных страниц в базе
+func SelectUnloadPagesCount() int {
+	row := _db.QueryRow(`SELECT COUNT(url) FROM pages WHERE success = FALSE`)
+	var c int
+	err := row.Scan(&c)
+	if err != nil {
+		log.Println(err)
+	}
+	return c
+}

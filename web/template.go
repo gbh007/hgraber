@@ -18,6 +18,34 @@ func init() {
   </head>
   <body>
 	<style>
+		body {
+			text-align: center;
+		}
+		ul {
+			text-align: left;
+			padding: 0px;
+			margin: 0px;
+			list-style: none;
+		}
+	</style>
+	<ul>
+		<li>Всего <b>{{.Count}}</b> тайтлов</li>
+		<li>Всего незагруженно <b>{{.UnloadCount}}</b> тайтлов</li>
+		<li>Всего <b>{{.PageCount}}</b> страниц</li>
+		<li>Всего незагруженно <b>{{.UnloadPageCount}}</b> страниц</li>
+		<li><a href="/list/1">Список тайтлов</a></li>
+	</ul>
+  </body>
+</html>
+{{end}}
+{{define "list"}}
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>HGRABER</title>
+  </head>
+  <body>
+	<style>
 		body{
 			text-align: center;
 		}
