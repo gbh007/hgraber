@@ -21,6 +21,45 @@ func init() {
 		body{
 			text-align: center;
 		}
+		a.page {
+			text-decoration: none;
+			color: black;
+			padding: 5px;
+			border-radius: 5px;
+			display: inline-block;
+			border: 1px dashed black;
+		}
+		a.page[selected="true"] {
+			background: lime;
+		}
+		a#title {
+			text-decoration: none;
+			color: black;
+		}
+		#title {
+			display: inline-grid;
+			grid-template-areas:
+				"img name name name name"
+				"img id pgc pgp dt"
+				"img tag tag tag tag";
+			grid-template-rows: none;
+			grid-template-columns: 130px 1fr 1fr 1fr 1fr;
+			border-spacing: 0px;
+			max-width: 500px;
+		}
+		#title *[t="red"]{
+			color: red;
+		}
+		#title *[t="bred"]{
+			background: pink;
+		}
+		span.tag {
+			border-radius: 3px;
+			padding: 3px;
+			margin: 2px;
+			background: lightgrey;
+			display: inline-block;
+		}
 	</style>
 	<div>
 		<form method="POST" action="/new" style="display: inline">
@@ -40,7 +79,15 @@ func init() {
 			<input value="подготовить архив" name="submit" type="submit">
 		</form>
 	</div>
-	{{range $ind, $e := .}}
+	<div style="padding: 10px">
+		{{with $info := .}}
+			{{range $info.Pages}}
+				<a class="page" href="/list/{{.}}" selected="{{if eq . $info.Page}}true{{end}}">{{.}}</a>
+			{{end}}
+		{{end}}
+		<b>Всего {{.Count}} тайтлов</b>
+	</div>
+	{{range $ind, $e := .Titles}}
 		{{template "title-short" $e}}
 	{{end}}
   </body>
@@ -71,36 +118,6 @@ func init() {
 </html>
 {{end}}
 {{define "title-short"}}
-	<style>
-		a#title {
-			text-decoration: none;
-			color: black;
-		}
-		#title {
-			display: inline-grid;
-			grid-template-areas:
-				"img name name name name"
-				"img id pgc pgp dt"
-				"img tag tag tag tag";
-			grid-template-rows: 1fr 1fr 1fr;
-			grid-template-columns: 130px 1fr 1fr 1fr 1fr;
-			border-spacing: 0px;
-			max-width: 500px;
-		}
-		#title *[t="red"]{
-			color: red;
-		}
-		#title *[t="bred"]{
-			background: pink;
-		}
-		span.tag {
-			border-radius: 3px;
-			padding: 3px;
-			margin: 2px;
-			background: lightgrey;
-			display: inline-block;
-		}
-	</style>
 	<a href="/title/{{.ID}}/1" id="title" t="{{if not .Loaded}}bred{{end}}">
 		{{if eq .Ext ""}}
 			<span style="grid-area: img;"></span>

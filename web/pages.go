@@ -5,14 +5,15 @@ import (
 	"app/file"
 	"app/handler"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
-func applyTemplate(w io.Writer, name string, data interface{}) {
+func applyTemplate(w http.ResponseWriter, name string, data interface{}) {
+	w.Header().Set("Content-Type", "text/html")
+	w.WriteHeader(200)
 	err := tmpl.ExecuteTemplate(w, name, data)
 	if err != nil {
 		log.Println(err)
@@ -21,15 +22,45 @@ func applyTemplate(w io.Writer, name string, data interface{}) {
 
 // GetMainPage возвращает главную страницу
 func GetMainPage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(200)
-	applyTemplate(w, "main", db.SelectTitles())
+	count := db.SelectTitlesCount()
+	offset := 0
+	page := 1
+	limit := 12
+	pageCount := count / limit
+	if count%limit > 0 {
+		pageCount++
+	}
+	pages := []int{}
+	for i := 1; i <= pageCount; i++ {
+		pages = append(pages, i)
+	}
+	if r.URL.Path != "/" {
+		tmp := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+		if len(tmp) != 2 || tmp[0] != "list" {
+			applyTemplate(w, "error", "ошибка адресации")
+			return
+		}
+		p, err := strconv.Atoi(tmp[1])
+		if err != nil {
+			applyTemplate(w, "error", err)
+			return
+		}
+		page = p
+		offset = (p - 1) * limit
+	}
+	titles := db.SelectTitles(offset, limit)
+	applyTemplate(w, "main", map[string]interface{}{
+		"Count":  count,
+		"Titles": titles,
+		"Offset": offset,
+		"Limit":  limit,
+		"Pages":  pages,
+		"Page":   page,
+	})
 }
 
 // NewTitle загружает новый тайтл
 func NewTitle(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(200)
 	u := r.FormValue("url")
 	err := handler.FirstHandle(u)
 	if err != nil {
@@ -41,8 +72,6 @@ func NewTitle(w http.ResponseWriter, r *http.Request) {
 
 // SaveToZIP загружает новый тайтл
 func SaveToZIP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(200)
 	fromRaw := r.FormValue("from")
 	toRaw := r.FormValue("to")
 	from, err := strconv.Atoi(fromRaw)
@@ -67,8 +96,6 @@ func SaveToZIP(w http.ResponseWriter, r *http.Request) {
 
 // GetTitlePage возвращает страницу из тайтла
 func GetTitlePage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(200)
 	tmp := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(tmp) != 3 || tmp[0] != "title" {
 		applyTemplate(w, "error", "ошибка адресации")
@@ -119,8 +146,6 @@ func GetTitlePage(w http.ResponseWriter, r *http.Request) {
 
 // ReloadTitlePage перезагружает страницу из тайтла
 func ReloadTitlePage(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(200)
 	tid, err := strconv.Atoi(r.FormValue("id"))
 	if err != nil {
 		applyTemplate(w, "error", err)

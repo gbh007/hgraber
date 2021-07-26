@@ -13,6 +13,7 @@ func Run(addr string) <-chan struct{} {
 	mux.Handle("/file/", http.StripPrefix("/file/", http.FileServer(http.Dir(config.DefaultFilePath))))
 
 	mux.HandleFunc("/", GetMainPage)
+	mux.HandleFunc("/list/", GetMainPage)
 	mux.HandleFunc("/new", NewTitle)
 	mux.HandleFunc("/prepare", SaveToZIP)
 	mux.HandleFunc("/title/", GetTitlePage)

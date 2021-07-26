@@ -110,7 +110,7 @@ type TitleShortInfo struct {
 }
 
 // SelectTitles выбирает из базы все тайтлы
-func SelectTitles() []TitleShortInfo {
+func SelectTitles(offset, limit int) []TitleShortInfo {
 	result := []TitleShortInfo{}
 	rows, err := _db.Query(`SELECT
 	t2.id,
@@ -140,7 +140,8 @@ LEFT JOIN pages p2 ON
 	p2.title_id = t2.id
 	AND p2.page_number = 1
 ORDER BY
-	t2.id DESC`)
+	t2.id DESC
+LIMIT ?, ?`, offset, limit)
 	if err != nil {
 		log.Println(err)
 		return result
@@ -317,4 +318,15 @@ ORDER BY t.name`, id)
 		}
 	}
 	return result
+}
+
+// SelectTitlesCount получает количество тайтлов в базе
+func SelectTitlesCount() int {
+	row := _db.QueryRow(`SELECT COUNT(id) FROM titles`)
+	var c int
+	err := row.Scan(&c)
+	if err != nil {
+		log.Println(err)
+	}
+	return c
 }
