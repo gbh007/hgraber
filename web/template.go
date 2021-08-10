@@ -18,16 +18,23 @@ func init() {
   </head>
   <body>
 	<style>
-		body {
-			text-align: center;
-		}
 		ul {
-			text-align: left;
 			padding: 0px;
 			margin: 0px;
 			list-style: none;
 		}
 	</style>
+	<form method="POST" action="/new" style="display: inline">
+		<input value="" name="url" placeholder="Загрузить новый тайтл">
+		<details style="display: inline">
+		<summary>Пример</summary>
+			<ol style="text-align: left">
+				<li>https://imhentai.xxx/gallery/653578/</li>
+				<li>https://manga-online.biz/rebirth_of_the_urban_immortal_cultivator/1/401/1/</li>
+			</ol>
+		</details>
+		<input value="загрузить" name="submit" type="submit">
+	</form>
 	<ul>
 		<li>Всего <b>{{.Count}}</b> тайтлов</li>
 		<li>Всего незагруженно <b>{{.UnloadCount}}</b> тайтлов</li>
