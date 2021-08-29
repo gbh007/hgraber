@@ -45,7 +45,7 @@ func (p Parser_IMHENTAI_XXX) ParseName() string {
 	if len(res) < 1 || len(res[0]) != 2 {
 		return ""
 	}
-	return regexp.MustCompile(`<a.+?</a>`).ReplaceAllString(res[0][1],"")
+	return regexp.MustCompile(`<a.+?</a>`).ReplaceAllString(res[0][1], "")
 	// return res[0][1]
 }
 func (p Parser_IMHENTAI_XXX) ParseTags() []string {
@@ -79,9 +79,13 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
 		if len(res) < 2 {
 			return []Page{}
 		}
-		fnameTmp := strings.Split(res[1], "/")                   // название файла
+		url := res[1]
+		if strings.Index(url, "data-src=\"") != -1 {
+			url = strings.Split(url, "data-src=\"")[1]
+		}
+		fnameTmp := strings.Split(url, "/")                      // название файла
 		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
-		result = append(result, Page{URL: res[1], Number: i, Ext: fnameTmp[len(fnameTmp)-1]})
+		result = append(result, Page{URL: url, Number: i, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 	return result
 }

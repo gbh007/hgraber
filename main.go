@@ -16,6 +16,7 @@ import (
 func main() {
 
 	webPort := flag.Int("p", 8080, "порт веб сервера")
+	flag.IntVar(&web.PageLimit, "pl", 12, "количество тайтлов на странице")
 	flag.Parse()
 
 	lf, err := os.Create("log.txt")

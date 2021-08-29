@@ -11,6 +11,9 @@ import (
 	"strings"
 )
 
+// PageLimit ограничение на выдачу
+var PageLimit int
+
 func applyTemplate(w http.ResponseWriter, name string, data interface{}) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(200)
@@ -35,7 +38,7 @@ func GetListPage(w http.ResponseWriter, r *http.Request) {
 	count := db.SelectTitlesCount()
 	offset := 0
 	page := 1
-	limit := 12
+	limit := PageLimit
 	pageCount := count / limit
 	if count%limit > 0 {
 		pageCount++
