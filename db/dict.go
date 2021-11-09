@@ -100,7 +100,7 @@ func UpdateTitleTags(id int, tags []string) error {
 	_, err = tx.Exec(`DELETE FROM link_tags_titles WHERE title_id = ?`, id)
 	if err != nil {
 		log.Println(err)
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	// добавление новых данных
@@ -108,7 +108,7 @@ func UpdateTitleTags(id int, tags []string) error {
 		_, err = tx.Exec(`INSERT INTO link_tags_titles(title_id, tag_id) VALUES(?, ?)`, id, tid)
 		if err != nil {
 			log.Println(err)
-			tx.Rollback()
+			_ = tx.Rollback()
 			return err
 		}
 	}
@@ -116,11 +116,10 @@ func UpdateTitleTags(id int, tags []string) error {
 	_, err = tx.Exec(`UPDATE titles SET parsed_tags = ? WHERE id = ?`, true, id)
 	if err != nil {
 		log.Println(err)
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
-	tx.Commit()
-	return nil
+	return tx.Commit()
 }
 
 // UpdateTitleAuthors обновляет в тайтле список авторов
@@ -143,7 +142,7 @@ func UpdateTitleAuthors(id int, authors []string) error {
 	_, err = tx.Exec(`DELETE FROM link_authors_titles WHERE title_id = ?`, id)
 	if err != nil {
 		log.Println(err)
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	// добавление новых данных
@@ -151,7 +150,7 @@ func UpdateTitleAuthors(id int, authors []string) error {
 		_, err = tx.Exec(`INSERT INTO link_authors_titles(title_id, author_id) VALUES(?, ?)`, id, tid)
 		if err != nil {
 			log.Println(err)
-			tx.Rollback()
+			_ = tx.Rollback()
 			return err
 		}
 	}
@@ -159,11 +158,10 @@ func UpdateTitleAuthors(id int, authors []string) error {
 	_, err = tx.Exec(`UPDATE titles SET parsed_authors = ? WHERE id = ?`, true, id)
 	if err != nil {
 		log.Println(err)
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
-	tx.Commit()
-	return nil
+	return tx.Commit()
 }
 
 // UpdateTitleCharacters обновляет в тайтле список персонажей
@@ -186,7 +184,7 @@ func UpdateTitleCharacters(id int, authors []string) error {
 	_, err = tx.Exec(`DELETE FROM link_characters_titles WHERE title_id = ?`, id)
 	if err != nil {
 		log.Println(err)
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
 	// добавление новых данных
@@ -194,7 +192,7 @@ func UpdateTitleCharacters(id int, authors []string) error {
 		_, err = tx.Exec(`INSERT INTO link_characters_titles(title_id, character_id) VALUES(?, ?)`, id, tid)
 		if err != nil {
 			log.Println(err)
-			tx.Rollback()
+			_ = tx.Rollback()
 			return err
 		}
 	}
@@ -202,9 +200,8 @@ func UpdateTitleCharacters(id int, authors []string) error {
 	_, err = tx.Exec(`UPDATE titles SET parsed_characters = ? WHERE id = ?`, true, id)
 	if err != nil {
 		log.Println(err)
-		tx.Rollback()
+		_ = tx.Rollback()
 		return err
 	}
-	tx.Commit()
-	return nil
+	return tx.Commit()
 }

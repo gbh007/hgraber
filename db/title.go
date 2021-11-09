@@ -97,16 +97,19 @@ titles t INNER JOIN pages p ON t.loaded = TRUE AND t.parsed_pages = TRUE AND t.i
 
 // TitleShortInfo информация о тайтле
 type TitleShortInfo struct {
-	ID         int       `json:"id"`
-	Name       string    `json:"name"`
-	PageCount  int       `json:"pc"`
-	Loaded     bool      `json:"loaded"`
-	ParsedPage bool      `json:"pp"`
-	Avg        float64   `json:"avg"`
-	Ext        string    `json:"ext"`
-	URL        string    `json:"url"`
-	Created    time.Time `json:"create"`
-	Tags       []string  `json:"tags"`
+	ID               int
+	Name             string
+	PageCount        int
+	Loaded           bool
+	ParsedPage       bool
+	ParsedTags       bool
+	ParsedAuthors    bool
+	ParsedCharacters bool
+	Avg              float64
+	Ext              string
+	URL              string
+	Created          time.Time
+	Tags             []string
 }
 
 // SelectTitles выбирает из базы все тайтлы
@@ -118,6 +121,9 @@ func SelectTitles(offset, limit int) []TitleShortInfo {
 	t2.page_count,
 	t2.loaded,
 	t2.parsed_pages,
+	t2.parsed_tags,
+	t2.parsed_authors,
+	t2.parsed_characters,
 	a.av,
 	p2.ext,
 	t2.url,
@@ -156,6 +162,9 @@ LIMIT ?, ?`, offset, limit)
 			&t.PageCount,
 			&t.Loaded,
 			&t.ParsedPage,
+			&t.ParsedTags,
+			&t.ParsedAuthors,
+			&t.ParsedCharacters,
 			&avg,
 			&ext,
 			&t.URL,
@@ -181,6 +190,9 @@ func SelectTitleByID(id int) (TitleShortInfo, error) {
 	t2.page_count,
 	t2.loaded,
 	t2.parsed_pages,
+	t2.parsed_tags,
+	t2.parsed_authors,
+	t2.parsed_characters,
 	a.av,
 	p2.ext,
 	t2.url,
@@ -214,6 +226,9 @@ ORDER BY
 		&t.PageCount,
 		&t.Loaded,
 		&t.ParsedPage,
+		&t.ParsedTags,
+		&t.ParsedAuthors,
+		&t.ParsedCharacters,
 		&avg,
 		&ext,
 		&t.URL,
@@ -277,7 +292,8 @@ WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber
 // SelectUnloadTitles выбирает из базы все недогруженые тайтлы
 func SelectUnloadTitles() []TitleShortInfo {
 	result := []TitleShortInfo{}
-	rows, err := _db.Query(`SELECT t.id, t.url FROM	titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE`)
+	rows, err := _db.Query(`SELECT t.id, t.url, t.loaded, t.parsed_pages, t.parsed_tags, t.parsed_authors, t.parsed_characters 
+	FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE OR parsed_tags = FALSE OR parsed_authors = FALSE OR parsed_characters = FALSE`)
 	if err != nil {
 		log.Println(err)
 		return result
@@ -287,6 +303,11 @@ func SelectUnloadTitles() []TitleShortInfo {
 		err = rows.Scan(
 			&t.ID,
 			&t.URL,
+			&t.Loaded,
+			&t.ParsedPage,
+			&t.ParsedTags,
+			&t.ParsedAuthors,
+			&t.ParsedCharacters,
 		)
 		if err != nil {
 			log.Println(err)

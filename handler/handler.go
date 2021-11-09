@@ -4,6 +4,7 @@ import (
 	"app/db"
 	"app/file"
 	"app/parser"
+	"fmt"
 	"log"
 	"sync"
 	"time"
@@ -42,7 +43,7 @@ func handleFileQueue() {
 		fileWG.Add(1)
 		err := file.Load(page.TitleID, page.PageNumber, page.URL, page.Ext)
 		if err == nil {
-			db.UpdatePageSuccess(page.TitleID, page.PageNumber, true)
+			_ = db.UpdatePageSuccess(page.TitleID, page.PageNumber, true)
 		}
 		fileWG.Done()
 	}
@@ -70,76 +71,58 @@ func FirstHandle(u string) error {
 	return nil
 }
 
-// HandleFull обрабатывает данные тайтла (новое добавление)
-func HandleFull(u string) error {
-	log.Println("начата обработка", u)
-	p, ok, err := parser.Load(u)
+// Update обрабатывает данные тайтла (только недостающие)
+func Update(title db.TitleShortInfo) error {
+	log.Println("начата обработка", title.URL)
+	p, ok, err := parser.Load(title.URL)
 	if err != nil {
 		return err
 	}
-	id, err := db.InsertTitle(p.ParseName(), u, ok)
-	if err != nil {
-		return err
+	if !ok {
+		return fmt.Errorf("not load")
 	}
-	if ok {
-		err = db.UpdateTitleAuthors(id, p.ParseAuthors())
+	if !title.Loaded {
+		err = db.UpdateTitle(title.ID, p.ParseName(), ok)
 		if err != nil {
 			return err
 		}
-		err = db.UpdateTitleTags(id, p.ParseTags())
+		log.Println("обновлено название", title.URL)
+	}
+	if !title.ParsedAuthors {
+		err = db.UpdateTitleAuthors(title.ID, p.ParseAuthors())
 		if err != nil {
 			return err
 		}
-		err = db.UpdateTitleCharacters(id, p.ParseCharacters())
+		log.Println("обновлены авторы", title.URL)
+	}
+	if !title.ParsedTags {
+		err = db.UpdateTitleTags(title.ID, p.ParseTags())
 		if err != nil {
 			return err
 		}
+		log.Println("обновлены теги", title.URL)
+	}
+	if !title.ParsedCharacters {
+		err = db.UpdateTitleCharacters(title.ID, p.ParseCharacters())
+		if err != nil {
+			return err
+		}
+		log.Println("обновлены персонажи", title.URL)
+	}
+	if !title.ParsedPage {
 		pp := true
 		pages := p.ParsePages()
 		for _, page := range pages {
-			if db.InsertPage(id, page.Ext, page.URL, page.Number) != nil {
+			if db.InsertPage(title.ID, page.Ext, page.URL, page.Number) != nil {
 				pp = false
 			}
 		}
-		db.UpdateTitleParsedPage(id, len(pages), pp && (len(pages) > 0))
-	}
-	log.Println("завершена обработка", u)
-	return nil
-}
-
-// UpdateFull обрабатывает данные тайтла (переобработка)
-func UpdateFull(id int, u string) error {
-	log.Println("начата обработка", u)
-	p, ok, err := parser.Load(u)
-	if err != nil {
-		return err
-	}
-	err = db.UpdateTitle(id, p.ParseName(), ok)
-	if err != nil {
-		return err
-	}
-	if ok {
-		err = db.UpdateTitleAuthors(id, p.ParseAuthors())
+		err = db.UpdateTitleParsedPage(title.ID, len(pages), pp && (len(pages) > 0))
 		if err != nil {
 			return err
 		}
-		err = db.UpdateTitleTags(id, p.ParseTags())
-		if err != nil {
-			return err
-		}
-		err = db.UpdateTitleCharacters(id, p.ParseCharacters())
-		if err != nil {
-			return err
-		}
-		pp := true
-		pages := p.ParsePages()
-		for _, page := range pages {
-			if db.InsertPage(id, page.Ext, page.URL, page.Number) != nil {
-				pp = false
-			}
-		}
-		db.UpdateTitleParsedPage(id, len(pages), pp && (len(pages) > 0))
+		log.Println("обновлены страницы", title.URL)
 	}
-	log.Println("завершена обработка", u)
+	log.Println("завершена обработка", title.URL)
 	return nil
 }

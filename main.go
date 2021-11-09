@@ -27,7 +27,11 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.SetOutput(io.MultiWriter(os.Stderr, lf))
 
-	db.Connect()
+	err = db.Connect()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	go func() {
 		timer := time.NewTimer(time.Minute)
@@ -43,7 +47,7 @@ func main() {
 		timer := time.NewTicker(time.Minute)
 		for range timer.C {
 			for _, t := range db.SelectUnloadTitles() {
-				handler.UpdateFull(t.ID, t.URL)
+				_ = handler.Update(t)
 			}
 		}
 	}()
@@ -59,7 +63,7 @@ func main() {
 			if sc.Text() == "" {
 				continue
 			}
-			handler.FirstHandle(sc.Text())
+			_ = handler.FirstHandle(sc.Text())
 		}
 		f.Close()
 	}()
