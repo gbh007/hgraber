@@ -14,6 +14,7 @@ func Run(addr string) <-chan struct{} {
 
 	mux.HandleFunc("/", GetMainPage)
 	mux.HandleFunc("/title/list", GetListPage)
+	mux.HandleFunc("/title/details", GetTitleDetails)
 	mux.HandleFunc("/new", NewTitle)
 	mux.HandleFunc("/prepare", SaveToZIP)
 	mux.HandleFunc("/title/page", GetTitlePage)

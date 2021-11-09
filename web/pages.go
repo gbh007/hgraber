@@ -82,14 +82,12 @@ func NewTitle(w http.ResponseWriter, r *http.Request) {
 
 // SaveToZIP загружает новый тайтл
 func SaveToZIP(w http.ResponseWriter, r *http.Request) {
-	fromRaw := r.FormValue("from")
-	toRaw := r.FormValue("to")
-	from, err := strconv.Atoi(fromRaw)
+	from, err := strconv.Atoi(r.FormValue("from"))
 	if err != nil {
 		applyTemplate(w, "error", err.Error())
 		return
 	}
-	to, err := strconv.Atoi(toRaw)
+	to, err := strconv.Atoi(r.FormValue("to"))
 	if err != nil {
 		applyTemplate(w, "error", err.Error())
 		return
@@ -102,6 +100,21 @@ func SaveToZIP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	applyTemplate(w, "success", "тайтлы успешно загруженны на диск ZIP")
+}
+
+// GetTitleDetails возвращает полные данные тайтла
+func GetTitleDetails(w http.ResponseWriter, r *http.Request) {
+	tid, err := strconv.Atoi(r.URL.Query().Get("title"))
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	title, err := db.SelectTitleByID(tid)
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	applyTemplate(w, "title-details", title)
 }
 
 // GetTitlePage возвращает страницу из тайтла

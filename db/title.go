@@ -239,6 +239,7 @@ ORDER BY
 	} else {
 		t.Avg = avg.Float64 * 100
 		t.Ext = ext.String
+		t.Tags = SelectTitleTagsByID(t.ID)
 	}
 	return t, err
 }

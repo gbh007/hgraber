@@ -153,7 +153,7 @@ func init() {
 </html>
 {{end}}
 {{define "title-short"}}
-	<a href="/title/page?title={{.ID}}&page=1" id="title" t="{{if not .Loaded}}bred{{end}}">
+	<a href="/title/details?title={{.ID}}" id="title" t="{{if not .Loaded}}bred{{end}}">
 		{{if eq .Ext ""}}
 			<span style="grid-area: img;"></span>
 		{{else}}
@@ -170,6 +170,77 @@ func init() {
 		{{end}}
 		</span>
 	</a>
+{{end}}
+{{define "title-details"}}
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>HGRABER</title>
+  </head>
+  <body>
+	<style>
+		body{
+			text-align: center;
+		}
+		#title-details {
+			display: grid;
+			grid-template-areas:
+				"img name name name name"
+				"img id pgc pgp dt"
+				"img tag tag tag tag";
+			grid-template-rows: 1fr 1fr 1fr;
+			grid-template-columns: 200px 1fr 1fr 1fr 1fr;
+			border-spacing: 0px;
+		}
+		#title-details *[t="red"]{
+			color: red;
+		}
+		#title-details *[t="bred"]{
+			background: pink;
+		}
+		span.tag {
+			border-radius: 3px;
+			padding: 3px;
+			margin: 2px;
+			background: lightgrey;
+			display: inline-block;
+		}
+		a.read {
+			text-decoration: none;
+			color: green;
+			background: lightgreen;
+			border-radius: 10px;
+			padding: 10px;
+		}
+		a.load {
+			text-decoration: none;
+			color: blue;
+			background: lightblue;
+			border-radius: 10px;
+			padding: 10px;
+		}
+	</style>
+	<div id="title-details" t="{{if not .Loaded}}bred{{end}}">
+		{{if eq .Ext ""}}
+			<span style="grid-area: img;"></span>
+		{{else}}
+			<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100%; max-height: 100%; grid-area: img;">
+		{{end}}
+		<span style="grid-area: name;" t="{{if not .Loaded}}red{{end}}">{{.Name}}</span>
+		<span style="grid-area: id;">#{{.ID}}</span>
+		<span style="grid-area: pgc;" t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</span>
+		<span style="grid-area: pgp;" t="{{if ne .Avg 100.0}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</span>
+		<span style="grid-area: dt;">{{.Created.Format "2006/01/02 15:04:05"}}</span>
+		<span style="grid-area: tag;"  t="{{if not .ParsedTags}}red{{end}}">Тэги: 
+		{{range .Tags}}
+			<span class="tag">{{.}}</span>
+		{{end}}
+		</span>
+	</div>
+	<a href="/title/load?title={{.ID}}" class="load">Скачать</a>
+	<a href="/title/page?title={{.ID}}&page=1" class="read">Читать</a>
+  </body>
+</html>
 {{end}}
 {{define "title-page"}}
 <html>
