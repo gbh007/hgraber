@@ -187,8 +187,10 @@ func init() {
 			grid-template-areas:
 				"img name name name name"
 				"img id pgc pgp dt"
-				"img tag tag tag tag";
-			grid-template-rows: 1fr 1fr 1fr;
+				"img tag tag tag tag"
+				"img authors authors authors authors"
+				"img char char char char";
+			/*grid-template-rows: 1fr 1fr 1fr;*/
 			grid-template-columns: 200px 1fr 1fr 1fr 1fr;
 			border-spacing: 0px;
 		}
@@ -198,12 +200,20 @@ func init() {
 		#title-details *[t="bred"]{
 			background: pink;
 		}
-		span.tag {
+		span.tag, span.author, span.char {
 			border-radius: 3px;
 			padding: 3px;
 			margin: 2px;
-			background: lightgrey;
 			display: inline-block;
+		}
+		span.tag{
+			background: lightgrey;
+		}
+		span.author{
+			background: #00bcd4;
+		}
+		span.char{
+			background: orange;
 		}
 		a.read {
 			text-decoration: none;
@@ -231,14 +241,26 @@ func init() {
 		<span style="grid-area: pgc;" t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</span>
 		<span style="grid-area: pgp;" t="{{if ne .Avg 100.0}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</span>
 		<span style="grid-area: dt;">{{.Created.Format "2006/01/02 15:04:05"}}</span>
+		<span style="grid-area: authors;"  t="{{if not .ParsedAuthors}}red{{end}}">Авторы: 
+		{{range .Authors}}
+			<span class="author">{{.}}</span>
+		{{end}}
+		</span>
+		<span style="grid-area: char;"  t="{{if not .ParsedCharacters}}red{{end}}">Персонажи: 
+		{{range .Characters}}
+			<span class="char">{{.}}</span>
+		{{end}}
+		</span>
 		<span style="grid-area: tag;"  t="{{if not .ParsedTags}}red{{end}}">Тэги: 
 		{{range .Tags}}
 			<span class="tag">{{.}}</span>
 		{{end}}
 		</span>
 	</div>
-	<a href="/title/load?title={{.ID}}" class="load">Скачать</a>
-	<a href="/title/page?title={{.ID}}&page=1" class="read">Читать</a>
+	{{if .Loaded}}
+		<a href="/title/load?title={{.ID}}" class="load">Скачать</a>
+		<a href="/title/page?title={{.ID}}&page=1" class="read">Читать</a>
+	{{end}}
   </body>
 </html>
 {{end}}

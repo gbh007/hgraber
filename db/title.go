@@ -110,6 +110,8 @@ type TitleShortInfo struct {
 	URL              string
 	Created          time.Time
 	Tags             []string
+	Authors          []string
+	Characters       []string
 }
 
 // SelectTitles выбирает из базы все тайтлы
@@ -176,6 +178,8 @@ LIMIT ?, ?`, offset, limit)
 			t.Avg = avg.Float64 * 100
 			t.Ext = ext.String
 			t.Tags = SelectTitleTagsByID(t.ID)
+			t.Authors = SelectTitleAuthorsByID(t.ID)
+			t.Characters = SelectTitleCharactersByID(t.ID)
 			result = append(result, t)
 		}
 	}
@@ -240,6 +244,8 @@ ORDER BY
 		t.Avg = avg.Float64 * 100
 		t.Ext = ext.String
 		t.Tags = SelectTitleTagsByID(t.ID)
+		t.Authors = SelectTitleAuthorsByID(t.ID)
+		t.Characters = SelectTitleCharactersByID(t.ID)
 	}
 	return t, err
 }
@@ -294,7 +300,7 @@ WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber
 func SelectUnloadTitles() []TitleShortInfo {
 	result := []TitleShortInfo{}
 	rows, err := _db.Query(`SELECT t.id, t.url, t.loaded, t.parsed_pages, t.parsed_tags, t.parsed_authors, t.parsed_characters 
-	FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE OR parsed_tags = FALSE OR parsed_authors = FALSE OR parsed_characters = FALSE`)
+	FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE OR t.parsed_tags = FALSE OR t.parsed_authors = FALSE OR t.parsed_characters = FALSE`)
 	if err != nil {
 		log.Println(err)
 		return result
@@ -342,6 +348,52 @@ ORDER BY t.name`, id)
 	return result
 }
 
+// SelectTitleCharactersByID получает персонажей тайтла по его ID
+func SelectTitleCharactersByID(id int) []string {
+	result := []string{}
+	rows, err := _db.Query(`SELECT t.name
+FROM link_characters_titles lct INNER JOIN characters t ON lct.character_id = t.id 
+WHERE lct.title_id = ?
+ORDER BY t.name`, id)
+	if err != nil {
+		log.Println(err)
+		return result
+	}
+	for rows.Next() {
+		var t string
+		err = rows.Scan(&t)
+		if err != nil {
+			log.Println(err)
+		} else {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
+// SelectTitleAuthorsByID получает персонажей тайтла по его ID
+func SelectTitleAuthorsByID(id int) []string {
+	result := []string{}
+	rows, err := _db.Query(`SELECT t.name
+FROM link_authors_titles lat INNER JOIN authors t ON lat.author_id = t.id 
+WHERE lat.title_id = ?
+ORDER BY t.name`, id)
+	if err != nil {
+		log.Println(err)
+		return result
+	}
+	for rows.Next() {
+		var t string
+		err = rows.Scan(&t)
+		if err != nil {
+			log.Println(err)
+		} else {
+			result = append(result, t)
+		}
+	}
+	return result
+}
+
 // SelectTitlesCount получает количество тайтлов в базе
 func SelectTitlesCount() int {
 	row := _db.QueryRow(`SELECT COUNT(id) FROM titles`)
@@ -355,7 +407,7 @@ func SelectTitlesCount() int {
 
 // SelectUnloadTitlesCount получает количество недогруженных тайтлов в базе
 func SelectUnloadTitlesCount() int {
-	row := _db.QueryRow(`SELECT COUNT(t.id) FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE`)
+	row := _db.QueryRow(`SELECT COUNT(t.id) FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE OR t.parsed_tags = FALSE OR t.parsed_authors = FALSE OR t.parsed_characters = FALSE`)
 	var c int
 	err := row.Scan(&c)
 	if err != nil {

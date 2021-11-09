@@ -16,6 +16,7 @@ import (
 func main() {
 
 	webPort := flag.Int("p", 8080, "порт веб сервера")
+	onlyView := flag.Bool("v", false, "режим только просмотра")
 	flag.IntVar(&web.PageLimit, "pl", 12, "количество тайтлов на странице")
 	flag.Parse()
 
@@ -33,41 +34,47 @@ func main() {
 		return
 	}
 
-	go func() {
-		timer := time.NewTimer(time.Minute)
-		for range timer.C {
-			handler.AddUnloadedPagesToQueue()
-			time.Sleep(time.Second)
-			handler.FileWait()
-			timer.Reset(time.Minute)
-		}
-	}()
-
-	go func() {
-		timer := time.NewTicker(time.Minute)
-		for range timer.C {
-			for _, t := range db.SelectUnloadTitles() {
-				_ = handler.Update(t)
-			}
-		}
-	}()
-
-	go func() {
-		f, err := os.Open("task.txt")
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		sc := bufio.NewScanner(f)
-		for sc.Scan() {
-			if sc.Text() == "" {
-				continue
-			}
-			_ = handler.FirstHandle(sc.Text())
-		}
-		f.Close()
-	}()
+	if !*onlyView {
+		go loadPages()
+		go completeTitle()
+		go parseTaskFile()
+	}
 
 	done := web.Run(fmt.Sprintf(":%d", *webPort))
 	<-done
+}
+
+func loadPages() {
+	timer := time.NewTimer(time.Minute)
+	for range timer.C {
+		handler.AddUnloadedPagesToQueue()
+		time.Sleep(time.Second)
+		handler.FileWait()
+		timer.Reset(time.Minute)
+	}
+}
+
+func completeTitle() {
+	timer := time.NewTicker(time.Minute)
+	for range timer.C {
+		for _, t := range db.SelectUnloadTitles() {
+			_ = handler.Update(t)
+		}
+	}
+}
+
+func parseTaskFile() {
+	f, err := os.Open("task.txt")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		if sc.Text() == "" {
+			continue
+		}
+		_ = handler.FirstHandle(sc.Text())
+	}
+	f.Close()
 }
