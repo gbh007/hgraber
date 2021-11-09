@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 // PageLimit ограничение на выдачу
@@ -35,35 +34,33 @@ func GetMainPage(w http.ResponseWriter, r *http.Request) {
 
 // GetListPage возвращает страницу со списком тайтлов
 func GetListPage(w http.ResponseWriter, r *http.Request) {
-	count := db.SelectTitlesCount()
+	titleCount := db.SelectTitlesCount()
 	offset := 0
-	page := 1
 	limit := PageLimit
-	pageCount := count / limit
-	if count%limit > 0 {
+	pageCount := titleCount / limit
+	if titleCount%limit > 0 {
 		pageCount++
 	}
 	pages := []int{}
 	for i := 1; i <= pageCount; i++ {
 		pages = append(pages, i)
 	}
-	if r.URL.Path != "/" {
-		tmp := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-		if len(tmp) != 2 || tmp[0] != "list" {
-			applyTemplate(w, "error", "ошибка адресации")
-			return
-		}
-		p, err := strconv.Atoi(tmp[1])
+	page, err := strconv.Atoi(r.FormValue("page"))
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	if l := r.FormValue("count"); l != "" {
+		limit, err = strconv.Atoi(r.FormValue("count"))
 		if err != nil {
 			applyTemplate(w, "error", err)
 			return
 		}
-		page = p
-		offset = (p - 1) * limit
 	}
+	offset = (page - 1) * limit
 	titles := db.SelectTitles(offset, limit)
-	applyTemplate(w, "list", map[string]interface{}{
-		"Count":  count,
+	applyTemplate(w, "title-list", map[string]interface{}{
+		"Count":  titleCount,
 		"Titles": titles,
 		"Offset": offset,
 		"Limit":  limit,
@@ -109,17 +106,12 @@ func SaveToZIP(w http.ResponseWriter, r *http.Request) {
 
 // GetTitlePage возвращает страницу из тайтла
 func GetTitlePage(w http.ResponseWriter, r *http.Request) {
-	tmp := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-	if len(tmp) != 3 || tmp[0] != "title" {
-		applyTemplate(w, "error", "ошибка адресации")
-		return
-	}
-	tid, err := strconv.Atoi(tmp[1])
+	tid, err := strconv.Atoi(r.URL.Query().Get("title"))
 	if err != nil {
 		applyTemplate(w, "error", err)
 		return
 	}
-	pid, err := strconv.Atoi(tmp[2])
+	pid, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
 		applyTemplate(w, "error", err)
 		return
@@ -149,10 +141,10 @@ func GetTitlePage(w http.ResponseWriter, r *http.Request) {
 		Next:       "/",
 	}
 	if page.PageNumber > 1 {
-		data.Prev = fmt.Sprintf("/title/%d/%d", page.TitleID, page.PageNumber-1)
+		data.Prev = fmt.Sprintf("/title/page?title=%d&page=%d", page.TitleID, page.PageNumber-1)
 	}
 	if page.PageNumber < title.PageCount {
-		data.Next = fmt.Sprintf("/title/%d/%d", page.TitleID, page.PageNumber+1)
+		data.Next = fmt.Sprintf("/title/page?title=%d&page=%d", page.TitleID, page.PageNumber+1)
 	}
 	applyTemplate(w, "title-page", data)
 }
@@ -171,9 +163,17 @@ func ReloadTitlePage(w http.ResponseWriter, r *http.Request) {
 	}
 	u := r.FormValue("url")
 	ext := r.FormValue("ext")
-	db.InsertPage(tid, ext, u, pid)
+	err = db.InsertPage(tid, ext, u, pid)
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
 	err = file.Load(tid, pid, u, ext)
-	db.UpdatePageSuccess(tid, pid, err == nil)
+	if err != nil {
+		applyTemplate(w, "error", err)
+		return
+	}
+	err = db.UpdatePageSuccess(tid, pid, err == nil)
 	if err != nil {
 		applyTemplate(w, "error", err)
 		return

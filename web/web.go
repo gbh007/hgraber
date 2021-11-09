@@ -13,10 +13,10 @@ func Run(addr string) <-chan struct{} {
 	mux.Handle("/file/", http.StripPrefix("/file/", http.FileServer(http.Dir(config.DefaultFilePath))))
 
 	mux.HandleFunc("/", GetMainPage)
-	mux.HandleFunc("/list/", GetListPage)
+	mux.HandleFunc("/title/list", GetListPage)
 	mux.HandleFunc("/new", NewTitle)
 	mux.HandleFunc("/prepare", SaveToZIP)
-	mux.HandleFunc("/title/", GetTitlePage)
+	mux.HandleFunc("/title/page", GetTitlePage)
 	mux.HandleFunc("/reload/page", ReloadTitlePage)
 	// создание объекта сервера
 	server := &http.Server{

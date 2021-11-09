@@ -40,12 +40,12 @@ func init() {
 		<li>Всего незагруженно <b>{{.UnloadCount}}</b> тайтлов</li>
 		<li>Всего <b>{{.PageCount}}</b> страниц</li>
 		<li>Всего незагруженно <b>{{.UnloadPageCount}}</b> страниц</li>
-		<li><a href="/list/1">Список тайтлов</a></li>
+		<li><a href="/title/list?page=1">Список тайтлов</a></li>
 	</ul>
   </body>
 </html>
 {{end}}
-{{define "list"}}
+{{define "title-list"}}
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -117,7 +117,7 @@ func init() {
 	<div style="padding: 10px">
 		{{with $info := .}}
 			{{range $info.Pages}}
-				<a class="page" href="/list/{{.}}" selected="{{if eq . $info.Page}}true{{end}}">{{.}}</a>
+				<a class="page" href="/title/list?page={{.}}" selected="{{if eq . $info.Page}}true{{end}}">{{.}}</a>
 			{{end}}
 		{{end}}
 		<b>Всего {{.Count}} тайтлов</b>
@@ -153,7 +153,7 @@ func init() {
 </html>
 {{end}}
 {{define "title-short"}}
-	<a href="/title/{{.ID}}/1" id="title" t="{{if not .Loaded}}bred{{end}}">
+	<a href="/title/page?title={{.ID}}&page=1" id="title" t="{{if not .Loaded}}bred{{end}}">
 		{{if eq .Ext ""}}
 			<span style="grid-area: img;"></span>
 		{{else}}
