@@ -89,25 +89,53 @@ func Update(title db.TitleShortInfo) error {
 		log.Println("обновлено название", title.URL)
 	}
 	if !title.ParsedAuthors {
-		err = db.UpdateTitleAuthors(title.ID, p.ParseAuthors())
+		err = db.UpdateTitleMeta(title.ID, db.AuthorsMetaType, p.ParseAuthors())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены авторы", title.URL)
 	}
 	if !title.ParsedTags {
-		err = db.UpdateTitleTags(title.ID, p.ParseTags())
+		err = db.UpdateTitleMeta(title.ID, db.TagsMetaType, p.ParseTags())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены теги", title.URL)
 	}
 	if !title.ParsedCharacters {
-		err = db.UpdateTitleCharacters(title.ID, p.ParseCharacters())
+		err = db.UpdateTitleMeta(title.ID, db.CharactersMetaType, p.ParseCharacters())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены персонажи", title.URL)
+	}
+	if !title.ParsedCategories {
+		err = db.UpdateTitleMeta(title.ID, db.CategoriesMetaType, p.ParseCategories())
+		if err != nil {
+			return err
+		}
+		log.Println("обновлены категории", title.URL)
+	}
+	if !title.ParsedGroups {
+		err = db.UpdateTitleMeta(title.ID, db.GroupsMetaType, p.ParseGroups())
+		if err != nil {
+			return err
+		}
+		log.Println("обновлены группы", title.URL)
+	}
+	if !title.ParsedLanguages {
+		err = db.UpdateTitleMeta(title.ID, db.LanguagesMetaType, p.ParseLanguages())
+		if err != nil {
+			return err
+		}
+		log.Println("обновлены языки", title.URL)
+	}
+	if !title.ParsedParodies {
+		err = db.UpdateTitleMeta(title.ID, db.ParodiesMetaType, p.ParseParodies())
+		if err != nil {
+			return err
+		}
+		log.Println("обновлены пародии", title.URL)
 	}
 	if !title.ParsedPage {
 		pp := true

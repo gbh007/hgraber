@@ -78,7 +78,7 @@ func UpdatePageSuccess(id, page int, success bool) error {
 func SelectUnsuccessPages() []Page {
 	result := []Page{}
 	rows, err := _db.Query(`SELECT p.title_id, p.page_number, p.url, p.ext FROM
-titles t INNER JOIN pages p ON t.loaded = TRUE AND t.parsed_pages = TRUE AND t.id = p.title_id AND p.success = FALSE`)
+titles t INNER JOIN pages p ON t.parsed_pages = TRUE AND t.id = p.title_id AND p.success = FALSE`)
 	if err != nil {
 		log.Println(err)
 		return result
@@ -112,6 +112,14 @@ type TitleShortInfo struct {
 	Tags             []string
 	Authors          []string
 	Characters       []string
+	ParsedLanguages  bool
+	ParsedCategories bool
+	ParsedParodies   bool
+	ParsedGroups     bool
+	Languages        []string
+	Categories       []string
+	Parodies         []string
+	Groups           []string
 }
 
 // SelectTitles выбирает из базы все тайтлы
@@ -126,6 +134,10 @@ func SelectTitles(offset, limit int) []TitleShortInfo {
 	t2.parsed_tags,
 	t2.parsed_authors,
 	t2.parsed_characters,
+	t2.parsed_languages,
+	t2.parsed_categories,
+	t2.parsed_parodies,
+	t2.parsed_groups,
 	a.av,
 	p2.ext,
 	t2.url,
@@ -167,6 +179,10 @@ LIMIT ?, ?`, offset, limit)
 			&t.ParsedTags,
 			&t.ParsedAuthors,
 			&t.ParsedCharacters,
+			&t.ParsedLanguages,
+			&t.ParsedCategories,
+			&t.ParsedParodies,
+			&t.ParsedGroups,
 			&avg,
 			&ext,
 			&t.URL,
@@ -177,9 +193,13 @@ LIMIT ?, ?`, offset, limit)
 		} else {
 			t.Avg = avg.Float64 * 100
 			t.Ext = ext.String
-			t.Tags = SelectTitleTagsByID(t.ID)
-			t.Authors = SelectTitleAuthorsByID(t.ID)
-			t.Characters = SelectTitleCharactersByID(t.ID)
+			t.Tags = SelectMetaByTitleIDAndType(t.ID, TagsMetaType)
+			t.Authors = SelectMetaByTitleIDAndType(t.ID, AuthorsMetaType)
+			t.Characters = SelectMetaByTitleIDAndType(t.ID, CharactersMetaType)
+			t.Languages = SelectMetaByTitleIDAndType(t.ID, LanguagesMetaType)
+			t.Categories = SelectMetaByTitleIDAndType(t.ID, CategoriesMetaType)
+			t.Parodies = SelectMetaByTitleIDAndType(t.ID, ParodiesMetaType)
+			t.Groups = SelectMetaByTitleIDAndType(t.ID, GroupsMetaType)
 			result = append(result, t)
 		}
 	}
@@ -197,6 +217,10 @@ func SelectTitleByID(id int) (TitleShortInfo, error) {
 	t2.parsed_tags,
 	t2.parsed_authors,
 	t2.parsed_characters,
+	t2.parsed_languages,
+	t2.parsed_categories,
+	t2.parsed_parodies,
+	t2.parsed_groups,
 	a.av,
 	p2.ext,
 	t2.url,
@@ -233,6 +257,10 @@ ORDER BY
 		&t.ParsedTags,
 		&t.ParsedAuthors,
 		&t.ParsedCharacters,
+		&t.ParsedLanguages,
+		&t.ParsedCategories,
+		&t.ParsedParodies,
+		&t.ParsedGroups,
 		&avg,
 		&ext,
 		&t.URL,
@@ -243,9 +271,13 @@ ORDER BY
 	} else {
 		t.Avg = avg.Float64 * 100
 		t.Ext = ext.String
-		t.Tags = SelectTitleTagsByID(t.ID)
-		t.Authors = SelectTitleAuthorsByID(t.ID)
-		t.Characters = SelectTitleCharactersByID(t.ID)
+		t.Tags = SelectMetaByTitleIDAndType(t.ID, TagsMetaType)
+		t.Authors = SelectMetaByTitleIDAndType(t.ID, AuthorsMetaType)
+		t.Characters = SelectMetaByTitleIDAndType(t.ID, CharactersMetaType)
+		t.Languages = SelectMetaByTitleIDAndType(t.ID, LanguagesMetaType)
+		t.Categories = SelectMetaByTitleIDAndType(t.ID, CategoriesMetaType)
+		t.Parodies = SelectMetaByTitleIDAndType(t.ID, ParodiesMetaType)
+		t.Groups = SelectMetaByTitleIDAndType(t.ID, GroupsMetaType)
 	}
 	return t, err
 }
@@ -299,8 +331,10 @@ WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber
 // SelectUnloadTitles выбирает из базы все недогруженые тайтлы
 func SelectUnloadTitles() []TitleShortInfo {
 	result := []TitleShortInfo{}
-	rows, err := _db.Query(`SELECT t.id, t.url, t.loaded, t.parsed_pages, t.parsed_tags, t.parsed_authors, t.parsed_characters 
-	FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE OR t.parsed_tags = FALSE OR t.parsed_authors = FALSE OR t.parsed_characters = FALSE`)
+	rows, err := _db.Query(`SELECT id, url, loaded, parsed_pages, parsed_tags, parsed_authors, parsed_characters,
+	parsed_languages, parsed_categories, parsed_parodies, parsed_groups
+	FROM titles WHERE loaded = FALSE OR parsed_pages = FALSE OR parsed_tags = FALSE OR parsed_authors = FALSE OR parsed_characters = FALSE
+	OR parsed_languages = FALSE OR parsed_categories = FALSE OR parsed_parodies = FALSE OR parsed_groups = FALSE`)
 	if err != nil {
 		log.Println(err)
 		return result
@@ -315,76 +349,11 @@ func SelectUnloadTitles() []TitleShortInfo {
 			&t.ParsedTags,
 			&t.ParsedAuthors,
 			&t.ParsedCharacters,
+			&t.ParsedLanguages,
+			&t.ParsedCategories,
+			&t.ParsedParodies,
+			&t.ParsedGroups,
 		)
-		if err != nil {
-			log.Println(err)
-		} else {
-			result = append(result, t)
-		}
-	}
-	return result
-}
-
-// SelectTitleTagsByID получает теги тайтла по его ID
-func SelectTitleTagsByID(id int) []string {
-	result := []string{}
-	rows, err := _db.Query(`SELECT t.name
-FROM link_tags_titles ltt INNER JOIN tags t ON ltt.tag_id = t.id 
-WHERE ltt.title_id = ?
-ORDER BY t.name`, id)
-	if err != nil {
-		log.Println(err)
-		return result
-	}
-	for rows.Next() {
-		var t string
-		err = rows.Scan(&t)
-		if err != nil {
-			log.Println(err)
-		} else {
-			result = append(result, t)
-		}
-	}
-	return result
-}
-
-// SelectTitleCharactersByID получает персонажей тайтла по его ID
-func SelectTitleCharactersByID(id int) []string {
-	result := []string{}
-	rows, err := _db.Query(`SELECT t.name
-FROM link_characters_titles lct INNER JOIN characters t ON lct.character_id = t.id 
-WHERE lct.title_id = ?
-ORDER BY t.name`, id)
-	if err != nil {
-		log.Println(err)
-		return result
-	}
-	for rows.Next() {
-		var t string
-		err = rows.Scan(&t)
-		if err != nil {
-			log.Println(err)
-		} else {
-			result = append(result, t)
-		}
-	}
-	return result
-}
-
-// SelectTitleAuthorsByID получает персонажей тайтла по его ID
-func SelectTitleAuthorsByID(id int) []string {
-	result := []string{}
-	rows, err := _db.Query(`SELECT t.name
-FROM link_authors_titles lat INNER JOIN authors t ON lat.author_id = t.id 
-WHERE lat.title_id = ?
-ORDER BY t.name`, id)
-	if err != nil {
-		log.Println(err)
-		return result
-	}
-	for rows.Next() {
-		var t string
-		err = rows.Scan(&t)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -407,7 +376,10 @@ func SelectTitlesCount() int {
 
 // SelectUnloadTitlesCount получает количество недогруженных тайтлов в базе
 func SelectUnloadTitlesCount() int {
-	row := _db.QueryRow(`SELECT COUNT(t.id) FROM titles t WHERE t.loaded = FALSE OR t.parsed_pages = FALSE OR t.parsed_tags = FALSE OR t.parsed_authors = FALSE OR t.parsed_characters = FALSE`)
+	row := _db.QueryRow(`SELECT COUNT(id) FROM titles WHERE 
+	loaded = FALSE OR parsed_pages = FALSE OR parsed_tags = FALSE OR parsed_authors = FALSE OR parsed_characters = FALSE
+	OR parsed_languages = FALSE OR parsed_categories = FALSE OR parsed_parodies = FALSE OR parsed_groups = FALSE
+	`)
 	var c int
 	err := row.Scan(&c)
 	if err != nil {

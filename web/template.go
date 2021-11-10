@@ -189,10 +189,15 @@ func init() {
 				"img id pgc pgp dt"
 				"img tag tag tag tag"
 				"img authors authors authors authors"
-				"img char char char char";
+				"img char char char char"
+				"img lang lang lang lang"
+				"img cat cat cat cat"
+				"img par par par par"
+				"img gr gr gr gr";
 			/*grid-template-rows: 1fr 1fr 1fr;*/
 			grid-template-columns: 200px 1fr 1fr 1fr 1fr;
 			border-spacing: 0px;
+			margin-bottom: 20px;
 		}
 		#title-details *[t="red"]{
 			color: red;
@@ -200,7 +205,7 @@ func init() {
 		#title-details *[t="bred"]{
 			background: pink;
 		}
-		span.tag, span.author, span.char {
+		span.lang, span.cat, span.par, span.gr, span.tag, span.author, span.char {
 			border-radius: 3px;
 			padding: 3px;
 			margin: 2px;
@@ -236,7 +241,7 @@ func init() {
 		{{else}}
 			<img src="/file/{{.ID}}/1.{{.Ext}}" style="max-width: 100%; max-height: 100%; grid-area: img;">
 		{{end}}
-		<span style="grid-area: name;" t="{{if not .Loaded}}red{{end}}">{{.Name}}</span>
+		<a style="grid-area: name;" t="{{if not .Loaded}}red{{end}}" href="{{.URL}}">{{.Name}}</a>
 		<span style="grid-area: id;">#{{.ID}}</span>
 		<span style="grid-area: pgc;" t="{{if not .ParsedPage}}red{{end}}">Страниц: {{.PageCount}}</span>
 		<span style="grid-area: pgp;" t="{{if ne .Avg 100.0}}red{{end}}">Загружено: {{printf "%02.2f" .Avg}}%</span>
@@ -254,6 +259,27 @@ func init() {
 		<span style="grid-area: tag;"  t="{{if not .ParsedTags}}red{{end}}">Тэги: 
 		{{range .Tags}}
 			<span class="tag">{{.}}</span>
+		{{end}}
+		</span>
+
+		<span style="grid-area: lang;"  t="{{if not .ParsedLanguages}}red{{end}}">Языки: 
+		{{range .Languages}}
+			<span class="lang">{{.}}</span>
+		{{end}}
+		</span>
+		<span style="grid-area: cat;"  t="{{if not .ParsedCategories}}red{{end}}">Категории: 
+		{{range .Categories}}
+			<span class="cat">{{.}}</span>
+		{{end}}
+		</span>
+		<span style="grid-area: par;"  t="{{if not .ParsedParodies}}red{{end}}">Пародии: 
+		{{range .Parodies}}
+			<span class="par">{{.}}</span>
+		{{end}}
+		</span>
+		<span style="grid-area: gr;"  t="{{if not .ParsedGroups}}red{{end}}">Группы: 
+		{{range .Groups}}
+			<span class="gr">{{.}}</span>
 		{{end}}
 		</span>
 	</div>

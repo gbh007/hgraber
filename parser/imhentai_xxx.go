@@ -17,10 +17,7 @@ func (p *Parser_IMHENTAI_XXX) Load(URL string) bool {
 	var err error
 	p.url = URL
 	p.main_raw, err = RequestString(URL)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
 
 // parseTags парсит теги авторов и тд
@@ -49,7 +46,7 @@ func (p Parser_IMHENTAI_XXX) ParseName() string {
 	// return res[0][1]
 }
 func (p Parser_IMHENTAI_XXX) ParseTags() []string {
-	if strings.Index(p.main_raw, `<span class='tags_text'>Tags:</span>`) < 0 {
+	if !strings.Contains(p.main_raw, `<span class='tags_text'>Tags:</span>`) {
 		return []string{}
 	}
 	raw := strings.Split(p.main_raw, `<span class='tags_text'>Tags:</span>`)[1]
@@ -80,7 +77,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
 			return []Page{}
 		}
 		url := res[1]
-		if strings.Index(url, "data-src=\"") != -1 {
+		if strings.Contains(url, "data-src=\"") {
 			url = strings.Split(url, "data-src=\"")[1]
 		}
 		fnameTmp := strings.Split(url, "/")                      // название файла
@@ -90,7 +87,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
 	return result
 }
 func (p Parser_IMHENTAI_XXX) ParseAuthors() []string {
-	if strings.Index(p.main_raw, `<span class='tags_text'>Artists:</span>`) < 0 {
+	if !strings.Contains(p.main_raw, `<span class='tags_text'>Artists:</span>`) {
 		return []string{}
 	}
 	raw := strings.Split(p.main_raw, `<span class='tags_text'>Artists:</span>`)[1]
@@ -98,10 +95,43 @@ func (p Parser_IMHENTAI_XXX) ParseAuthors() []string {
 	return p.parseTags(raw)
 }
 func (p Parser_IMHENTAI_XXX) ParseCharacters() []string {
-	if strings.Index(p.main_raw, `<span class='tags_text'>Characters:</span>`) < 0 {
+	if !strings.Contains(p.main_raw, `<span class='tags_text'>Characters:</span>`) {
 		return []string{}
 	}
 	raw := strings.Split(p.main_raw, `<span class='tags_text'>Characters:</span>`)[1]
+	raw = strings.Split(raw, `</li>`)[0]
+	return p.parseTags(raw)
+}
+
+func (p Parser_IMHENTAI_XXX) ParseLanguages() []string {
+	if !strings.Contains(p.main_raw, `<span class='tags_text'>Languages:</span>`) {
+		return []string{}
+	}
+	raw := strings.Split(p.main_raw, `<span class='tags_text'>Languages:</span>`)[1]
+	raw = strings.Split(raw, `</li>`)[0]
+	return p.parseTags(raw)
+}
+func (p Parser_IMHENTAI_XXX) ParseCategories() []string {
+	if !strings.Contains(p.main_raw, `<span class='tags_text'>Category:</span>`) {
+		return []string{}
+	}
+	raw := strings.Split(p.main_raw, `<span class='tags_text'>Category:</span>`)[1]
+	raw = strings.Split(raw, `</li>`)[0]
+	return p.parseTags(raw)
+}
+func (p Parser_IMHENTAI_XXX) ParseParodies() []string {
+	if !strings.Contains(p.main_raw, `<span class='tags_text'>Parodies:</span>`) {
+		return []string{}
+	}
+	raw := strings.Split(p.main_raw, `<span class='tags_text'>Parodies:</span>`)[1]
+	raw = strings.Split(raw, `</li>`)[0]
+	return p.parseTags(raw)
+}
+func (p Parser_IMHENTAI_XXX) ParseGroups() []string {
+	if !strings.Contains(p.main_raw, `<span class='tags_text'>Groups:</span>`) {
+		return []string{}
+	}
+	raw := strings.Split(p.main_raw, `<span class='tags_text'>Groups:</span>`)[1]
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }

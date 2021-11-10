@@ -17,11 +17,9 @@ func (p *Parser_MANGAONLINE_BIZ) Load(URL string) bool {
 	p.url = URL
 	tmpUrl := trimLastSlash(URL, 4) + ".html"
 	p.main_raw, err = RequestString(tmpUrl)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
+
 func (p Parser_MANGAONLINE_BIZ) ParseName() string {
 	rp := `(?sm)` + regexp.QuoteMeta(`<h1 class="header">`) + `\s*(.+?)\s*` + regexp.QuoteMeta(`</h1>`)
 	res := regexp.MustCompile(rp).FindAllStringSubmatch(p.main_raw, -1)
@@ -30,19 +28,7 @@ func (p Parser_MANGAONLINE_BIZ) ParseName() string {
 	}
 	return res[0][1]
 }
-func (p Parser_MANGAONLINE_BIZ) parsePageCount() int {
-	pcDataRaw, err := RequestString(p.url)
-	if err != nil {
-		return 0
-	}
-	rp := `(?sm)` + regexp.QuoteMeta(`<div class="page-chooser">`) + `.+?из (\d+).+?` + regexp.QuoteMeta(`</div>`)
-	res := regexp.MustCompile(rp).FindAllStringSubmatch(pcDataRaw, -1)
-	if len(res) < 1 || len(res[0]) != 2 {
-		return 0
-	}
-	pc, _ := strconv.Atoi(res[0][1])
-	return pc
-}
+
 func (p Parser_MANGAONLINE_BIZ) ParsePages() []Page {
 	result := make([]Page, 0)
 	pcDataRaw, err := RequestString(p.url)
@@ -79,5 +65,10 @@ func (p Parser_MANGAONLINE_BIZ) ParseTags() []string {
 	}
 	return result
 }
+
 func (p Parser_MANGAONLINE_BIZ) ParseAuthors() []string    { return []string{} }
 func (p Parser_MANGAONLINE_BIZ) ParseCharacters() []string { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseLanguages() []string  { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseCategories() []string { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseParodies() []string   { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseGroups() []string     { return []string{} }

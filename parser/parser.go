@@ -12,10 +12,7 @@ func trimLastSlash(URL string, count int) string {
 			return false
 		}
 		c++
-		if c == count {
-			return true
-		}
-		return false
+		return c == count
 	})
 	return URL[:ind]
 }
@@ -54,15 +51,21 @@ type Parser interface {
 	ParseTags() []string
 	ParseAuthors() []string
 	ParseCharacters() []string
+	ParseLanguages() []string
+	ParseCategories() []string
+	ParseParodies() []string
+	ParseGroups() []string
 }
 
 /*
-
-func (p *Parser) Load(URL string) bool     { return false}
+func (p *Parser) Load(URL string) bool     { return false }
 func (p Parser) ParseName() string         { return "" }
 func (p Parser) ParsePages() []Page        { return []Page{} }
 func (p Parser) ParseTags() []string       { return []string{} }
 func (p Parser) ParseAuthors() []string    { return []string{} }
 func (p Parser) ParseCharacters() []string { return []string{} }
-
+func (p Parser) ParseLanguages() []string  { return []string{} }
+func (p Parser) ParseCategories() []string { return []string{} }
+func (p Parser) ParseParodies() []string   { return []string{} }
+func (p Parser) ParseGroups() []string     { return []string{} }
 */
