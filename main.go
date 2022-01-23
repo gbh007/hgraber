@@ -4,6 +4,7 @@ import (
 	"app/db"
 	"app/handler"
 	"app/web"
+	"app/webgin"
 	"bufio"
 	"flag"
 	"fmt"
@@ -41,7 +42,9 @@ func main() {
 	}
 
 	done := web.Run(fmt.Sprintf(":%d", *webPort))
+	done2 := webgin.Run(":8081")
 	<-done
+	<-done2
 }
 
 func loadPages() {
