@@ -97,29 +97,29 @@ titles t INNER JOIN pages p ON t.parsed_pages = TRUE AND t.id = p.title_id AND p
 
 // TitleShortInfo информация о тайтле
 type TitleShortInfo struct {
-	ID               int
-	Name             string
-	PageCount        int
-	Loaded           bool
-	ParsedPage       bool
-	ParsedTags       bool
-	ParsedAuthors    bool
-	ParsedCharacters bool
-	Avg              float64
-	Ext              string
-	URL              string
-	Created          time.Time
-	Tags             []string
-	Authors          []string
-	Characters       []string
-	ParsedLanguages  bool
-	ParsedCategories bool
-	ParsedParodies   bool
-	ParsedGroups     bool
-	Languages        []string
-	Categories       []string
-	Parodies         []string
-	Groups           []string
+	ID               int       `json:"id"`
+	Name             string    `json:"name"`
+	PageCount        int       `json:"page_count"`
+	Loaded           bool      `json:"loaded"`
+	ParsedPage       bool      `json:"parsed_page"`
+	ParsedTags       bool      `json:"parsed_tags"`
+	ParsedAuthors    bool      `json:"parsed_authors"`
+	ParsedCharacters bool      `json:"parsed_characters"`
+	Avg              float64   `json:"avg"`
+	Ext              string    `json:"ext"`
+	URL              string    `json:"url"`
+	Created          time.Time `json:"created"`
+	Tags             []string  `json:"tags"`
+	Authors          []string  `json:"authors"`
+	Characters       []string  `json:"characters"`
+	ParsedLanguages  bool      `json:"parsed_languages"`
+	ParsedCategories bool      `json:"parsed_categories"`
+	ParsedParodies   bool      `json:"parsed_parodies"`
+	ParsedGroups     bool      `json:"parsed_groups"`
+	Languages        []string  `json:"languages"`
+	Categories       []string  `json:"categories"`
+	Parodies         []string  `json:"parodies"`
+	Groups           []string  `json:"groups"`
 }
 
 // SelectTitles выбирает из базы все тайтлы

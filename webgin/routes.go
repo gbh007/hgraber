@@ -33,3 +33,17 @@ func NewTitle(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, struct{}{})
 	}
 }
+
+func TitleList(ctx *gin.Context) {
+	request := struct {
+		Count  int `json:"count" binding:"required"`
+		Offset int `json:"offset"`
+	}{}
+	err := ctx.ShouldBindJSON(&request)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	data := db.SelectTitles(request.Offset, request.Count)
+	ctx.JSON(http.StatusOK, data)
+}

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>HGrabber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="/static/main.css"
+    />
+    <script src="/static/main.js"></script>
+  </head>
+  <body>
+    <style>
+      body {
+        text-align: center;
+      }
+      a.title {
+        text-decoration: none;
+        color: black;
+      }
+      .title {
+        display: inline-grid;
+        grid-template-areas:
+          "img name name name name"
+          "img id pgc pgp dt"
+          "img tag tag tag tag";
+        grid-template-rows: none;
+        grid-template-columns: 130px 1fr 1fr 1fr 1fr;
+        border-spacing: 0px;
+        max-width: 500px;
+      }
+      .title *[t="red"] {
+        color: red;
+      }
+      .title *[t="bred"] {
+        background: pink;
+      }
+      span.tag {
+        border-radius: 3px;
+        padding: 3px;
+        margin: 2px;
+        background: lightgrey;
+        display: inline-block;
+      }
+    </style>
+    <div id="title-list"></div>
+    <script>
+      let api = new Api();
+      const onPageCount = 18;
+      function loadTitleList() {
+        api.getTitleList(onPageCount, 0).then((data) => {
+          let innerHtml = "";
+          data.forEach((info) => {
+            innerHtml += generateHTMLFromTitleInfo(info);
+          });
+          document.getElementById("title-list").innerHTML = innerHtml;
+        });
+      }
+      function generateHTMLFromTitleInfo(info) {
+        return `<a href="/title/details?title=${info.id}" class="title" t="${
+          info.loaded ? "" : "bred"
+        }">
+		${
+      info.ext == ""
+        ? '<span style="grid-area: img;"></span>'
+        : '<img src="/file/' +
+          info.id +
+          "/1." +
+          info.ext +
+          '" style="max-width: 100%; max-height: 100%; grid-area: img;">'
+    }
+		<span style="grid-area: name;" t="${info.loaded ? "" : "red"}">${
+          info.name
+        }</span>
+		<span style="grid-area: id;">#${info.id}</span>
+		<span style="grid-area: pgc;" t="${info.parsed_page ? "" : "red"}">Страниц: ${
+          info.page_count
+        }</span>
+		<span style="grid-area: pgp;" t="${
+      info.avg != 100.0 ? "red" : ""
+    }">Загружено: ${info.avg}%</span>
+		<span style="grid-area: dt;">${new Date(info.created).toLocaleString()}</span>
+		<span style="grid-area: tag;">
+		${info.tags.map((tag) => '<span class="tag">' + tag + "</span>")}			
+		</span>
+	</a>`;
+      }
+      window.addEventListener("load", function () {
+        loadTitleList();
+      });
+    </script>
+  </body>
+</html>

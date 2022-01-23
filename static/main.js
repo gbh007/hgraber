@@ -20,4 +20,16 @@ class Api {
       return {};
     }
   }
+  async getTitleList(count, offset) {
+    try {
+      let response = await fetch("/title/list", {
+        method: "POST",
+        body: JSON.stringify({ count: count, offset: offset }),
+      });
+      return await response.json();
+    } catch (err) {
+      console.log(err);
+      return {};
+    }
+  }
 }

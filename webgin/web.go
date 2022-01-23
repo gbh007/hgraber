@@ -17,11 +17,9 @@ func Run(addr string) <-chan struct{} {
 
 	router.GET("/info", MainInfo)
 	router.POST("/new", NewTitle)
+	router.POST("/title/list", TitleList)
 
-	// mux.HandleFunc("/", GetMainPage)
-	// mux.HandleFunc("/title/list", GetListPage)
 	// mux.HandleFunc("/title/details", GetTitleDetails)
-	// mux.HandleFunc("/new", NewTitle)
 	// mux.HandleFunc("/prepare", SaveToZIP)
 	// mux.HandleFunc("/title/page", GetTitlePage)
 	// mux.HandleFunc("/reload/page", ReloadTitlePage)
