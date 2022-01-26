@@ -1,6 +1,8 @@
 package db
 
 import (
+	"app/system/clog"
+	"app/system/coreContext"
 	"database/sql"
 	"log"
 	"time"
@@ -14,18 +16,19 @@ type Page struct {
 }
 
 // InsertTitle добавляет тайтл
-func InsertTitle(name, URL string, loaded bool) (int, error) {
-	result, err := _db.Exec(
+func InsertTitle(ctx coreContext.CoreContext, name, URL string, loaded bool) (int, error) {
+	result, err := _db.ExecContext(
+		ctx,
 		`INSERT INTO titles(name, url, creation_time, loaded) VALUES(?, ?, ?, ?)`,
 		name, URL, time.Now(), loaded,
 	)
 	if err != nil {
-		log.Println(err)
+		clog.Error(ctx, err)
 		return -1, err
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		log.Println(err)
+		clog.Error(ctx, err)
 		return -1, err
 	}
 	return int(id), nil

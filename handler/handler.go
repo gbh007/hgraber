@@ -4,6 +4,8 @@ import (
 	"app/db"
 	"app/file"
 	"app/parser"
+	"app/system/clog"
+	"app/system/coreContext"
 	"fmt"
 	"log"
 	"sync"
@@ -57,17 +59,17 @@ func AddUnloadedPagesToQueue() {
 }
 
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
-func FirstHandle(u string) error {
-	log.Println("начата обработка", u)
+func FirstHandle(ctx coreContext.CoreContext, u string) error {
+	clog.Info(ctx, "начата обработка", u)
 	p, ok, err := parser.Load(u)
 	if err != nil {
 		return err
 	}
-	_, err = db.InsertTitle(p.ParseName(), u, ok)
+	_, err = db.InsertTitle(ctx,p.ParseName(), u, ok)
 	if err != nil {
 		return err
 	}
-	log.Println("завершена обработка", u)
+	clog.Info(ctx, "завершена обработка", u)
 	return nil
 }
 

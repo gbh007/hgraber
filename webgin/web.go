@@ -11,6 +11,7 @@ import (
 func Run(addr string) <-chan struct{} {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
+	router.Use(SetCoreContext)
 	// обработчик статики
 	router.StaticFile("/", "./static/index.html")
 	router.StaticFile("/list", "./static/list.html")

@@ -3,12 +3,12 @@ package main
 import (
 	"app/db"
 	"app/handler"
+	"app/system/clog"
+	"app/system/coreContext"
 	"app/webgin"
 	"bufio"
 	"flag"
 	"fmt"
-	"io"
-	"log"
 	"os"
 	"time"
 )
@@ -19,24 +19,21 @@ func main() {
 	onlyView := flag.Bool("v", false, "режим только просмотра")
 	flag.Parse()
 
-	lf, err := os.Create("log.txt")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	log.SetOutput(io.MultiWriter(os.Stderr, lf))
+	mainContext := coreContext.NewSystemContext()
+	mainContext.SetRequestID("MAIN")
 
-	err = db.Connect()
+	clog.Info(mainContext)
+	clog.Info(mainContext, "test")
+	err := db.Connect(mainContext)
 	if err != nil {
-		log.Println(err)
+		clog.Error(mainContext, err)
 		return
 	}
 
 	if !*onlyView {
 		go loadPages()
 		go completeTitle()
-		go parseTaskFile()
+		go parseTaskFile(mainContext)
 	}
 
 	done := webgin.Run(fmt.Sprintf(":%d", *webPort))
@@ -62,10 +59,10 @@ func completeTitle() {
 	}
 }
 
-func parseTaskFile() {
+func parseTaskFile(ctx coreContext.CoreContext) {
 	f, err := os.Open("task.txt")
 	if err != nil {
-		log.Println(err)
+		clog.Error(ctx, err)
 		return
 	}
 	sc := bufio.NewScanner(f)
@@ -73,7 +70,7 @@ func parseTaskFile() {
 		if sc.Text() == "" {
 			continue
 		}
-		_ = handler.FirstHandle(sc.Text())
+		_ = handler.FirstHandle(ctx, sc.Text())
 	}
 	f.Close()
 }

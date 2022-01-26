@@ -27,7 +27,8 @@ func NewTitle(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	err = handler.FirstHandle(request.URL)
+	sctx := getCoreContext(ctx)
+	err = handler.FirstHandle(sctx, request.URL)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 	} else {
