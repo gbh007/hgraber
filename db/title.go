@@ -7,10 +7,10 @@ import (
 )
 
 type Page struct {
-	TitleID    int
-	PageNumber int
-	URL        string
-	Ext        string
+	TitleID    int    `json:"title_id"`
+	PageNumber int    `json:"page_number"`
+	URL        string `json:"url"`
+	Ext        string `json:"ext"`
 }
 
 // InsertTitle добавляет тайтл

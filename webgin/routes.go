@@ -47,3 +47,38 @@ func TitleList(ctx *gin.Context) {
 	data := db.SelectTitles(request.Offset, request.Count)
 	ctx.JSON(http.StatusOK, data)
 }
+
+func TitleInfo(ctx *gin.Context) {
+	request := struct {
+		ID int `json:"id" binding:"required"`
+	}{}
+	err := ctx.ShouldBindJSON(&request)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	data, err := db.SelectTitleByID(request.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSON(http.StatusOK, data)
+}
+
+func TitlePage(ctx *gin.Context) {
+	request := struct {
+		ID   int `json:"id" binding:"required"`
+		Page int `json:"page" binding:"required"`
+	}{}
+	err := ctx.ShouldBindJSON(&request)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	data, err := db.SelectPagesByTitleIDAndNumber(request.ID, request.Page)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	ctx.JSON(http.StatusOK, data)
+}

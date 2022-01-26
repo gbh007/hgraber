@@ -39,13 +39,37 @@ class Api {
       return {};
     }
   }
+  async getTitleInfo(id) {
+    try {
+      let response = await fetch("/title/details", {
+        method: "POST",
+        body: JSON.stringify({ id: id }),
+      });
+      return await response.json();
+    } catch (err) {
+      console.log(err);
+      return {};
+    }
+  }
+  async getTitlePageInfo(id, page) {
+    try {
+      let response = await fetch("/title/page", {
+        method: "POST",
+        body: JSON.stringify({ id: id, page: page }),
+      });
+      return await response.json();
+    } catch (err) {
+      console.log(err);
+      return {};
+    }
+  }
 }
 
-class Rendering{
-      generateHTMLFromTitleInfo(info) {
-        return `<a href="/title/details?title=${info.id}" class="title" t="${
-          info.loaded ? "" : "bred"
-        }">
+class Rendering {
+  generateHTMLFromTitleInfo(info) {
+    return `<a href="/read?title=${info.id}" class="title" t="${
+      info.loaded ? "" : "bred"
+    }">
       	${
           info.ext == ""
             ? '<span style="grid-area: img;"></span>'
@@ -56,8 +80,8 @@ class Rendering{
               '" style="max-width: 100%; max-height: 100%; grid-area: img;">'
         }
       	<span style="grid-area: name;" t="${info.loaded ? "" : "red"}">${
-          info.name
-        }</span>
+      info.name
+    }</span>
       	<span style="grid-area: id;">#${info.id}</span>
       	<span style="grid-area: pgc;" t="${
           info.parsed_page ? "" : "red"
@@ -77,5 +101,5 @@ class Rendering{
              ${info.tags.length > 7 ? "<b>и больше!</b>" : ""}
       	</span>
       </a>`;
-      }
+  }
 }

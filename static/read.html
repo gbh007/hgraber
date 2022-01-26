@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>HGrabber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="/static/main.css"
+    />
+    <script src="/static/main.js"></script>
+  </head>
+  <body>
+    <script></script>
+    <style>
+      body {
+        text-align: center;
+      }
+      div.view {
+        height: 90vh;
+      }
+      span.page {
+        text-decoration: none;
+        color: black;
+      }
+      h1.page {
+        display: inline-block;
+        writing-mode: vertical-lr;
+        text-orientation: upright;
+        text-decoration: none;
+        color: black;
+        height: 100%;
+        text-align: center;
+        border: 2px dotted black;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+    </style>
+    <div>
+      <a href="/">на главную</a>
+      Страница <span id="page-number">1</span> из <span id="page-count">1</span>
+    </div>
+    <div class="view">
+      <span class="page"
+        ><h1 class="page" onclick="prevPage();">Назад</h1></span
+      >
+      <img src="" id="main-image" style="max-width: 100%; max-height: 100%" />
+      <span class="page"
+        ><h1 class="page" onclick="nextPage();">Вперед</h1></span
+      >
+    </div>
+    <script>
+      let api = new Api();
+      let page = 1;
+      let pageCount = 1;
+      const titleID = parseInt(
+        new URLSearchParams(window.location.search).get("title")
+      );
+      function updatePage(info) {
+        document
+          .getElementById("main-image")
+          .setAttribute(
+            "src",
+            `/file/${titleID}/${info.page_number}.${info.ext}`
+          );
+        document.getElementById("page-number").innerText = info.page_number;
+        page = info.page_number;
+      }
+      function prevPage() {
+        console.log("prevPage");
+        if (page == 1) return;
+        api.getTitlePageInfo(titleID, page - 1).then((data) => {
+          updatePage(data);
+        });
+      }
+      function nextPage() {
+        console.log("nextPage");
+        if (page == pageCount) return;
+        api.getTitlePageInfo(titleID, page + 1).then((data) => {
+          updatePage(data);
+        });
+      }
+      window.addEventListener("load", function () {
+        api.getTitleInfo(titleID).then((data) => {
+          pageCount = data.page_count;
+          document.getElementById("page-count").innerText = pageCount;
+          api.getTitlePageInfo(titleID, page).then((data) => {
+            updatePage(data);
+          });
+        });
+      });
+
+      window.addEventListener("keydown", function (event) {
+        if (event.keyCode === 37) prevPage();
+        if (event.keyCode === 39) nextPage();
+      });
+    </script>
+  </body>
+</html>
