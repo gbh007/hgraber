@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"app/system/coreContext"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -13,10 +14,10 @@ type Parser_IMHENTAI_XXX struct {
 	url      string
 }
 
-func (p *Parser_IMHENTAI_XXX) Load(URL string) bool {
+func (p *Parser_IMHENTAI_XXX) Load(ctx coreContext.CoreContext, URL string) bool {
 	var err error
 	p.url = URL
-	p.main_raw, err = RequestString(URL)
+	p.main_raw, err = RequestString(ctx, URL)
 	return err == nil
 }
 
@@ -35,7 +36,7 @@ func (p Parser_IMHENTAI_XXX) parseTags(s string) []string {
 	return result
 }
 
-func (p Parser_IMHENTAI_XXX) ParseName() string {
+func (p Parser_IMHENTAI_XXX) ParseName(ctx coreContext.CoreContext) string {
 	rp := `(?sm)` + regexp.QuoteMeta(`<div class="row gallery_first">`) + `.+?` +
 		regexp.QuoteMeta(`<h1>`) + `(.+?)` + regexp.QuoteMeta(`</h1>`)
 	res := regexp.MustCompile(rp).FindAllStringSubmatch(p.main_raw, -1)
@@ -45,7 +46,7 @@ func (p Parser_IMHENTAI_XXX) ParseName() string {
 	return regexp.MustCompile(`<a.+?</a>`).ReplaceAllString(res[0][1], "")
 	// return res[0][1]
 }
-func (p Parser_IMHENTAI_XXX) ParseTags() []string {
+func (p Parser_IMHENTAI_XXX) ParseTags(ctx coreContext.CoreContext) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Tags:</span>`) {
 		return []string{}
 	}
@@ -53,7 +54,7 @@ func (p Parser_IMHENTAI_XXX) ParseTags() []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
+func (p Parser_IMHENTAI_XXX) ParsePages(ctx coreContext.CoreContext) []Page {
 	result := make([]Page, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<li class="pages">Pages: `) + `(\d+).*?` + regexp.QuoteMeta(`</li>`)
 	res := regexp.MustCompile(rp).FindStringSubmatch(p.main_raw)
@@ -68,7 +69,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
 	rp_img := regexp.MustCompile(regexp.QuoteMeta(`<img id="gimg" class="lazy`) + `.+?` + `src="(.+?)" alt`)
 	for i := 1; i <= count; i++ {
 		// символ / и так будет в конце
-		data, err := RequestString(fmt.Sprintf("%s%d", u, i))
+		data, err := RequestString(ctx, fmt.Sprintf("%s%d", u, i))
 		if err != nil {
 			return []Page{}
 		}
@@ -86,7 +87,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages() []Page {
 	}
 	return result
 }
-func (p Parser_IMHENTAI_XXX) ParseAuthors() []string {
+func (p Parser_IMHENTAI_XXX) ParseAuthors(ctx coreContext.CoreContext) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Artists:</span>`) {
 		return []string{}
 	}
@@ -94,7 +95,7 @@ func (p Parser_IMHENTAI_XXX) ParseAuthors() []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseCharacters() []string {
+func (p Parser_IMHENTAI_XXX) ParseCharacters(ctx coreContext.CoreContext) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Characters:</span>`) {
 		return []string{}
 	}
@@ -103,7 +104,7 @@ func (p Parser_IMHENTAI_XXX) ParseCharacters() []string {
 	return p.parseTags(raw)
 }
 
-func (p Parser_IMHENTAI_XXX) ParseLanguages() []string {
+func (p Parser_IMHENTAI_XXX) ParseLanguages(ctx coreContext.CoreContext) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Languages:</span>`) {
 		return []string{}
 	}
@@ -111,7 +112,7 @@ func (p Parser_IMHENTAI_XXX) ParseLanguages() []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseCategories() []string {
+func (p Parser_IMHENTAI_XXX) ParseCategories(ctx coreContext.CoreContext) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Category:</span>`) {
 		return []string{}
 	}
@@ -119,7 +120,7 @@ func (p Parser_IMHENTAI_XXX) ParseCategories() []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseParodies() []string {
+func (p Parser_IMHENTAI_XXX) ParseParodies(ctx coreContext.CoreContext) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Parodies:</span>`) {
 		return []string{}
 	}
@@ -127,7 +128,7 @@ func (p Parser_IMHENTAI_XXX) ParseParodies() []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseGroups() []string {
+func (p Parser_IMHENTAI_XXX) ParseGroups(ctx coreContext.CoreContext) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Groups:</span>`) {
 		return []string{}
 	}

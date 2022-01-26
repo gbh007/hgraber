@@ -34,7 +34,7 @@ func main() {
 		go parseTaskFile(mainContext)
 	}
 
-	done := webgin.Run(fmt.Sprintf(":%d", *webPort))
+	done := webgin.Run(mainContext, fmt.Sprintf(":%d", *webPort))
 	<-done
 }
 

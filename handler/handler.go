@@ -7,7 +7,6 @@ import (
 	"app/system/clog"
 	"app/system/coreContext"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 )
@@ -45,7 +44,7 @@ func init() {
 func handleFileQueue(ctx coreContext.CoreContext) {
 	for page := range fileQueue {
 		fileWG.Add(1)
-		err := file.Load(page.TitleID, page.PageNumber, page.URL, page.Ext)
+		err := file.Load(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
 		if err == nil {
 			_ = db.UpdatePageSuccess(ctx, page.TitleID, page.PageNumber, true)
 		}
@@ -63,11 +62,11 @@ func AddUnloadedPagesToQueue(ctx coreContext.CoreContext) {
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
 func FirstHandle(ctx coreContext.CoreContext, u string) error {
 	clog.Info(ctx, "начата обработка", u)
-	p, ok, err := parser.Load(u)
+	p, ok, err := parser.Load(ctx, u)
 	if err != nil {
 		return err
 	}
-	_, err = db.InsertTitle(ctx, p.ParseName(), u, ok)
+	_, err = db.InsertTitle(ctx, p.ParseName(ctx), u, ok)
 	if err != nil {
 		return err
 	}
@@ -77,8 +76,8 @@ func FirstHandle(ctx coreContext.CoreContext, u string) error {
 
 // Update обрабатывает данные тайтла (только недостающие)
 func Update(ctx coreContext.CoreContext, title db.TitleShortInfo) error {
-	log.Println("начата обработка", title.URL)
-	p, ok, err := parser.Load(title.URL)
+	clog.Info(ctx, "начата обработка", title.URL)
+	p, ok, err := parser.Load(ctx, title.URL)
 	if err != nil {
 		return err
 	}
@@ -86,64 +85,64 @@ func Update(ctx coreContext.CoreContext, title db.TitleShortInfo) error {
 		return fmt.Errorf("not load")
 	}
 	if !title.Loaded {
-		err = db.UpdateTitle(ctx, title.ID, p.ParseName(), ok)
+		err = db.UpdateTitle(ctx, title.ID, p.ParseName(ctx), ok)
 		if err != nil {
 			return err
 		}
-		log.Println("обновлено название", title.URL)
+		clog.Info(ctx, "обновлено название", title.URL)
 	}
 	if !title.ParsedAuthors {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.AuthorsMetaType, p.ParseAuthors())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.AuthorsMetaType, p.ParseAuthors(ctx))
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены авторы", title.URL)
+		clog.Info(ctx, "обновлены авторы", title.URL)
 	}
 	if !title.ParsedTags {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.TagsMetaType, p.ParseTags())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.TagsMetaType, p.ParseTags(ctx))
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены теги", title.URL)
+		clog.Info(ctx, "обновлены теги", title.URL)
 	}
 	if !title.ParsedCharacters {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.CharactersMetaType, p.ParseCharacters())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.CharactersMetaType, p.ParseCharacters(ctx))
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены персонажи", title.URL)
+		clog.Info(ctx, "обновлены персонажи", title.URL)
 	}
 	if !title.ParsedCategories {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.CategoriesMetaType, p.ParseCategories())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.CategoriesMetaType, p.ParseCategories(ctx))
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены категории", title.URL)
+		clog.Info(ctx, "обновлены категории", title.URL)
 	}
 	if !title.ParsedGroups {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.GroupsMetaType, p.ParseGroups())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.GroupsMetaType, p.ParseGroups(ctx))
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены группы", title.URL)
+		clog.Info(ctx, "обновлены группы", title.URL)
 	}
 	if !title.ParsedLanguages {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.LanguagesMetaType, p.ParseLanguages())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.LanguagesMetaType, p.ParseLanguages(ctx))
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены языки", title.URL)
+		clog.Info(ctx, "обновлены языки", title.URL)
 	}
 	if !title.ParsedParodies {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.ParodiesMetaType, p.ParseParodies())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.ParodiesMetaType, p.ParseParodies(ctx))
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены пародии", title.URL)
+		clog.Info(ctx, "обновлены пародии", title.URL)
 	}
 	if !title.ParsedPage {
 		pp := true
-		pages := p.ParsePages()
+		pages := p.ParsePages(ctx)
 		for _, page := range pages {
 			if db.InsertPage(ctx, title.ID, page.Ext, page.URL, page.Number) != nil {
 				pp = false
@@ -153,8 +152,8 @@ func Update(ctx coreContext.CoreContext, title db.TitleShortInfo) error {
 		if err != nil {
 			return err
 		}
-		log.Println("обновлены страницы", title.URL)
+		clog.Info(ctx, "обновлены страницы", title.URL)
 	}
-	log.Println("завершена обработка", title.URL)
+	clog.Info(ctx, "завершена обработка", title.URL)
 	return nil
 }
