@@ -63,8 +63,19 @@ class Api {
       return {};
     }
   }
+  async saveToZIP(from, to) {
+    try {
+      let response = await fetch("/to-zip", {
+        method: "POST",
+        body: JSON.stringify({ from: from, to: to }),
+      });
+      return await response.json();
+    } catch (err) {
+      console.log(err);
+      return {};
+    }
+  }
 }
-
 class Rendering {
   generateHTMLFromTitleInfo(info) {
     return `<a href="/read?title=${info.id}" class="title" t="${

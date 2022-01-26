@@ -9,6 +9,7 @@ import (
 
 // Run запускает веб сервер
 func Run(addr string) <-chan struct{} {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	// обработчик статики
 	router.StaticFile("/", "./static/index.html")
@@ -22,8 +23,7 @@ func Run(addr string) <-chan struct{} {
 	router.POST("/title/list", TitleList)
 	router.POST("/title/details", TitleInfo)
 	router.POST("/title/page", TitlePage)
-
-	// mux.HandleFunc("/prepare", SaveToZIP)
+	router.POST("/to-zip", SaveToZIP)
 
 	done := make(chan struct{})
 	go func() {

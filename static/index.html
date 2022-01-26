@@ -30,23 +30,45 @@
       />
       <button onclick="loadTitle();">Загрузить</button>
     </div>
-    <div id="info"></div>
+    <div>
+      <ul>
+        <li>Всего <b id="info-count"></b> тайтлов</li>
+        <li>Всего незагруженно <b id="info-not_load_count"></b> тайтлов</li>
+        <li>Всего <b id="info-page_count"></b> страниц</li>
+        <li>
+          Всего незагруженно <b id="info-not_load_page_count"></b> страниц
+        </li>
+        <li><a href="/list">Список тайтлов</a></li>
+      </ul>
+    </div>
+    <div>
+      Скачать архивы С
+      <input value="" placeholder="С" id="load-from" />
+      По
+      <input value="" placeholder="По" id="load-to" />
+      <button onclick="saveToZIP();">Загрузить</button>
+    </div>
     <script>
       let api = new Api();
       function remakeInfo() {
         api.getMainInfo().then((data) => {
-          document.getElementById("info").innerHTML = `<ul>
-		<li>Всего <b>${data.count}</b> тайтлов</li>
-		<li>Всего незагруженно <b>${data.not_load_count}</b> тайтлов</li>
-		<li>Всего <b>${data.page_count}</b> страниц</li>
-		<li>Всего незагруженно <b>${data.not_load_page_count}</b> страниц</li>
-		<li><a href="/list">Список тайтлов</a></li>
-	</ul>`;
+          document.getElementById("info-count").innerText = data.count;
+          document.getElementById("info-not_load_count").innerText =
+            data.not_load_count;
+          document.getElementById("info-page_count").innerText =
+            data.page_count;
+          document.getElementById("info-not_load_page_count").innerText =
+            data.not_load_page_count;
         });
       }
       function loadTitle() {
         let urlInput = document.getElementById("new-title-url");
         api.newTitle(urlInput.value);
+      }
+      function saveToZIP() {
+        let loadFrom = document.getElementById("load-from");
+        let loadTo = document.getElementById("load-to");
+        api.saveToZIP(parseInt(loadFrom.value), parseInt(loadTo.value));
       }
       window.addEventListener("load", function () {
         remakeInfo();

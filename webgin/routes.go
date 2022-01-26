@@ -2,6 +2,7 @@ package webgin
 
 import (
 	"app/db"
+	"app/file"
 	"app/handler"
 	"net/http"
 
@@ -81,4 +82,24 @@ func TitlePage(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, data)
+}
+
+func SaveToZIP(ctx *gin.Context) {
+	request := struct {
+		From int `json:"from" binding:"required"`
+		To   int `json:"to" binding:"required"`
+	}{}
+	err := ctx.ShouldBindJSON(&request)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	for i := request.From; i <= request.To; i++ {
+		err = file.LoadToZip(i)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+	ctx.JSON(http.StatusOK, struct{}{})
 }
