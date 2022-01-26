@@ -3,7 +3,6 @@ package main
 import (
 	"app/db"
 	"app/handler"
-	"app/web"
 	"app/webgin"
 	"bufio"
 	"flag"
@@ -18,7 +17,6 @@ func main() {
 
 	webPort := flag.Int("p", 8080, "порт веб сервера")
 	onlyView := flag.Bool("v", false, "режим только просмотра")
-	flag.IntVar(&web.PageLimit, "pl", 12, "количество тайтлов на странице")
 	flag.Parse()
 
 	lf, err := os.Create("log.txt")
@@ -41,10 +39,8 @@ func main() {
 		go parseTaskFile()
 	}
 
-	done := web.Run(fmt.Sprintf(":%d", *webPort))
-	done2 := webgin.Run(":8081")
+	done := webgin.Run(fmt.Sprintf(":%d", *webPort))
 	<-done
-	<-done2
 }
 
 func loadPages() {
