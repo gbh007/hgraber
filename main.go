@@ -22,8 +22,6 @@ func main() {
 	mainContext := coreContext.NewSystemContext()
 	mainContext.SetRequestID("MAIN")
 
-	clog.Info(mainContext)
-	clog.Info(mainContext, "test")
 	err := db.Connect(mainContext)
 	if err != nil {
 		clog.Error(mainContext, err)
@@ -31,8 +29,8 @@ func main() {
 	}
 
 	if !*onlyView {
-		go loadPages()
-		go completeTitle()
+		go loadPages(mainContext)
+		go completeTitle(mainContext)
 		go parseTaskFile(mainContext)
 	}
 
@@ -40,21 +38,21 @@ func main() {
 	<-done
 }
 
-func loadPages() {
+func loadPages(ctx coreContext.CoreContext) {
 	timer := time.NewTimer(time.Minute)
 	for range timer.C {
-		handler.AddUnloadedPagesToQueue()
+		handler.AddUnloadedPagesToQueue(ctx)
 		time.Sleep(time.Second)
 		handler.FileWait()
 		timer.Reset(time.Minute)
 	}
 }
 
-func completeTitle() {
+func completeTitle(ctx coreContext.CoreContext) {
 	timer := time.NewTicker(time.Minute)
 	for range timer.C {
-		for _, t := range db.SelectUnloadTitles() {
-			_ = handler.Update(t)
+		for _, t := range db.SelectUnloadTitles(ctx) {
+			_ = handler.Update(ctx, t)
 		}
 	}
 }

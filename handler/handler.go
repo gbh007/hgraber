@@ -33,27 +33,29 @@ func FileWait() {
 }
 
 func init() {
+	ctx := coreContext.NewSystemContext()
+	ctx.SetRequestID("FILE-HANDLE")
 	fileQueue = make(chan db.Page, maxQueueSize)
 	for i := 0; i < maxFileHandlersCount; i++ {
-		go handleFileQueue()
+		go handleFileQueue(ctx)
 	}
 }
 
 // handleFileQueue обработчик файловой очереди
-func handleFileQueue() {
+func handleFileQueue(ctx coreContext.CoreContext) {
 	for page := range fileQueue {
 		fileWG.Add(1)
 		err := file.Load(page.TitleID, page.PageNumber, page.URL, page.Ext)
 		if err == nil {
-			_ = db.UpdatePageSuccess(page.TitleID, page.PageNumber, true)
+			_ = db.UpdatePageSuccess(ctx, page.TitleID, page.PageNumber, true)
 		}
 		fileWG.Done()
 	}
 }
 
 // AddUnloadedPagesToQueue добавляет незагруженные страницы в очередь
-func AddUnloadedPagesToQueue() {
-	for _, p := range db.SelectUnsuccessPages() {
+func AddUnloadedPagesToQueue(ctx coreContext.CoreContext) {
+	for _, p := range db.SelectUnsuccessPages(ctx) {
 		fileQueue <- p
 	}
 }
@@ -65,7 +67,7 @@ func FirstHandle(ctx coreContext.CoreContext, u string) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.InsertTitle(ctx,p.ParseName(), u, ok)
+	_, err = db.InsertTitle(ctx, p.ParseName(), u, ok)
 	if err != nil {
 		return err
 	}
@@ -74,7 +76,7 @@ func FirstHandle(ctx coreContext.CoreContext, u string) error {
 }
 
 // Update обрабатывает данные тайтла (только недостающие)
-func Update(title db.TitleShortInfo) error {
+func Update(ctx coreContext.CoreContext, title db.TitleShortInfo) error {
 	log.Println("начата обработка", title.URL)
 	p, ok, err := parser.Load(title.URL)
 	if err != nil {
@@ -84,56 +86,56 @@ func Update(title db.TitleShortInfo) error {
 		return fmt.Errorf("not load")
 	}
 	if !title.Loaded {
-		err = db.UpdateTitle(title.ID, p.ParseName(), ok)
+		err = db.UpdateTitle(ctx, title.ID, p.ParseName(), ok)
 		if err != nil {
 			return err
 		}
 		log.Println("обновлено название", title.URL)
 	}
 	if !title.ParsedAuthors {
-		err = db.UpdateTitleMeta(title.ID, db.AuthorsMetaType, p.ParseAuthors())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.AuthorsMetaType, p.ParseAuthors())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены авторы", title.URL)
 	}
 	if !title.ParsedTags {
-		err = db.UpdateTitleMeta(title.ID, db.TagsMetaType, p.ParseTags())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.TagsMetaType, p.ParseTags())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены теги", title.URL)
 	}
 	if !title.ParsedCharacters {
-		err = db.UpdateTitleMeta(title.ID, db.CharactersMetaType, p.ParseCharacters())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.CharactersMetaType, p.ParseCharacters())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены персонажи", title.URL)
 	}
 	if !title.ParsedCategories {
-		err = db.UpdateTitleMeta(title.ID, db.CategoriesMetaType, p.ParseCategories())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.CategoriesMetaType, p.ParseCategories())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены категории", title.URL)
 	}
 	if !title.ParsedGroups {
-		err = db.UpdateTitleMeta(title.ID, db.GroupsMetaType, p.ParseGroups())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.GroupsMetaType, p.ParseGroups())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены группы", title.URL)
 	}
 	if !title.ParsedLanguages {
-		err = db.UpdateTitleMeta(title.ID, db.LanguagesMetaType, p.ParseLanguages())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.LanguagesMetaType, p.ParseLanguages())
 		if err != nil {
 			return err
 		}
 		log.Println("обновлены языки", title.URL)
 	}
 	if !title.ParsedParodies {
-		err = db.UpdateTitleMeta(title.ID, db.ParodiesMetaType, p.ParseParodies())
+		err = db.UpdateTitleMeta(ctx, title.ID, db.ParodiesMetaType, p.ParseParodies())
 		if err != nil {
 			return err
 		}
@@ -143,11 +145,11 @@ func Update(title db.TitleShortInfo) error {
 		pp := true
 		pages := p.ParsePages()
 		for _, page := range pages {
-			if db.InsertPage(title.ID, page.Ext, page.URL, page.Number) != nil {
+			if db.InsertPage(ctx, title.ID, page.Ext, page.URL, page.Number) != nil {
 				pp = false
 			}
 		}
-		err = db.UpdateTitleParsedPage(title.ID, len(pages), pp && (len(pages) > 0))
+		err = db.UpdateTitleParsedPage(ctx, title.ID, len(pages), pp && (len(pages) > 0))
 		if err != nil {
 			return err
 		}

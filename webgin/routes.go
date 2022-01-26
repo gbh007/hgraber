@@ -10,11 +10,12 @@ import (
 )
 
 func MainInfo(ctx *gin.Context) {
+	sctx := getCoreContext(ctx)
 	ctx.JSON(http.StatusOK, gin.H{
-		"count":               db.SelectTitlesCount(),
-		"not_load_count":      db.SelectUnloadTitlesCount(),
-		"page_count":          db.SelectPagesCount(),
-		"not_load_page_count": db.SelectUnloadPagesCount(),
+		"count":               db.SelectTitlesCount(sctx),
+		"not_load_count":      db.SelectUnloadTitlesCount(sctx),
+		"page_count":          db.SelectPagesCount(sctx),
+		"not_load_page_count": db.SelectUnloadPagesCount(sctx),
 	})
 }
 
@@ -46,7 +47,8 @@ func TitleList(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	data := db.SelectTitles(request.Offset, request.Count)
+	sctx := getCoreContext(ctx)
+	data := db.SelectTitles(sctx, request.Offset, request.Count)
 	ctx.JSON(http.StatusOK, data)
 }
 
@@ -59,7 +61,8 @@ func TitleInfo(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	data, err := db.SelectTitleByID(request.ID)
+	sctx := getCoreContext(ctx)
+	data, err := db.SelectTitleByID(sctx, request.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -77,7 +80,8 @@ func TitlePage(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	data, err := db.SelectPagesByTitleIDAndNumber(request.ID, request.Page)
+	sctx := getCoreContext(ctx)
+	data, err := db.SelectPagesByTitleIDAndNumber(sctx, request.ID, request.Page)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -95,8 +99,9 @@ func SaveToZIP(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
+	sctx := getCoreContext(ctx)
 	for i := request.From; i <= request.To; i++ {
-		err = file.LoadToZip(i)
+		err = file.LoadToZip(sctx, i)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, err.Error())
 			return

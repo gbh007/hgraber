@@ -21,6 +21,12 @@ func init() {
 
 const timeFormat = "2006-01-02 15:04:05"
 
+func IfErr(ctx coreContext.CoreContext, err error) {
+	if err == nil {
+		return
+	}
+	Error(ctx, err)
+}
 func Error(ctx coreContext.CoreContext, err error) {
 	fmt.Fprintf(logWriter, "[%s]{%s} - %s\n", ctx.GetRequestID(), time.Now().Format(timeFormat), err.Error())
 }

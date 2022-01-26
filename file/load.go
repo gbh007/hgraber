@@ -4,6 +4,7 @@ import (
 	"app/config"
 	"app/db"
 	"app/parser"
+	"app/system/coreContext"
 	"archive/zip"
 	"bytes"
 	"fmt"
@@ -39,13 +40,13 @@ func Load(id, page int, URL, ext string) error {
 }
 
 // LoadToZip сохраняет тайтлы на диск zip архивом
-func LoadToZip(id int) error {
+func LoadToZip(ctx coreContext.CoreContext, id int) error {
 
-	titleInfo, err := db.SelectTitleByID(id)
+	titleInfo, err := db.SelectTitleByID(ctx, id)
 	if err != nil {
 		return err
 	}
-	pages := db.SelectPagesByTitleID(id)
+	pages := db.SelectPagesByTitleID(ctx, id)
 
 	buff := &bytes.Buffer{}
 	zw := zip.NewWriter(buff)
