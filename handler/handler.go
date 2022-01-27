@@ -32,8 +32,7 @@ func FileWait() {
 }
 
 func init() {
-	ctx := coreContext.NewSystemContext()
-	ctx.SetRequestID("FILE-HANDLE")
+	ctx := coreContext.NewSystemContext("FILE-HANDLE")
 	fileQueue = make(chan db.Page, maxQueueSize)
 	for i := 0; i < maxFileHandlersCount; i++ {
 		go handleFileQueue(ctx)

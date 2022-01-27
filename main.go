@@ -19,8 +19,7 @@ func main() {
 	onlyView := flag.Bool("v", false, "режим только просмотра")
 	flag.Parse()
 
-	mainContext := coreContext.NewSystemContext()
-	mainContext.SetRequestID("MAIN")
+	mainContext := coreContext.NewSystemContext("MAIN")
 
 	err := db.Connect(mainContext)
 	if err != nil {
@@ -32,6 +31,7 @@ func main() {
 		go loadPages(mainContext)
 		go completeTitle(mainContext)
 		go parseTaskFile(mainContext)
+		clog.Info(mainContext, "Запущены асинхронные обработчики")
 	}
 
 	done := webgin.Run(mainContext, fmt.Sprintf(":%d", *webPort))

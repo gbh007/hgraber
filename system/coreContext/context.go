@@ -13,10 +13,13 @@ type CoreContext interface {
 	IsSystem() bool
 }
 
-func NewSystemContext() CoreContext {
+func NewSystemContext(name string) CoreContext {
+	if name == "" {
+		name = "SYSTEM-" + hash(time.Now().String())
+	}
 	return &sContext{
 		Context:   context.Background(),
-		requestID: "SYSTEM-" + hash(time.Now().String()),
+		requestID: name,
 		isSystem:  true,
 	}
 }
