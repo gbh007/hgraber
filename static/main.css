@@ -1,0 +1,20 @@
+span.tag {
+  border-radius: 3px;
+  padding: 3px;
+  margin: 2px;
+  background: lightgrey;
+  display: inline-block;
+}
+
+span.page {
+  border-radius: 3px;
+  padding: 3px;
+  margin: 2px;
+  min-width: 20px;
+  background: lightgrey;
+  display: inline-block;
+  cursor: pointer;
+}
+span.page[current="true"] {
+  background: grey;
+}

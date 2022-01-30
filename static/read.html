@@ -22,11 +22,11 @@
       div.view {
         height: 90vh;
       }
-      span.page {
+      span.page-switch {
         text-decoration: none;
         color: black;
       }
-      h1.page {
+      h1.page-switch {
         display: inline-block;
         writing-mode: vertical-lr;
         text-orientation: upright;
@@ -44,12 +44,12 @@
       Страница <span id="page-number">1</span> из <span id="page-count">1</span>
     </div>
     <div class="view">
-      <span class="page"
-        ><h1 class="page" onclick="prevPage();">Назад</h1></span
+      <span class="page-switch"
+        ><h1 class="page-switch" onclick="prevPage();">Назад</h1></span
       >
       <img src="" id="main-image" style="max-width: 100%; max-height: 100%" />
-      <span class="page"
-        ><h1 class="page" onclick="nextPage();">Вперед</h1></span
+      <span class="page-switch"
+        ><h1 class="page-switch" onclick="nextPage();">Вперед</h1></span
       >
     </div>
     <script>

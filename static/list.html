@@ -44,27 +44,6 @@
       .title *[t="bred"] {
         background: pink;
       }
-
-      span.tag {
-        border-radius: 3px;
-        padding: 3px;
-        margin: 2px;
-        background: lightgrey;
-        display: inline-block;
-      }
-
-      span.page {
-        border-radius: 3px;
-        padding: 3px;
-        margin: 2px;
-        min-width: 20px;
-        background: lightgrey;
-        display: inline-block;
-        cursor: pointer;
-      }
-      span.page[current="true"] {
-        background: grey;
-      }
     </style>
     <div id="paginator"></div>
     <div id="title-list"></div>
@@ -79,9 +58,11 @@
           countOnPage,
           (pageNumber - 1) * countOnPage
         );
-        document.getElementById("title-list").innerHTML = data
-          .map((info) => rendering.generateHTMLFromTitleInfo(info))
-          .join("\n");
+        let tl = document.getElementById("title-list");
+        tl.innerHTML = "";
+        data.map((info) =>
+          tl.appendChild(rendering.generateHTMLFromTitleInfo(info))
+        );
       }
       function renderPages(page) {
         let paginator = document.getElementById("paginator");

@@ -63,7 +63,9 @@
       }
       function loadTitle() {
         let urlInput = document.getElementById("new-title-url");
-        api.newTitle(urlInput.value);
+        api.newTitle(urlInput.value).then(() => {
+          urlInput.value = "";
+        });
       }
       function saveToZIP() {
         let loadFrom = document.getElementById("load-from");

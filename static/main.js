@@ -78,39 +78,66 @@ class Api {
 }
 class Rendering {
   generateHTMLFromTitleInfo(info) {
-    return `<a href="/read?title=${info.id}" class="title" t="${
-      info.loaded ? "" : "bred"
-    }">
-      	${
-          info.ext == ""
-            ? '<span style="grid-area: img;"></span>'
-            : '<img src="/file/' +
-              info.id +
-              "/1." +
-              info.ext +
-              '" style="max-width: 100%; max-height: 100%; grid-area: img;">'
-        }
-      	<span style="grid-area: name;" t="${info.loaded ? "" : "red"}">${
-      info.name
-    }</span>
-      	<span style="grid-area: id;">#${info.id}</span>
-      	<span style="grid-area: pgc;" t="${
-          info.parsed_page ? "" : "red"
-        }">Страниц: ${info.page_count}</span>
-      	<span style="grid-area: pgp;" t="${
-          info.avg != 100.0 ? "red" : ""
-        }">Загружено: ${info.avg}%</span>
-      	<span style="grid-area: dt;">${new Date(
-          info.created
-        ).toLocaleString()}</span>
-      	<span style="grid-area: tag;">
-      	${info.tags
-          .map((tag, ind) =>
-            ind < 8 ? '<span class="tag">' + tag + "</span>" : ""
-          )
-          .join("\n")}
-             ${info.tags.length > 7 ? "<b>и больше!</b>" : ""}
-      	</span>
-      </a>`;
+    let title = document.createElement("a");
+    title.href = `/read?title=${info.id}`;
+    title.className = "title";
+    title.setAttribute("t", info.loaded ? "" : "bred");
+
+    if (info.ext == "") {
+      let tImg = document.createElement("span");
+      tImg.style = "grid-area: img;";
+      title.appendChild(tImg);
+    } else {
+      let tImg = document.createElement("img");
+      tImg.style = "max-width: 100%; max-height: 100%; grid-area: img;";
+      tImg.src = `/file/${info.id}/1.${info.ext}`;
+      title.appendChild(tImg);
+    }
+
+    let node = document.createElement("span");
+    node.style = "grid-area: name;";
+    node.setAttribute("t", info.loaded ? "" : "red");
+    node.innerText = info.name;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: id;";
+    node.innerText = `#${info.id}`;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: pgc;";
+    node.setAttribute("t", info.parsed_page ? "" : "red");
+    node.innerText = `Страниц: ${info.page_count}`;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: pgp;";
+    node.setAttribute("t", info.avg != 100.0 ? "red" : "");
+    node.innerText = `Загружено: ${info.avg}%`;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: dt;";
+    node.innerText = new Date(info.created).toLocaleString();
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: tag;";
+    info.tags.map((tagname, ind) => {
+      if (ind >= 8) return;
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    if (info.tags.length > 7) {
+      let more = document.createElement("b");
+      more.innerText = "и больше!";
+      node.appendChild(more);
+    }
+    title.appendChild(node);
+
+    return title;
   }
 }
