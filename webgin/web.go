@@ -2,14 +2,13 @@ package webgin
 
 import (
 	"app/config"
-	"app/system/clog"
-	"app/system/coreContext"
+	"app/system"
 
 	"github.com/gin-gonic/gin"
 )
 
 // Run запускает веб сервер
-func Run(ctx coreContext.CoreContext, addr string) <-chan struct{} {
+func Run(ctx system.Context, addr string) <-chan struct{} {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(SetCoreContext)
@@ -30,7 +29,7 @@ func Run(ctx coreContext.CoreContext, addr string) <-chan struct{} {
 	done := make(chan struct{})
 	go func() {
 		if err := router.Run(addr); err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 		}
 		close(done)
 	}()

@@ -3,8 +3,7 @@ package main
 import (
 	"app/db"
 	"app/handler"
-	"app/system/clog"
-	"app/system/coreContext"
+	"app/system"
 	"app/webgin"
 	"bufio"
 	"flag"
@@ -19,11 +18,11 @@ func main() {
 	onlyView := flag.Bool("v", false, "режим только просмотра")
 	flag.Parse()
 
-	mainContext := coreContext.NewSystemContext("MAIN")
+	mainContext := system.NewSystemContext("MAIN")
 
 	err := db.Connect(mainContext)
 	if err != nil {
-		clog.Error(mainContext, err)
+		system.Error(mainContext, err)
 		return
 	}
 
@@ -31,14 +30,14 @@ func main() {
 		go loadPages(mainContext)
 		go completeTitle(mainContext)
 		go parseTaskFile(mainContext)
-		clog.Info(mainContext, "Запущены асинхронные обработчики")
+		system.Info(mainContext, "Запущены асинхронные обработчики")
 	}
 
 	done := webgin.Run(mainContext, fmt.Sprintf(":%d", *webPort))
 	<-done
 }
 
-func loadPages(ctx coreContext.CoreContext) {
+func loadPages(ctx system.Context) {
 	timer := time.NewTimer(time.Minute)
 	for range timer.C {
 		handler.AddUnloadedPagesToQueue(ctx)
@@ -48,7 +47,7 @@ func loadPages(ctx coreContext.CoreContext) {
 	}
 }
 
-func completeTitle(ctx coreContext.CoreContext) {
+func completeTitle(ctx system.Context) {
 	timer := time.NewTicker(time.Minute)
 	for range timer.C {
 		for _, t := range db.SelectUnloadTitles(ctx) {
@@ -57,10 +56,10 @@ func completeTitle(ctx coreContext.CoreContext) {
 	}
 }
 
-func parseTaskFile(ctx coreContext.CoreContext) {
+func parseTaskFile(ctx system.Context) {
 	f, err := os.Open("task.txt")
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return
 	}
 	sc := bufio.NewScanner(f)

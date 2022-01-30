@@ -4,8 +4,7 @@ import (
 	"app/db"
 	"app/file"
 	"app/parser"
-	"app/system/clog"
-	"app/system/coreContext"
+	"app/system"
 	"fmt"
 	"sync"
 	"time"
@@ -32,7 +31,7 @@ func FileWait() {
 }
 
 func init() {
-	ctx := coreContext.NewSystemContext("FILE-HANDLE")
+	ctx := system.NewSystemContext("FILE-HANDLE")
 	fileQueue = make(chan db.Page, maxQueueSize)
 	for i := 0; i < maxFileHandlersCount; i++ {
 		go handleFileQueue(ctx)
@@ -40,7 +39,7 @@ func init() {
 }
 
 // handleFileQueue обработчик файловой очереди
-func handleFileQueue(ctx coreContext.CoreContext) {
+func handleFileQueue(ctx system.Context) {
 	for page := range fileQueue {
 		fileWG.Add(1)
 		err := file.Load(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
@@ -52,15 +51,15 @@ func handleFileQueue(ctx coreContext.CoreContext) {
 }
 
 // AddUnloadedPagesToQueue добавляет незагруженные страницы в очередь
-func AddUnloadedPagesToQueue(ctx coreContext.CoreContext) {
+func AddUnloadedPagesToQueue(ctx system.Context) {
 	for _, p := range db.SelectUnsuccessPages(ctx) {
 		fileQueue <- p
 	}
 }
 
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
-func FirstHandle(ctx coreContext.CoreContext, u string) error {
-	clog.Info(ctx, "начата обработка", u)
+func FirstHandle(ctx system.Context, u string) error {
+	system.Info(ctx, "начата обработка", u)
 	p, ok, err := parser.Load(ctx, u)
 	if err != nil {
 		return err
@@ -69,13 +68,13 @@ func FirstHandle(ctx coreContext.CoreContext, u string) error {
 	if err != nil {
 		return err
 	}
-	clog.Info(ctx, "завершена обработка", u)
+	system.Info(ctx, "завершена обработка", u)
 	return nil
 }
 
 // Update обрабатывает данные тайтла (только недостающие)
-func Update(ctx coreContext.CoreContext, title db.TitleShortInfo) error {
-	clog.Info(ctx, "начата обработка", title.URL)
+func Update(ctx system.Context, title db.TitleShortInfo) error {
+	system.Info(ctx, "начата обработка", title.URL)
 	p, ok, err := parser.Load(ctx, title.URL)
 	if err != nil {
 		return err
@@ -88,56 +87,56 @@ func Update(ctx coreContext.CoreContext, title db.TitleShortInfo) error {
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлено название", title.URL)
+		system.Info(ctx, "обновлено название", title.URL)
 	}
 	if !title.ParsedAuthors {
 		err = db.UpdateTitleMeta(ctx, title.ID, db.AuthorsMetaType, p.ParseAuthors(ctx))
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены авторы", title.URL)
+		system.Info(ctx, "обновлены авторы", title.URL)
 	}
 	if !title.ParsedTags {
 		err = db.UpdateTitleMeta(ctx, title.ID, db.TagsMetaType, p.ParseTags(ctx))
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены теги", title.URL)
+		system.Info(ctx, "обновлены теги", title.URL)
 	}
 	if !title.ParsedCharacters {
 		err = db.UpdateTitleMeta(ctx, title.ID, db.CharactersMetaType, p.ParseCharacters(ctx))
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены персонажи", title.URL)
+		system.Info(ctx, "обновлены персонажи", title.URL)
 	}
 	if !title.ParsedCategories {
 		err = db.UpdateTitleMeta(ctx, title.ID, db.CategoriesMetaType, p.ParseCategories(ctx))
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены категории", title.URL)
+		system.Info(ctx, "обновлены категории", title.URL)
 	}
 	if !title.ParsedGroups {
 		err = db.UpdateTitleMeta(ctx, title.ID, db.GroupsMetaType, p.ParseGroups(ctx))
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены группы", title.URL)
+		system.Info(ctx, "обновлены группы", title.URL)
 	}
 	if !title.ParsedLanguages {
 		err = db.UpdateTitleMeta(ctx, title.ID, db.LanguagesMetaType, p.ParseLanguages(ctx))
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены языки", title.URL)
+		system.Info(ctx, "обновлены языки", title.URL)
 	}
 	if !title.ParsedParodies {
 		err = db.UpdateTitleMeta(ctx, title.ID, db.ParodiesMetaType, p.ParseParodies(ctx))
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены пародии", title.URL)
+		system.Info(ctx, "обновлены пародии", title.URL)
 	}
 	if !title.ParsedPage {
 		pp := true
@@ -151,8 +150,8 @@ func Update(ctx coreContext.CoreContext, title db.TitleShortInfo) error {
 		if err != nil {
 			return err
 		}
-		clog.Info(ctx, "обновлены страницы", title.URL)
+		system.Info(ctx, "обновлены страницы", title.URL)
 	}
-	clog.Info(ctx, "завершена обработка", title.URL)
+	system.Info(ctx, "завершена обработка", title.URL)
 	return nil
 }

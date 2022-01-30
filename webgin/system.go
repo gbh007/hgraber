@@ -1,19 +1,19 @@
 package webgin
 
 import (
-	"app/system/coreContext"
+	"app/system"
 
 	"github.com/gin-gonic/gin"
 )
 
 const coreContextKey = "core-context-key"
 
-func getCoreContext(ctx *gin.Context) coreContext.CoreContext {
+func getCoreContext(ctx *gin.Context) system.Context {
 	v, _ := ctx.Get(coreContextKey)
 	// паника тут специально игнорируется
-	return v.(coreContext.CoreContext)
+	return v.(system.Context)
 }
 
 func SetCoreContext(ctx *gin.Context) {
-	ctx.Set(coreContextKey,coreContext.NewUserContext())
+	ctx.Set(coreContextKey, system.NewUserContext())
 }

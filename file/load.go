@@ -4,8 +4,7 @@ import (
 	"app/config"
 	"app/db"
 	"app/parser"
-	"app/system/clog"
-	"app/system/coreContext"
+	"app/system"
 	"archive/zip"
 	"bytes"
 	"fmt"
@@ -13,11 +12,11 @@ import (
 	"strings"
 )
 
-func Load(ctx coreContext.CoreContext, id, page int, URL, ext string) error {
+func Load(ctx system.Context, id, page int, URL, ext string) error {
 	// создаем папку с тайтлом
 	err := os.MkdirAll(fmt.Sprintf("%s/%d", config.DefaultFilePath, id), 0777)
 	if err != nil && !os.IsExist(err) {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	// скачиваем изображение
@@ -28,19 +27,19 @@ func Load(ctx coreContext.CoreContext, id, page int, URL, ext string) error {
 	// создаем файл и загружаем туда изображение
 	f, err := os.Create(fmt.Sprintf("%s/%d/%d.%s", config.DefaultFilePath, id, page, ext))
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	_, err = f.Write(data)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	return f.Close()
 }
 
 // LoadToZip сохраняет тайтлы на диск zip архивом
-func LoadToZip(ctx coreContext.CoreContext, id int) error {
+func LoadToZip(ctx system.Context, id int) error {
 
 	titleInfo, err := db.SelectTitleByID(ctx, id)
 	if err != nil {
@@ -54,30 +53,30 @@ func LoadToZip(ctx coreContext.CoreContext, id int) error {
 		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", config.DefaultFilePath, id, p.PageNumber, p.Ext))
 		defer f.Close()
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 			return err
 		}
 		tmpBuff := &bytes.Buffer{}
 		_, err = tmpBuff.ReadFrom(f)
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 			return err
 		}
 		w, err := zw.Create(fmt.Sprintf("%d.%s", p.PageNumber, p.Ext))
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 			return err
 		}
 		_, err = w.Write(tmpBuff.Bytes())
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 			return err
 		}
 	}
 
 	w, err := zw.Create("info.txt")
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	_, err = fmt.Fprintf(
@@ -89,12 +88,12 @@ func LoadToZip(ctx coreContext.CoreContext, id int) error {
 		titleInfo.ID,
 	)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	err = zw.Close()
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	f, err := os.Create(fmt.Sprintf(
@@ -105,12 +104,12 @@ func LoadToZip(ctx coreContext.CoreContext, id int) error {
 	))
 	defer f.Close()
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	_, err = buff.WriteTo(f)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return err
 	}
 	return nil

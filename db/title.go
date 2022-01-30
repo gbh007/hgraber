@@ -1,8 +1,7 @@
 package db
 
 import (
-	"app/system/clog"
-	"app/system/coreContext"
+	"app/system"
 	"database/sql"
 	"time"
 )
@@ -15,48 +14,48 @@ type Page struct {
 }
 
 // InsertTitle добавляет тайтл
-func InsertTitle(ctx coreContext.CoreContext, name, URL string, loaded bool) (int, error) {
+func InsertTitle(ctx system.Context, name, URL string, loaded bool) (int, error) {
 	result, err := _db.ExecContext(
 		ctx,
 		`INSERT INTO titles(name, url, creation_time, loaded) VALUES(?, ?, ?, ?)`,
 		name, URL, time.Now(), loaded,
 	)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return -1, err
 	}
 	id, err := result.LastInsertId()
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return -1, err
 	}
 	return int(id), nil
 }
 
 // UpdateTitle обновляет тайтл
-func UpdateTitle(ctx coreContext.CoreContext, id int, name string, loaded bool) error {
+func UpdateTitle(ctx system.Context, id int, name string, loaded bool) error {
 	_, err := _db.ExecContext(
 		ctx,
 		`UPDATE titles SET name = ?, loaded = ? WHERE id = ?`,
 		name, loaded, id,
 	)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return err
 }
 
 // UpdateTitleParsedPage обновляет информацию об обработанных страницах в тайтле
-func UpdateTitleParsedPage(ctx coreContext.CoreContext, id, count int, success bool) error {
+func UpdateTitleParsedPage(ctx system.Context, id, count int, success bool) error {
 	_, err := _db.ExecContext(ctx, `UPDATE titles SET parsed_pages = ?, page_count = ? WHERE id = ?`, success, count, id)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return err
 }
 
 // InsertPage добавляет страницу тайтла
-func InsertPage(ctx coreContext.CoreContext, id int, ext, URL string, page_number int) error {
+func InsertPage(ctx system.Context, id int, ext, URL string, page_number int) error {
 	_, err := _db.ExecContext(
 		ctx,
 		`INSERT INTO pages(title_id, ext, url, page_number, success) VALUES(?, ?, ?, ?, ?)
@@ -64,34 +63,34 @@ func InsertPage(ctx coreContext.CoreContext, id int, ext, URL string, page_numbe
 		id, ext, URL, page_number, false,
 	)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return err
 }
 
 // UpdatePageSuccess обновляет информацию об успешной загрузке страницы
-func UpdatePageSuccess(ctx coreContext.CoreContext, id, page int, success bool) error {
+func UpdatePageSuccess(ctx system.Context, id, page int, success bool) error {
 	_, err := _db.ExecContext(ctx, `UPDATE pages SET success = ? WHERE title_id = ? AND page_number = ?`, success, id, page)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return err
 }
 
 // SelectUnsuccessPages выбирает из базы не загруженные страницы
-func SelectUnsuccessPages(ctx coreContext.CoreContext) []Page {
+func SelectUnsuccessPages(ctx system.Context) []Page {
 	result := []Page{}
 	rows, err := _db.QueryContext(ctx, `SELECT p.title_id, p.page_number, p.url, p.ext FROM
 titles t INNER JOIN pages p ON t.parsed_pages = TRUE AND t.id = p.title_id AND p.success = FALSE`)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return result
 	}
 	for rows.Next() {
 		p := Page{}
 		err = rows.Scan(&p.TitleID, &p.PageNumber, &p.URL, &p.Ext)
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 		} else {
 			result = append(result, p)
 		}
@@ -127,7 +126,7 @@ type TitleShortInfo struct {
 }
 
 // SelectTitles выбирает из базы все тайтлы
-func SelectTitles(ctx coreContext.CoreContext, offset, limit int) []TitleShortInfo {
+func SelectTitles(ctx system.Context, offset, limit int) []TitleShortInfo {
 	result := []TitleShortInfo{}
 	rows, err := _db.QueryContext(ctx, `SELECT
 	t2.id,
@@ -167,7 +166,7 @@ ORDER BY
 	t2.id DESC
 LIMIT ?, ?`, offset, limit)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return result
 	}
 	for rows.Next() {
@@ -193,7 +192,7 @@ LIMIT ?, ?`, offset, limit)
 			&t.Created,
 		)
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 		} else {
 			t.Avg = avg.Float64 * 100
 			t.Ext = ext.String
@@ -211,7 +210,7 @@ LIMIT ?, ?`, offset, limit)
 }
 
 // SelectTitles выбирает из базы тайтл по ID
-func SelectTitleByID(ctx coreContext.CoreContext, id int) (TitleShortInfo, error) {
+func SelectTitleByID(ctx system.Context, id int) (TitleShortInfo, error) {
 	row := _db.QueryRowContext(ctx, `SELECT
 	t2.id,
 	t2.name,
@@ -271,7 +270,7 @@ ORDER BY
 		&t.Created,
 	)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	} else {
 		t.Avg = avg.Float64 * 100
 		t.Ext = ext.String
@@ -287,14 +286,14 @@ ORDER BY
 }
 
 // SelectPagesByTitleID выбирает из базы все страницы из тайтла
-func SelectPagesByTitleID(ctx coreContext.CoreContext, id int) []Page {
+func SelectPagesByTitleID(ctx system.Context, id int) []Page {
 	result := []Page{}
 	rows, err := _db.QueryContext(ctx, `SELECT p.title_id, p.page_number, p.url, p.ext
 FROM pages p
 WHERE p.success = TRUE AND p.title_id = ?
 ORDER BY p.page_number`, id)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return result
 	}
 	for rows.Next() {
@@ -306,7 +305,7 @@ ORDER BY p.page_number`, id)
 			&p.Ext,
 		)
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 		} else {
 			result = append(result, p)
 		}
@@ -315,7 +314,7 @@ ORDER BY p.page_number`, id)
 }
 
 // SelectPagesByTitleIDAndNumber выбирает из базы все страницу из тайтла по его ид и номеру страницы
-func SelectPagesByTitleIDAndNumber(ctx coreContext.CoreContext, id, pageNumber int) (Page, error) {
+func SelectPagesByTitleIDAndNumber(ctx system.Context, id, pageNumber int) (Page, error) {
 	row := _db.QueryRowContext(ctx, `SELECT p.title_id, p.page_number, p.url, p.ext
 FROM pages p
 WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber)
@@ -327,20 +326,20 @@ WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber
 		&p.Ext,
 	)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return p, err
 }
 
 // SelectUnloadTitles выбирает из базы все недогруженые тайтлы
-func SelectUnloadTitles(ctx coreContext.CoreContext) []TitleShortInfo {
+func SelectUnloadTitles(ctx system.Context) []TitleShortInfo {
 	result := []TitleShortInfo{}
 	rows, err := _db.QueryContext(ctx, `SELECT id, url, loaded, parsed_pages, parsed_tags, parsed_authors, parsed_characters,
 	parsed_languages, parsed_categories, parsed_parodies, parsed_groups
 	FROM titles WHERE loaded = FALSE OR parsed_pages = FALSE OR parsed_tags = FALSE OR parsed_authors = FALSE OR parsed_characters = FALSE
 	OR parsed_languages = FALSE OR parsed_categories = FALSE OR parsed_parodies = FALSE OR parsed_groups = FALSE`)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 		return result
 	}
 	for rows.Next() {
@@ -359,7 +358,7 @@ func SelectUnloadTitles(ctx coreContext.CoreContext) []TitleShortInfo {
 			&t.ParsedGroups,
 		)
 		if err != nil {
-			clog.Error(ctx, err)
+			system.Error(ctx, err)
 		} else {
 			result = append(result, t)
 		}
@@ -368,18 +367,18 @@ func SelectUnloadTitles(ctx coreContext.CoreContext) []TitleShortInfo {
 }
 
 // SelectTitlesCount получает количество тайтлов в базе
-func SelectTitlesCount(ctx coreContext.CoreContext) int {
+func SelectTitlesCount(ctx system.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(id) FROM titles`)
 	var c int
 	err := row.Scan(&c)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return c
 }
 
 // SelectUnloadTitlesCount получает количество недогруженных тайтлов в базе
-func SelectUnloadTitlesCount(ctx coreContext.CoreContext) int {
+func SelectUnloadTitlesCount(ctx system.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(id) FROM titles WHERE 
 	loaded = FALSE OR parsed_pages = FALSE OR parsed_tags = FALSE OR parsed_authors = FALSE OR parsed_characters = FALSE
 	OR parsed_languages = FALSE OR parsed_categories = FALSE OR parsed_parodies = FALSE OR parsed_groups = FALSE
@@ -387,29 +386,29 @@ func SelectUnloadTitlesCount(ctx coreContext.CoreContext) int {
 	var c int
 	err := row.Scan(&c)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return c
 }
 
 // SelectPagesCount получает количество страниц в базе
-func SelectPagesCount(ctx coreContext.CoreContext) int {
+func SelectPagesCount(ctx system.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(url) FROM pages`)
 	var c int
 	err := row.Scan(&c)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return c
 }
 
 // SelectUnloadPagesCount получает количество недогруженных страниц в базе
-func SelectUnloadPagesCount(ctx coreContext.CoreContext) int {
+func SelectUnloadPagesCount(ctx system.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(url) FROM pages WHERE success = FALSE`)
 	var c int
 	err := row.Scan(&c)
 	if err != nil {
-		clog.Error(ctx, err)
+		system.Error(ctx, err)
 	}
 	return c
 }

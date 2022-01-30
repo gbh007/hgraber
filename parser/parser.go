@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/system/coreContext"
+	"app/system"
 	"fmt"
 	"strings"
 )
@@ -24,7 +24,7 @@ type Page struct {
 	Ext    string
 }
 
-func Load(ctx coreContext.CoreContext, URL string) (Parser, bool, error) {
+func Load(ctx system.Context, URL string) (Parser, bool, error) {
 	var (
 		p   Parser
 		err error
@@ -46,27 +46,27 @@ func Load(ctx coreContext.CoreContext, URL string) (Parser, bool, error) {
 
 // Parser интерфейс для реализации парсеров для различных сайтов
 type Parser interface {
-	Load(ctx coreContext.CoreContext, URL string) bool
-	ParseName(ctx coreContext.CoreContext) string
-	ParsePages(ctx coreContext.CoreContext) []Page
-	ParseTags(ctx coreContext.CoreContext) []string
-	ParseAuthors(ctx coreContext.CoreContext) []string
-	ParseCharacters(ctx coreContext.CoreContext) []string
-	ParseLanguages(ctx coreContext.CoreContext) []string
-	ParseCategories(ctx coreContext.CoreContext) []string
-	ParseParodies(ctx coreContext.CoreContext) []string
-	ParseGroups(ctx coreContext.CoreContext) []string
+	Load(ctx system.Context, URL string) bool
+	ParseName(ctx system.Context) string
+	ParsePages(ctx system.Context) []Page
+	ParseTags(ctx system.Context) []string
+	ParseAuthors(ctx system.Context) []string
+	ParseCharacters(ctx system.Context) []string
+	ParseLanguages(ctx system.Context) []string
+	ParseCategories(ctx system.Context) []string
+	ParseParodies(ctx system.Context) []string
+	ParseGroups(ctx system.Context) []string
 }
 
 /*
 func (p *Parser) Load(URL string) bool     { return false }
-func (p Parser) ParseName(ctx coreContext.CoreContext) string         { return "" }
-func (p Parser) ParsePages(ctx coreContext.CoreContext) []Page        { return []Page{} }
-func (p Parser) ParseTags(ctx coreContext.CoreContext) []string       { return []string{} }
-func (p Parser) ParseAuthors(ctx coreContext.CoreContext) []string    { return []string{} }
-func (p Parser) ParseCharacters(ctx coreContext.CoreContext) []string { return []string{} }
-func (p Parser) ParseLanguages(ctx coreContext.CoreContext) []string  { return []string{} }
-func (p Parser) ParseCategories(ctx coreContext.CoreContext) []string { return []string{} }
-func (p Parser) ParseParodies(ctx coreContext.CoreContext) []string   { return []string{} }
-func (p Parser) ParseGroups(ctx coreContext.CoreContext) []string     { return []string{} }
+func (p Parser) ParseName(ctx system.Context) string         { return "" }
+func (p Parser) ParsePages(ctx system.Context) []Page        { return []Page{} }
+func (p Parser) ParseTags(ctx system.Context) []string       { return []string{} }
+func (p Parser) ParseAuthors(ctx system.Context) []string    { return []string{} }
+func (p Parser) ParseCharacters(ctx system.Context) []string { return []string{} }
+func (p Parser) ParseLanguages(ctx system.Context) []string  { return []string{} }
+func (p Parser) ParseCategories(ctx system.Context) []string { return []string{} }
+func (p Parser) ParseParodies(ctx system.Context) []string   { return []string{} }
+func (p Parser) ParseGroups(ctx system.Context) []string     { return []string{} }
 */

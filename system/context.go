@@ -1,11 +1,11 @@
-package coreContext
+package system
 
 import (
 	"context"
 	"time"
 )
 
-type CoreContext interface {
+type Context interface {
 	context.Context
 	SetRequestID(id string)
 	GetRequestID() string
@@ -13,7 +13,7 @@ type CoreContext interface {
 	IsSystem() bool
 }
 
-func NewSystemContext(name string) CoreContext {
+func NewSystemContext(name string) Context {
 	if name == "" {
 		name = "SYSTEM-" + hash(time.Now().String())
 	}
@@ -24,7 +24,7 @@ func NewSystemContext(name string) CoreContext {
 	}
 }
 
-func NewUserContext() CoreContext {
+func NewUserContext() Context {
 	return &sContext{
 		Context:   context.Background(),
 		requestID: "USER-" + hash(time.Now().String()),
