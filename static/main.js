@@ -77,9 +77,136 @@ class Api {
   }
 }
 class Rendering {
+  generateHTMLTItleDetailsFromTitleInfo(info) {
+    let title = document.createElement("div");
+    title.className = "title-details";
+    title.setAttribute("t", info.loaded ? "" : "bred");
+
+    if (info.ext == "") {
+      let tImg = document.createElement("span");
+      tImg.style = "grid-area: img;";
+      title.appendChild(tImg);
+    } else {
+      let tImg = document.createElement("img");
+      tImg.style = "max-width: 100%; max-height: 100%; grid-area: img;";
+      tImg.src = `/file/${info.id}/1.${info.ext}`;
+      title.appendChild(tImg);
+    }
+
+    let node = document.createElement("span");
+    node.style = "grid-area: name;";
+    node.setAttribute("t", info.loaded ? "" : "red");
+    node.innerText = info.name;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: id;";
+    node.innerText = `#${info.id}`;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: pgc;";
+    node.setAttribute("t", info.parsed_page ? "" : "red");
+    node.innerText = `Страниц: ${info.page_count}`;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: pgp;";
+    node.setAttribute("t", info.avg != 100.0 ? "red" : "");
+    node.innerText = `Загружено: ${info.avg}%`;
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: dt;";
+    node.innerText = new Date(info.created).toLocaleString();
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: tag;";
+    info.tags.map((tagname) => {
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: authors;";
+    info.authors.map((tagname) => {
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: char;";
+    info.characters.map((tagname) => {
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: lang;";
+    info.languages.map((tagname) => {
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: cat;";
+    info.categories.map((tagname) => {
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: par;";
+    info.parodies.map((tagname) => {
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    title.appendChild(node);
+
+    node = document.createElement("span");
+    node.style = "grid-area: gr;";
+    info.groups.map((tagname) => {
+      let tag = document.createElement("span");
+      tag.className = "tag";
+      tag.innerText = tagname;
+      node.appendChild(tag);
+    });
+    title.appendChild(node);
+
+    node = document.createElement("a");
+    node.className = "load";
+    node.innerText = "Скачать";
+    title.appendChild(node);
+
+    node = document.createElement("a");
+    node.href = `/read?title=${info.id}`;
+    node.className = "read";
+    node.innerText = "Читать";
+    title.appendChild(node);
+
+    return title;
+  }
   generateHTMLFromTitleInfo(info) {
-    let title = document.createElement("a");
-    title.href = `/read?title=${info.id}`;
+    let title = document.createElement("div");
+    // title.href = `/read?title=${info.id}`;
     title.className = "title";
     title.setAttribute("t", info.loaded ? "" : "bred");
 
@@ -137,6 +264,8 @@ class Rendering {
       node.appendChild(more);
     }
     title.appendChild(node);
+
+    title.appendChild(this.generateHTMLTItleDetailsFromTitleInfo(info));
 
     return title;
   }
