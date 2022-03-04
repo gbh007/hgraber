@@ -5,3 +5,5 @@ main
 main.db
 log.txt
 .hidden
+.build
+_build
