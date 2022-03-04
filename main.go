@@ -3,6 +3,7 @@ package main
 import (
 	"app/db"
 	"app/handler"
+	"app/jdb"
 	"app/system"
 	"app/webgin"
 	"bufio"
@@ -16,6 +17,7 @@ func main() {
 
 	webPort := flag.Int("p", 8080, "порт веб сервера")
 	onlyView := flag.Bool("v", false, "режим только просмотра")
+	export := flag.Bool("e", false, "экспортировать данные и выйти")
 	flag.Parse()
 
 	mainContext := system.NewSystemContext("MAIN")
@@ -24,6 +26,17 @@ func main() {
 	if err != nil {
 		system.Error(mainContext, err)
 		return
+	}
+
+	if *export {
+		system.Info(mainContext, "Экспорт начат")
+		exporter := jdb.New()
+		system.Info(mainContext, "Конвертирование данных")
+		exporter.FetchFromSQL(mainContext)
+		system.Info(mainContext, "Сохранение данных")
+		_ = exporter.Save(mainContext, fmt.Sprintf("exported-%s.json", time.Now().Format("2006-01-02-150405")))
+		system.Info(mainContext, "Экспорт завершен")
+		os.Exit(0)
 	}
 
 	if !*onlyView {

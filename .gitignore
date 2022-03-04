@@ -7,3 +7,4 @@ log.txt
 .hidden
 .build
 _build
+exported-*.json
