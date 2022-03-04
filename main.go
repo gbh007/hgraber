@@ -18,7 +18,16 @@ func main() {
 	webPort := flag.Int("p", 8080, "порт веб сервера")
 	onlyView := flag.Bool("v", false, "режим только просмотра")
 	export := flag.Bool("e", false, "экспортировать данные и выйти")
+	disableStdErr := flag.Bool("no-stderr", false, "отключить стандартный поток ошибок")
+	disableFileErr := flag.Bool("no-stdfile", false, "отключить поток ошибок в файл")
+	enableAppendFileErr := flag.Bool("stdfile-append", false, "режим дозаписи файла потока ошибок")
 	flag.Parse()
+
+	system.Init(system.LogConfig{
+		EnableFile:   !*disableFileErr,
+		AppendMode:   *enableAppendFileErr,
+		EnableStdErr: !*disableStdErr,
+	})
 
 	mainContext := system.NewSystemContext("MAIN")
 

@@ -11,9 +11,10 @@ import (
 )
 
 type Page struct {
-	URL     string `json:"url"`
-	Ext     string `json:"ext"`
-	Success bool   `json:"success"`
+	URL      string    `json:"url"`
+	Ext      string    `json:"ext"`
+	Success  bool      `json:"success"`
+	LoadedAt time.Time `json:"loaded_at"`
 }
 
 type TitleInfoParsed struct {
@@ -55,7 +56,7 @@ type Title struct {
 }
 
 type DatabaseData struct {
-	Titles map[int]*Title `json:"titles"`
+	Titles map[int]Title `json:"titles"`
 }
 
 type Database struct {
@@ -67,7 +68,7 @@ func New() *Database {
 	return &Database{
 		mutex: &sync.RWMutex{},
 		data: DatabaseData{
-			Titles: make(map[int]*Title),
+			Titles: make(map[int]Title),
 		},
 	}
 }
@@ -99,7 +100,7 @@ func (dtb *Database) FetchFromSQL(ctx system.Context) {
 	checkPagesCount := db.SelectPagesCount(ctx)
 
 	for _, title := range db.SelectTitles(ctx, 0, db.SelectTitlesCount(ctx)) {
-		t := &Title{
+		t := Title{
 			ID:      title.ID,
 			Created: title.Created,
 			URL:     title.URL,
