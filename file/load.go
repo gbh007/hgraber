@@ -1,7 +1,6 @@
 package file
 
 import (
-	"app/config"
 	"app/db"
 	"app/parser"
 	"app/system"
@@ -14,7 +13,7 @@ import (
 
 func Load(ctx system.Context, id, page int, URL, ext string) error {
 	// создаем папку с тайтлом
-	err := os.MkdirAll(fmt.Sprintf("%s/%d", config.DefaultFilePath, id), 0777)
+	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), 0666)
 	if err != nil && !os.IsExist(err) {
 		system.Error(ctx, err)
 		return err
@@ -25,7 +24,7 @@ func Load(ctx system.Context, id, page int, URL, ext string) error {
 		return err
 	}
 	// создаем файл и загружаем туда изображение
-	f, err := os.Create(fmt.Sprintf("%s/%d/%d.%s", config.DefaultFilePath, id, page, ext))
+	f, err := os.Create(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, page, ext))
 	if err != nil {
 		system.Error(ctx, err)
 		return err
@@ -49,24 +48,29 @@ func LoadToZip(ctx system.Context, id int) error {
 
 	buff := &bytes.Buffer{}
 	zw := zip.NewWriter(buff)
+
 	for _, p := range pages {
-		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", config.DefaultFilePath, id, p.PageNumber, p.Ext))
-		defer f.Close()
+		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, p.PageNumber, p.Ext))
+		defer system.IfErrFunc(ctx, f.Close)
 		if err != nil {
 			system.Error(ctx, err)
 			return err
 		}
+
 		tmpBuff := &bytes.Buffer{}
+
 		_, err = tmpBuff.ReadFrom(f)
 		if err != nil {
 			system.Error(ctx, err)
 			return err
 		}
+
 		w, err := zw.Create(fmt.Sprintf("%d.%s", p.PageNumber, p.Ext))
 		if err != nil {
 			system.Error(ctx, err)
 			return err
 		}
+
 		_, err = w.Write(tmpBuff.Bytes())
 		if err != nil {
 			system.Error(ctx, err)
@@ -79,6 +83,7 @@ func LoadToZip(ctx system.Context, id int) error {
 		system.Error(ctx, err)
 		return err
 	}
+
 	_, err = fmt.Fprintf(
 		w,
 		"URL:%s\nNAME:%s\nPAGE-COUNT:%d\nINNER-ID:%d",
@@ -91,18 +96,22 @@ func LoadToZip(ctx system.Context, id int) error {
 		system.Error(ctx, err)
 		return err
 	}
+
 	err = zw.Close()
 	if err != nil {
 		system.Error(ctx, err)
 		return err
 	}
+
 	f, err := os.Create(fmt.Sprintf(
 		"%s/%d)_%s.zip",
-		config.DefaultFilePath,
+		system.GetFileStoragePath(ctx),
 		id,
 		escapeFileName(titleInfo.Name),
 	))
-	defer f.Close()
+
+	defer system.IfErrFunc(ctx, f.Close)
+
 	if err != nil {
 		system.Error(ctx, err)
 		return err

@@ -1,7 +1,6 @@
 package webgin
 
 import (
-	"app/config"
 	"app/system"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +16,7 @@ func Run(ctx system.Context, addr string) <-chan struct{} {
 	router.StaticFile("/list", "./static/list.html")
 	router.StaticFile("/read", "./static/read.html")
 	router.Static("/static", "./static")
-	router.Static("/file", config.DefaultFilePath)
+	router.Static("/file", system.GetFileStoragePath(ctx))
 
 	router.GET("/info", MainInfo)
 	router.POST("/new", NewTitle)

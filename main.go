@@ -21,6 +21,7 @@ func main() {
 	disableStdErr := flag.Bool("no-stderr", false, "отключить стандартный поток ошибок")
 	disableFileErr := flag.Bool("no-stdfile", false, "отключить поток ошибок в файл")
 	enableAppendFileErr := flag.Bool("stdfile-append", false, "режим дозаписи файла потока ошибок")
+	fileStorage := flag.String("fs", "loads", "директория для данных")
 	flag.Parse()
 
 	system.Init(system.LogConfig{
@@ -31,10 +32,15 @@ func main() {
 
 	mainContext := system.NewSystemContext("MAIN")
 
-	err := db.Connect(mainContext)
+	err := system.SetFileStoragePath(mainContext, *fileStorage)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	err = db.Connect(mainContext)
 	if err != nil {
 		system.Error(mainContext, err)
-		return
+		os.Exit(2)
 	}
 
 	if *export {
