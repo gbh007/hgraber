@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/system"
+	"context"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -14,7 +14,7 @@ type Parser_IMHENTAI_XXX struct {
 	url      string
 }
 
-func (p *Parser_IMHENTAI_XXX) Load(ctx system.Context, URL string) bool {
+func (p *Parser_IMHENTAI_XXX) Load(ctx context.Context, URL string) bool {
 	var err error
 	p.url = URL
 	p.main_raw, err = RequestString(ctx, URL)
@@ -36,7 +36,7 @@ func (p Parser_IMHENTAI_XXX) parseTags(s string) []string {
 	return result
 }
 
-func (p Parser_IMHENTAI_XXX) ParseName(ctx system.Context) string {
+func (p Parser_IMHENTAI_XXX) ParseName(ctx context.Context) string {
 	rp := `(?sm)` + regexp.QuoteMeta(`<div class="row gallery_first">`) + `.+?` +
 		regexp.QuoteMeta(`<h1>`) + `(.+?)` + regexp.QuoteMeta(`</h1>`)
 	res := regexp.MustCompile(rp).FindAllStringSubmatch(p.main_raw, -1)
@@ -46,7 +46,7 @@ func (p Parser_IMHENTAI_XXX) ParseName(ctx system.Context) string {
 	return regexp.MustCompile(`<a.+?</a>`).ReplaceAllString(res[0][1], "")
 	// return res[0][1]
 }
-func (p Parser_IMHENTAI_XXX) ParseTags(ctx system.Context) []string {
+func (p Parser_IMHENTAI_XXX) ParseTags(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Tags:</span>`) {
 		return []string{}
 	}
@@ -54,7 +54,7 @@ func (p Parser_IMHENTAI_XXX) ParseTags(ctx system.Context) []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParsePages(ctx system.Context) []Page {
+func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []Page {
 	result := make([]Page, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<li class="pages">Pages: `) + `(\d+).*?` + regexp.QuoteMeta(`</li>`)
 	res := regexp.MustCompile(rp).FindStringSubmatch(p.main_raw)
@@ -87,7 +87,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages(ctx system.Context) []Page {
 	}
 	return result
 }
-func (p Parser_IMHENTAI_XXX) ParseAuthors(ctx system.Context) []string {
+func (p Parser_IMHENTAI_XXX) ParseAuthors(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Artists:</span>`) {
 		return []string{}
 	}
@@ -95,7 +95,7 @@ func (p Parser_IMHENTAI_XXX) ParseAuthors(ctx system.Context) []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseCharacters(ctx system.Context) []string {
+func (p Parser_IMHENTAI_XXX) ParseCharacters(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Characters:</span>`) {
 		return []string{}
 	}
@@ -104,7 +104,7 @@ func (p Parser_IMHENTAI_XXX) ParseCharacters(ctx system.Context) []string {
 	return p.parseTags(raw)
 }
 
-func (p Parser_IMHENTAI_XXX) ParseLanguages(ctx system.Context) []string {
+func (p Parser_IMHENTAI_XXX) ParseLanguages(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Languages:</span>`) {
 		return []string{}
 	}
@@ -112,7 +112,7 @@ func (p Parser_IMHENTAI_XXX) ParseLanguages(ctx system.Context) []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseCategories(ctx system.Context) []string {
+func (p Parser_IMHENTAI_XXX) ParseCategories(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Category:</span>`) {
 		return []string{}
 	}
@@ -120,7 +120,7 @@ func (p Parser_IMHENTAI_XXX) ParseCategories(ctx system.Context) []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseParodies(ctx system.Context) []string {
+func (p Parser_IMHENTAI_XXX) ParseParodies(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Parodies:</span>`) {
 		return []string{}
 	}
@@ -128,7 +128,7 @@ func (p Parser_IMHENTAI_XXX) ParseParodies(ctx system.Context) []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParseGroups(ctx system.Context) []string {
+func (p Parser_IMHENTAI_XXX) ParseGroups(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `<span class='tags_text'>Groups:</span>`) {
 		return []string{}
 	}

@@ -3,13 +3,14 @@ package parser
 import (
 	"app/system"
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 )
 
 // requestBuffer запрашивает данные по урле и возвращает их в виде буффера
-func requestBuffer(ctx system.Context, URL string) (bytes.Buffer, error) {
+func requestBuffer(ctx context.Context, URL string) (bytes.Buffer, error) {
 	buff := bytes.Buffer{}
 	req, err := http.NewRequest(http.MethodGet, URL, &bytes.Buffer{})
 	if err != nil {
@@ -46,13 +47,13 @@ func requestBuffer(ctx system.Context, URL string) (bytes.Buffer, error) {
 }
 
 // RequestString запрашивает данные по урле и возвращает их строкой
-func RequestString(ctx system.Context, URL string) (string, error) {
+func RequestString(ctx context.Context, URL string) (string, error) {
 	buff, err := requestBuffer(ctx, URL)
 	return buff.String(), err
 }
 
 // RequestBytes запрашивает данные по урле и возвращает их массивом байт
-func RequestBytes(ctx system.Context, URL string) ([]byte, error) {
+func RequestBytes(ctx context.Context, URL string) ([]byte, error) {
 	buff, err := requestBuffer(ctx, URL)
 	return buff.Bytes(), err
 }

@@ -7,6 +7,7 @@ import (
 	"app/system"
 	"app/webgin"
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -30,7 +31,7 @@ func main() {
 		EnableStdErr: !*disableStdErr,
 	})
 
-	mainContext := system.NewSystemContext("MAIN")
+	mainContext := system.NewSystemContext(context.Background(), "MAIN")
 
 	err := system.SetFileStoragePath(mainContext, *fileStorage)
 	if err != nil {
@@ -61,11 +62,13 @@ func main() {
 		system.Info(mainContext, "Запущены асинхронные обработчики")
 	}
 
+	system.Info(mainContext, "Запущен веб сервер")
 	done := webgin.Run(mainContext, fmt.Sprintf(":%d", *webPort))
 	<-done
 }
 
-func loadPages(ctx system.Context) {
+func loadPages(ctx context.Context) {
+	handler.Init(ctx)
 	timer := time.NewTimer(time.Minute)
 	for range timer.C {
 		handler.AddUnloadedPagesToQueue(ctx)
@@ -75,7 +78,7 @@ func loadPages(ctx system.Context) {
 	}
 }
 
-func completeTitle(ctx system.Context) {
+func completeTitle(ctx context.Context) {
 	timer := time.NewTicker(time.Minute)
 	for range timer.C {
 		for _, t := range db.SelectUnloadTitles(ctx) {
@@ -84,8 +87,9 @@ func completeTitle(ctx system.Context) {
 	}
 }
 
-func parseTaskFile(ctx system.Context) {
+func parseTaskFile(ctx context.Context) {
 	f, err := os.Open("task.txt")
+	defer system.IfErrFunc(ctx, f.Close)
 	if err != nil {
 		system.Error(ctx, err)
 		return
@@ -97,5 +101,4 @@ func parseTaskFile(ctx system.Context) {
 		}
 		_ = handler.FirstHandle(ctx, sc.Text())
 	}
-	f.Close()
 }

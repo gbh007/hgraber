@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/system"
+	"context"
 	"fmt"
 	"strings"
 )
@@ -24,7 +24,7 @@ type Page struct {
 	Ext    string
 }
 
-func Load(ctx system.Context, URL string) (Parser, bool, error) {
+func Load(ctx context.Context, URL string) (Parser, bool, error) {
 	var (
 		p   Parser
 		err error
@@ -46,27 +46,27 @@ func Load(ctx system.Context, URL string) (Parser, bool, error) {
 
 // Parser интерфейс для реализации парсеров для различных сайтов
 type Parser interface {
-	Load(ctx system.Context, URL string) bool
-	ParseName(ctx system.Context) string
-	ParsePages(ctx system.Context) []Page
-	ParseTags(ctx system.Context) []string
-	ParseAuthors(ctx system.Context) []string
-	ParseCharacters(ctx system.Context) []string
-	ParseLanguages(ctx system.Context) []string
-	ParseCategories(ctx system.Context) []string
-	ParseParodies(ctx system.Context) []string
-	ParseGroups(ctx system.Context) []string
+	Load(ctx context.Context, URL string) bool
+	ParseName(ctx context.Context) string
+	ParsePages(ctx context.Context) []Page
+	ParseTags(ctx context.Context) []string
+	ParseAuthors(ctx context.Context) []string
+	ParseCharacters(ctx context.Context) []string
+	ParseLanguages(ctx context.Context) []string
+	ParseCategories(ctx context.Context) []string
+	ParseParodies(ctx context.Context) []string
+	ParseGroups(ctx context.Context) []string
 }
 
 /*
 func (p *Parser) Load(URL string) bool     { return false }
-func (p Parser) ParseName(ctx system.Context) string         { return "" }
-func (p Parser) ParsePages(ctx system.Context) []Page        { return []Page{} }
-func (p Parser) ParseTags(ctx system.Context) []string       { return []string{} }
-func (p Parser) ParseAuthors(ctx system.Context) []string    { return []string{} }
-func (p Parser) ParseCharacters(ctx system.Context) []string { return []string{} }
-func (p Parser) ParseLanguages(ctx system.Context) []string  { return []string{} }
-func (p Parser) ParseCategories(ctx system.Context) []string { return []string{} }
-func (p Parser) ParseParodies(ctx system.Context) []string   { return []string{} }
-func (p Parser) ParseGroups(ctx system.Context) []string     { return []string{} }
+func (p Parser) ParseName(ctx context.Context) string         { return "" }
+func (p Parser) ParsePages(ctx context.Context) []Page        { return []Page{} }
+func (p Parser) ParseTags(ctx context.Context) []string       { return []string{} }
+func (p Parser) ParseAuthors(ctx context.Context) []string    { return []string{} }
+func (p Parser) ParseCharacters(ctx context.Context) []string { return []string{} }
+func (p Parser) ParseLanguages(ctx context.Context) []string  { return []string{} }
+func (p Parser) ParseCategories(ctx context.Context) []string { return []string{} }
+func (p Parser) ParseParodies(ctx context.Context) []string   { return []string{} }
+func (p Parser) ParseGroups(ctx context.Context) []string     { return []string{} }
 */

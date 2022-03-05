@@ -2,6 +2,7 @@ package db
 
 import (
 	"app/system"
+	"context"
 	"database/sql"
 	"time"
 )
@@ -14,7 +15,7 @@ type Page struct {
 }
 
 // InsertTitle добавляет тайтл
-func InsertTitle(ctx system.Context, name, URL string, loaded bool) (int, error) {
+func InsertTitle(ctx context.Context, name, URL string, loaded bool) (int, error) {
 	result, err := _db.ExecContext(
 		ctx,
 		`INSERT INTO titles(name, url, creation_time, loaded) VALUES(?, ?, ?, ?)`,
@@ -33,7 +34,7 @@ func InsertTitle(ctx system.Context, name, URL string, loaded bool) (int, error)
 }
 
 // UpdateTitle обновляет тайтл
-func UpdateTitle(ctx system.Context, id int, name string, loaded bool) error {
+func UpdateTitle(ctx context.Context, id int, name string, loaded bool) error {
 	_, err := _db.ExecContext(
 		ctx,
 		`UPDATE titles SET name = ?, loaded = ? WHERE id = ?`,
@@ -46,7 +47,7 @@ func UpdateTitle(ctx system.Context, id int, name string, loaded bool) error {
 }
 
 // UpdateTitleParsedPage обновляет информацию об обработанных страницах в тайтле
-func UpdateTitleParsedPage(ctx system.Context, id, count int, success bool) error {
+func UpdateTitleParsedPage(ctx context.Context, id, count int, success bool) error {
 	_, err := _db.ExecContext(ctx, `UPDATE titles SET parsed_pages = ?, page_count = ? WHERE id = ?`, success, count, id)
 	if err != nil {
 		system.Error(ctx, err)
@@ -55,7 +56,7 @@ func UpdateTitleParsedPage(ctx system.Context, id, count int, success bool) erro
 }
 
 // InsertPage добавляет страницу тайтла
-func InsertPage(ctx system.Context, id int, ext, URL string, page_number int) error {
+func InsertPage(ctx context.Context, id int, ext, URL string, page_number int) error {
 	_, err := _db.ExecContext(
 		ctx,
 		`INSERT INTO pages(title_id, ext, url, page_number, success) VALUES(?, ?, ?, ?, ?)
@@ -69,7 +70,7 @@ func InsertPage(ctx system.Context, id int, ext, URL string, page_number int) er
 }
 
 // UpdatePageSuccess обновляет информацию об успешной загрузке страницы
-func UpdatePageSuccess(ctx system.Context, id, page int, success bool) error {
+func UpdatePageSuccess(ctx context.Context, id, page int, success bool) error {
 	_, err := _db.ExecContext(ctx, `UPDATE pages SET success = ? WHERE title_id = ? AND page_number = ?`, success, id, page)
 	if err != nil {
 		system.Error(ctx, err)
@@ -78,7 +79,7 @@ func UpdatePageSuccess(ctx system.Context, id, page int, success bool) error {
 }
 
 // SelectUnsuccessPages выбирает из базы не загруженные страницы
-func SelectUnsuccessPages(ctx system.Context) []Page {
+func SelectUnsuccessPages(ctx context.Context) []Page {
 	result := []Page{}
 	rows, err := _db.QueryContext(ctx, `SELECT p.title_id, p.page_number, p.url, p.ext FROM
 titles t INNER JOIN pages p ON t.parsed_pages = TRUE AND t.id = p.title_id AND p.success = FALSE`)
@@ -126,7 +127,7 @@ type TitleShortInfo struct {
 }
 
 // SelectTitles выбирает из базы все тайтлы
-func SelectTitles(ctx system.Context, offset, limit int) []TitleShortInfo {
+func SelectTitles(ctx context.Context, offset, limit int) []TitleShortInfo {
 	result := []TitleShortInfo{}
 	rows, err := _db.QueryContext(ctx, `SELECT
 	t2.id,
@@ -210,7 +211,7 @@ LIMIT ?, ?`, offset, limit)
 }
 
 // SelectTitles выбирает из базы тайтл по ID
-func SelectTitleByID(ctx system.Context, id int) (TitleShortInfo, error) {
+func SelectTitleByID(ctx context.Context, id int) (TitleShortInfo, error) {
 	row := _db.QueryRowContext(ctx, `SELECT
 	t2.id,
 	t2.name,
@@ -286,7 +287,7 @@ ORDER BY
 }
 
 // SelectPagesByTitleID выбирает из базы все страницы из тайтла
-func SelectPagesByTitleID(ctx system.Context, id int) []Page {
+func SelectPagesByTitleID(ctx context.Context, id int) []Page {
 	result := []Page{}
 	rows, err := _db.QueryContext(ctx, `SELECT p.title_id, p.page_number, p.url, p.ext
 FROM pages p
@@ -314,7 +315,7 @@ ORDER BY p.page_number`, id)
 }
 
 // SelectPagesByTitleIDAndNumber выбирает из базы все страницу из тайтла по его ид и номеру страницы
-func SelectPagesByTitleIDAndNumber(ctx system.Context, id, pageNumber int) (Page, error) {
+func SelectPagesByTitleIDAndNumber(ctx context.Context, id, pageNumber int) (Page, error) {
 	row := _db.QueryRowContext(ctx, `SELECT p.title_id, p.page_number, p.url, p.ext
 FROM pages p
 WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber)
@@ -332,7 +333,7 @@ WHERE p.success = TRUE AND p.title_id = ? AND p.page_number = ?`, id, pageNumber
 }
 
 // SelectUnloadTitles выбирает из базы все недогруженые тайтлы
-func SelectUnloadTitles(ctx system.Context) []TitleShortInfo {
+func SelectUnloadTitles(ctx context.Context) []TitleShortInfo {
 	result := []TitleShortInfo{}
 	rows, err := _db.QueryContext(ctx, `SELECT id, url, loaded, parsed_pages, parsed_tags, parsed_authors, parsed_characters,
 	parsed_languages, parsed_categories, parsed_parodies, parsed_groups
@@ -367,7 +368,7 @@ func SelectUnloadTitles(ctx system.Context) []TitleShortInfo {
 }
 
 // SelectTitlesCount получает количество тайтлов в базе
-func SelectTitlesCount(ctx system.Context) int {
+func SelectTitlesCount(ctx context.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(id) FROM titles`)
 	var c int
 	err := row.Scan(&c)
@@ -378,7 +379,7 @@ func SelectTitlesCount(ctx system.Context) int {
 }
 
 // SelectUnloadTitlesCount получает количество недогруженных тайтлов в базе
-func SelectUnloadTitlesCount(ctx system.Context) int {
+func SelectUnloadTitlesCount(ctx context.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(id) FROM titles WHERE 
 	loaded = FALSE OR parsed_pages = FALSE OR parsed_tags = FALSE OR parsed_authors = FALSE OR parsed_characters = FALSE
 	OR parsed_languages = FALSE OR parsed_categories = FALSE OR parsed_parodies = FALSE OR parsed_groups = FALSE
@@ -392,7 +393,7 @@ func SelectUnloadTitlesCount(ctx system.Context) int {
 }
 
 // SelectPagesCount получает количество страниц в базе
-func SelectPagesCount(ctx system.Context) int {
+func SelectPagesCount(ctx context.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(url) FROM pages`)
 	var c int
 	err := row.Scan(&c)
@@ -403,7 +404,7 @@ func SelectPagesCount(ctx system.Context) int {
 }
 
 // SelectUnloadPagesCount получает количество недогруженных страниц в базе
-func SelectUnloadPagesCount(ctx system.Context) int {
+func SelectUnloadPagesCount(ctx context.Context) int {
 	row := _db.QueryRowContext(ctx, `SELECT COUNT(url) FROM pages WHERE success = FALSE`)
 	var c int
 	err := row.Scan(&c)

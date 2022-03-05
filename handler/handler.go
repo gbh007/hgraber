@@ -5,6 +5,7 @@ import (
 	"app/file"
 	"app/parser"
 	"app/system"
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -30,8 +31,8 @@ func FileWait() {
 	fileWG.Wait()
 }
 
-func init() {
-	ctx := system.NewSystemContext("FILE-HANDLE")
+func Init(parentCtx context.Context) {
+	ctx := system.NewSystemContext(parentCtx, "FILE-HANDLE")
 	fileQueue = make(chan db.Page, maxQueueSize)
 	for i := 0; i < maxFileHandlersCount; i++ {
 		go handleFileQueue(ctx)
@@ -39,7 +40,7 @@ func init() {
 }
 
 // handleFileQueue обработчик файловой очереди
-func handleFileQueue(ctx system.Context) {
+func handleFileQueue(ctx context.Context) {
 	for page := range fileQueue {
 		fileWG.Add(1)
 		err := file.Load(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
@@ -51,14 +52,14 @@ func handleFileQueue(ctx system.Context) {
 }
 
 // AddUnloadedPagesToQueue добавляет незагруженные страницы в очередь
-func AddUnloadedPagesToQueue(ctx system.Context) {
+func AddUnloadedPagesToQueue(ctx context.Context) {
 	for _, p := range db.SelectUnsuccessPages(ctx) {
 		fileQueue <- p
 	}
 }
 
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
-func FirstHandle(ctx system.Context, u string) error {
+func FirstHandle(ctx context.Context, u string) error {
 	system.Info(ctx, "начата обработка", u)
 	p, ok, err := parser.Load(ctx, u)
 	if err != nil {
@@ -73,7 +74,7 @@ func FirstHandle(ctx system.Context, u string) error {
 }
 
 // Update обрабатывает данные тайтла (только недостающие)
-func Update(ctx system.Context, title db.TitleShortInfo) error {
+func Update(ctx context.Context, title db.TitleShortInfo) error {
 	system.Info(ctx, "начата обработка", title.URL)
 	p, ok, err := parser.Load(ctx, title.URL)
 	if err != nil {

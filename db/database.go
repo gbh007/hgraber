@@ -2,6 +2,7 @@ package db
 
 import (
 	"app/system"
+	"context"
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -9,7 +10,7 @@ import (
 
 var _db *sql.DB
 
-func Connect(ctx system.Context) error {
+func Connect(ctx context.Context) error {
 	var err error
 	_db, err = sql.Open("sqlite3", "./main.db")
 	if err != nil {

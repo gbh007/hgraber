@@ -2,6 +2,7 @@ package db
 
 import (
 	"app/system"
+	"context"
 	"database/sql"
 	"fmt"
 )
@@ -17,7 +18,7 @@ const (
 )
 
 // GetMetaID возвращает ид меты, в случае его отсутствия создает
-func GetMetaID(ctx system.Context, name, tp string) (int, error) {
+func GetMetaID(ctx context.Context, name, tp string) (int, error) {
 	var id int
 	row := _db.QueryRowContext(ctx, `SELECT id FROM meta WHERE name = ? AND type = ?`, name, tp)
 	err := row.Scan(&id)
@@ -42,7 +43,7 @@ func GetMetaID(ctx system.Context, name, tp string) (int, error) {
 }
 
 // UpdateTitleMeta обновляет в тайтле список меты
-func UpdateTitleMeta(ctx system.Context, id int, tp string, names []string) error {
+func UpdateTitleMeta(ctx context.Context, id int, tp string, names []string) error {
 	ids := []int{}
 	for _, name := range names {
 		i, err := GetMetaID(ctx, name, tp)
@@ -84,7 +85,7 @@ func UpdateTitleMeta(ctx system.Context, id int, tp string, names []string) erro
 }
 
 // SelectMetaByTitleIDAndType получает мету тайтла по его ID и типу
-func SelectMetaByTitleIDAndType(ctx system.Context, id int, tp string) []string {
+func SelectMetaByTitleIDAndType(ctx context.Context, id int, tp string) []string {
 	result := []string{}
 	rows, err := _db.QueryContext(ctx, `SELECT m.name
 FROM link_meta_titles lmt INNER JOIN meta m ON lmt.meta_id = m.id 

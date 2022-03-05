@@ -1,6 +1,7 @@
 package system
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -52,7 +53,7 @@ func Init(cnf LogConfig) {
 	logWriter = io.MultiWriter(writers...)
 }
 
-func IfErr(ctx Context, err error) {
+func IfErr(ctx context.Context, err error) {
 	if err == nil {
 		return
 	}
@@ -60,7 +61,7 @@ func IfErr(ctx Context, err error) {
 	print(ctx, logLevelError, 0, err.Error())
 }
 
-func IfErrFunc(ctx Context, f func() error) {
+func IfErrFunc(ctx context.Context, f func() error) {
 	err := f()
 	if err == nil {
 		return
@@ -69,28 +70,28 @@ func IfErrFunc(ctx Context, f func() error) {
 	print(ctx, logLevelError, 0, err.Error())
 }
 
-func Error(ctx Context, err error) {
+func Error(ctx context.Context, err error) {
 	print(ctx, logLevelError, 0, err.Error())
 }
 
-func ErrorText(ctx Context, args ...interface{}) {
+func ErrorText(ctx context.Context, args ...interface{}) {
 	print(ctx, logLevelError, 0, args...)
 }
 
-func Info(ctx Context, args ...interface{}) {
+func Info(ctx context.Context, args ...interface{}) {
 	print(ctx, logLevelInfo, 0, args...)
 }
 
-func Warning(ctx Context, args ...interface{}) {
+func Warning(ctx context.Context, args ...interface{}) {
 	print(ctx, logLevelWarning, 0, args...)
 }
 
-func print(ctx Context, level string, depth int, args ...interface{}) {
+func print(ctx context.Context, level string, depth int, args ...interface{}) {
 	fmt.Fprintf(
 		logWriter,
 		"[%s] [%s] %s [%s] - %s",
 		level,
-		ctx.GetRequestID(),
+		GetRequestID(ctx),
 		time.Now().Format(timeFormat),
 		from(3+depth),
 		fmt.Sprintln(args...),

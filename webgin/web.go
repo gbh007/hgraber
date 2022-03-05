@@ -2,12 +2,13 @@ package webgin
 
 import (
 	"app/system"
+	"context"
 
 	"github.com/gin-gonic/gin"
 )
 
 // Run запускает веб сервер
-func Run(ctx system.Context, addr string) <-chan struct{} {
+func Run(ctx context.Context, addr string) <-chan struct{} {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	router.Use(SetCoreContext)

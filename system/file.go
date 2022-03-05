@@ -1,6 +1,7 @@
 package system
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -10,11 +11,11 @@ var (
 	fileStoragePath string
 )
 
-func GetFileStoragePath(ctx Context) string {
+func GetFileStoragePath(ctx context.Context) string {
 	return fileStoragePath
 }
 
-func SetFileStoragePath(ctx Context, dirPath string) error {
+func SetFileStoragePath(ctx context.Context, dirPath string) error {
 	err := createDir(ctx, dirPath)
 	if err != nil {
 		Warning(ctx, dirPath, "не является директорией для FileStorage")
@@ -26,7 +27,7 @@ func SetFileStoragePath(ctx Context, dirPath string) error {
 	return nil
 }
 
-func createDir(ctx Context, dirPath string) error {
+func createDir(ctx context.Context, dirPath string) error {
 	info, err := os.Stat(dirPath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		Error(ctx, err)

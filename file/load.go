@@ -6,12 +6,13 @@ import (
 	"app/system"
 	"archive/zip"
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"strings"
 )
 
-func Load(ctx system.Context, id, page int, URL, ext string) error {
+func Load(ctx context.Context, id, page int, URL, ext string) error {
 	// создаем папку с тайтлом
 	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), 0666)
 	if err != nil && !os.IsExist(err) {
@@ -38,7 +39,7 @@ func Load(ctx system.Context, id, page int, URL, ext string) error {
 }
 
 // LoadToZip сохраняет тайтлы на диск zip архивом
-func LoadToZip(ctx system.Context, id int) error {
+func LoadToZip(ctx context.Context, id int) error {
 
 	titleInfo, err := db.SelectTitleByID(ctx, id)
 	if err != nil {

@@ -3,6 +3,7 @@ package jdb
 import (
 	"app/db"
 	"app/system"
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -73,7 +74,7 @@ func New() *Database {
 	}
 }
 
-func (dtb *Database) Save(ctx system.Context, path string) error {
+func (dtb *Database) Save(ctx context.Context, path string) error {
 	file, err := os.Create(path)
 	defer system.IfErrFunc(ctx, file.Close)
 	if err != nil {
@@ -93,7 +94,7 @@ func (dtb *Database) Save(ctx system.Context, path string) error {
 	return nil
 }
 
-func (dtb *Database) FetchFromSQL(ctx system.Context) {
+func (dtb *Database) FetchFromSQL(ctx context.Context) {
 	dtb.mutex.Lock()
 	defer dtb.mutex.Unlock()
 

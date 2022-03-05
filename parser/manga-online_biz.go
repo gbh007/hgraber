@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/system"
+	"context"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,7 +13,7 @@ type Parser_MANGAONLINE_BIZ struct {
 	url      string
 }
 
-func (p *Parser_MANGAONLINE_BIZ) Load(ctx system.Context, URL string) bool {
+func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, URL string) bool {
 	var err error
 	p.url = URL
 	tmpUrl := trimLastSlash(URL, 4) + ".html"
@@ -21,7 +21,7 @@ func (p *Parser_MANGAONLINE_BIZ) Load(ctx system.Context, URL string) bool {
 	return err == nil
 }
 
-func (p Parser_MANGAONLINE_BIZ) ParseName(ctx system.Context) string {
+func (p Parser_MANGAONLINE_BIZ) ParseName(ctx context.Context) string {
 	rp := `(?sm)` + regexp.QuoteMeta(`<h1 class="header">`) + `\s*(.+?)\s*` + regexp.QuoteMeta(`</h1>`)
 	res := regexp.MustCompile(rp).FindAllStringSubmatch(p.main_raw, -1)
 	if len(res) < 1 || len(res[0]) != 2 {
@@ -30,7 +30,7 @@ func (p Parser_MANGAONLINE_BIZ) ParseName(ctx system.Context) string {
 	return res[0][1]
 }
 
-func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx system.Context) []Page {
+func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []Page {
 	result := make([]Page, 0)
 	pcDataRaw, err := RequestString(ctx, p.url)
 	if err != nil {
@@ -55,7 +55,7 @@ func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx system.Context) []Page {
 	}
 	return result
 }
-func (p Parser_MANGAONLINE_BIZ) ParseTags(ctx system.Context) []string {
+func (p Parser_MANGAONLINE_BIZ) ParseTags(ctx context.Context) []string {
 	result := make([]string, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<a onclick="App.Analytics.track('Genre', 'Click', 'Manga');" href="`) + `.+?` +
 		regexp.QuoteMeta(`" target="_blank" class="ui label">`) + `(.+?)` + regexp.QuoteMeta(`</a>`)
@@ -67,17 +67,17 @@ func (p Parser_MANGAONLINE_BIZ) ParseTags(ctx system.Context) []string {
 	return result
 }
 
-func (p Parser_MANGAONLINE_BIZ) ParseAuthors(ctx system.Context) []string { return []string{} }
-func (p Parser_MANGAONLINE_BIZ) ParseCharacters(ctx system.Context) []string {
+func (p Parser_MANGAONLINE_BIZ) ParseAuthors(ctx context.Context) []string { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseCharacters(ctx context.Context) []string {
 	return []string{}
 }
-func (p Parser_MANGAONLINE_BIZ) ParseLanguages(ctx system.Context) []string {
+func (p Parser_MANGAONLINE_BIZ) ParseLanguages(ctx context.Context) []string {
 	return []string{}
 }
-func (p Parser_MANGAONLINE_BIZ) ParseCategories(ctx system.Context) []string {
+func (p Parser_MANGAONLINE_BIZ) ParseCategories(ctx context.Context) []string {
 	return []string{}
 }
-func (p Parser_MANGAONLINE_BIZ) ParseParodies(ctx system.Context) []string {
+func (p Parser_MANGAONLINE_BIZ) ParseParodies(ctx context.Context) []string {
 	return []string{}
 }
-func (p Parser_MANGAONLINE_BIZ) ParseGroups(ctx system.Context) []string { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseGroups(ctx context.Context) []string { return []string{} }

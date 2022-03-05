@@ -5,40 +5,45 @@ import (
 	"time"
 )
 
-type Context interface {
-	context.Context
-	SetRequestID(id string)
-	GetRequestID() string
-	Created() time.Time
-	IsSystem() bool
-}
+var requestIDKey = 1
 
-func NewSystemContext(name string) Context {
+func NewSystemContext(parent context.Context, name string) context.Context {
 	if name == "" {
 		name = "SYSTEM-" + hash(time.Now().String())
 	}
-	return &sContext{
-		Context:   context.Background(),
-		requestID: name,
-		isSystem:  true,
+
+	return withRequestIDContext(parent, name)
+}
+
+func NewUserContext(parent context.Context) context.Context {
+	return withRequestIDContext(parent, "USER-"+hash(time.Now().String()))
+}
+
+func GetRequestID(ctx context.Context) string {
+	id, ok := ctx.Value(&requestIDKey).(string)
+	if !ok {
+		id = "???"
+	}
+
+	return id
+}
+
+func withRequestIDContext(parent context.Context, id string) context.Context {
+	return &requestIDContext{
+		Context:   parent,
+		requestID: id,
 	}
 }
 
-func NewUserContext() Context {
-	return &sContext{
-		Context:   context.Background(),
-		requestID: "USER-" + hash(time.Now().String()),
-	}
-}
-
-type sContext struct {
+type requestIDContext struct {
 	context.Context
 	requestID string
-	created   time.Time
-	isSystem  bool
 }
 
-func (sc *sContext) SetRequestID(id string) { sc.requestID = id }
-func (sc sContext) GetRequestID() string    { return sc.requestID }
-func (sc sContext) Created() time.Time      { return sc.created }
-func (sc sContext) IsSystem() bool          { return sc.isSystem }
+func (rc *requestIDContext) Value(key interface{}) interface{} {
+	if key == &requestIDKey {
+		return rc.requestID
+	}
+
+	return rc.Context.Value(key)
+}
