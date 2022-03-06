@@ -1,7 +1,6 @@
 package main
 
 import (
-	"app/db"
 	"app/service/jdb"
 	"app/service/titleHandler"
 	"app/service/webServer"
@@ -42,14 +41,17 @@ func main() {
 		system.EnableDebug(mainContext)
 	}
 
-	err := system.SetFileStoragePath(mainContext, *fileStorage)
-	if err != nil {
-		os.Exit(1)
-	}
-
-	err = db.Connect(mainContext)
+	system.Info(mainContext, "Инициализация базы")
+	jdb.Init(mainContext)
+	err := jdb.Get().Load(mainContext, "db.json")
 	if err != nil {
 		os.Exit(2)
+	}
+	system.Info(mainContext, "База загружена")
+
+	err = system.SetFileStoragePath(mainContext, *fileStorage)
+	if err != nil {
+		os.Exit(1)
 	}
 
 	if *export {
@@ -68,15 +70,19 @@ func main() {
 	<-mainContext.Done()
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
 	<-system.WaitingChan(mainContext)
-	system.Info(mainContext, "Процессы завершены, выход")
+	system.Info(mainContext, "Процессы завершены")
+	if jdb.Get().Save(mainContext, "db.json") == nil {
+		system.Info(mainContext, "База сохранена")
+	}
+	system.Info(mainContext, "Выход")
 }
 
 func exportData(ctx context.Context) {
 	system.Info(ctx, "Экспорт начат")
-	exporter := jdb.New()
-	system.Info(ctx, "Конвертирование данных")
-	exporter.FetchFromSQL(ctx)
-	system.Info(ctx, "Сохранение данных")
+	exporter := jdb.Get()
+	// system.Info(ctx, "Конвертирование данных")
+	// exporter.FetchFromSQL(ctx)
+	// system.Info(ctx, "Сохранение данных")
 	_ = exporter.Save(ctx, fmt.Sprintf("exported-%s.json", time.Now().Format("2006-01-02-150405")))
 	system.Info(ctx, "Экспорт завершен")
 	os.Exit(0)
@@ -97,7 +103,7 @@ func loadPages(ctx context.Context) {
 func completeTitle(ctx context.Context) {
 	timer := time.NewTicker(time.Minute)
 	for range timer.C {
-		for _, t := range db.SelectUnloadTitles(ctx) {
+		for _, t := range jdb.Get().UnloadedTitles(ctx) {
 			_ = titleHandler.Update(ctx, t)
 		}
 	}

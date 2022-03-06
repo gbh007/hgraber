@@ -8,3 +8,4 @@ log*.txt
 .build
 _build
 exported-*.json
+db.json

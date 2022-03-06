@@ -1,7 +1,7 @@
 package fileStorage
 
 import (
-	"app/db"
+	"app/service/jdb"
 	"app/service/parser"
 	"app/system"
 	"archive/zip"
@@ -41,17 +41,16 @@ func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error
 // SaveToZip сохраняет тайтлы на диск zip архивом
 func SaveToZip(ctx context.Context, id int) error {
 
-	titleInfo, err := db.SelectTitleByID(ctx, id)
+	titleInfo, err := jdb.Get().GetTitle(ctx, id)
 	if err != nil {
 		return err
 	}
-	pages := db.SelectPagesByTitleID(ctx, id)
 
 	buff := &bytes.Buffer{}
 	zw := zip.NewWriter(buff)
 
-	for _, p := range pages {
-		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, p.PageNumber, p.Ext))
+	for pageNumber, p := range titleInfo.Pages {
+		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, pageNumber+1, p.Ext))
 		defer system.IfErrFunc(ctx, f.Close)
 		if err != nil {
 			system.Error(ctx, err)
@@ -66,7 +65,7 @@ func SaveToZip(ctx context.Context, id int) error {
 			return err
 		}
 
-		w, err := zw.Create(fmt.Sprintf("%d.%s", p.PageNumber, p.Ext))
+		w, err := zw.Create(fmt.Sprintf("%d.%s", pageNumber+1, p.Ext))
 		if err != nil {
 			system.Error(ctx, err)
 			return err
@@ -89,8 +88,8 @@ func SaveToZip(ctx context.Context, id int) error {
 		w,
 		"URL:%s\nNAME:%s\nPAGE-COUNT:%d\nINNER-ID:%d",
 		titleInfo.URL,
-		titleInfo.Name,
-		titleInfo.PageCount,
+		titleInfo.Data.Name,
+		len(titleInfo.Pages),
 		titleInfo.ID,
 	)
 	if err != nil {
@@ -108,7 +107,7 @@ func SaveToZip(ctx context.Context, id int) error {
 		"%s/%d)_%s.zip",
 		system.GetFileStoragePath(ctx),
 		id,
-		escapeFileName(titleInfo.Name),
+		escapeFileName(titleInfo.Data.Name),
 	))
 
 	defer system.IfErrFunc(ctx, f.Close)

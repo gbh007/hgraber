@@ -65,14 +65,12 @@
         page = info.page_number;
       }
       function prevPage() {
-        console.log("prevPage");
         if (page == 1) return;
         api.getTitlePageInfo(titleID, page - 1).then((data) => {
           updatePage(data);
         });
       }
       function nextPage() {
-        console.log("nextPage");
         if (page == pageCount) return;
         api.getTitlePageInfo(titleID, page + 1).then((data) => {
           updatePage(data);
@@ -80,7 +78,7 @@
       }
       window.addEventListener("load", function () {
         api.getTitleInfo(titleID).then((data) => {
-          pageCount = data.page_count;
+          pageCount = data.pages.length || 0;
           document.getElementById("page-count").innerText = pageCount;
           api.getTitlePageInfo(titleID, page).then((data) => {
             updatePage(data);

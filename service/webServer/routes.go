@@ -1,8 +1,8 @@
 package webServer
 
 import (
-	"app/db"
 	"app/service/fileStorage"
+	"app/service/jdb"
 	"app/service/titleHandler"
 	"app/service/webServer/base"
 	"net/http"
@@ -11,10 +11,10 @@ import (
 func MainInfo() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		base.SetResponse(r, map[string]interface{}{
-			"count":               db.SelectTitlesCount(r.Context()),
-			"not_load_count":      db.SelectUnloadTitlesCount(r.Context()),
-			"page_count":          db.SelectPagesCount(r.Context()),
-			"not_load_page_count": db.SelectUnloadPagesCount(r.Context()),
+			"count":               jdb.Get().TitlesCount(r.Context()),
+			"not_load_count":      jdb.Get().UnloadedTitlesCount(r.Context()),
+			"page_count":          jdb.Get().PagesCount(r.Context()),
+			"not_load_page_count": jdb.Get().UnloadedPagesCount(r.Context()),
 		})
 	})
 }
@@ -51,7 +51,7 @@ func TitleList() http.Handler {
 			base.SetError(r, err)
 			return
 		}
-		data := db.SelectTitles(r.Context(), request.Offset, request.Count)
+		data := jdb.Get().GetTitles(r.Context(), request.Offset, request.Count)
 		base.SetResponse(r, data)
 	})
 }
@@ -66,7 +66,7 @@ func TitleInfo() http.Handler {
 			base.SetError(r, err)
 			return
 		}
-		data, err := db.SelectTitleByID(r.Context(), request.ID)
+		data, err := jdb.Get().GetTitle(r.Context(), request.ID)
 		if err != nil {
 			base.SetError(r, err)
 			return
@@ -86,7 +86,7 @@ func TitlePage() http.Handler {
 			base.SetError(r, err)
 			return
 		}
-		data, err := db.SelectPagesByTitleIDAndNumber(r.Context(), request.ID, request.Page)
+		data, err := jdb.Get().GetPage(r.Context(), request.ID, request.Page)
 		if err != nil {
 			base.SetError(r, err)
 			return
