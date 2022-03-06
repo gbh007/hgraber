@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"context"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,15 +13,15 @@ type Parser_MANGAONLINE_BIZ struct {
 	url      string
 }
 
-func (p *Parser_MANGAONLINE_BIZ) Load(URL string) bool {
+func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, URL string) bool {
 	var err error
 	p.url = URL
 	tmpUrl := trimLastSlash(URL, 4) + ".html"
-	p.main_raw, err = RequestString(tmpUrl)
+	p.main_raw, err = RequestString(ctx, tmpUrl)
 	return err == nil
 }
 
-func (p Parser_MANGAONLINE_BIZ) ParseName() string {
+func (p Parser_MANGAONLINE_BIZ) ParseName(ctx context.Context) string {
 	rp := `(?sm)` + regexp.QuoteMeta(`<h1 class="header">`) + `\s*(.+?)\s*` + regexp.QuoteMeta(`</h1>`)
 	res := regexp.MustCompile(rp).FindAllStringSubmatch(p.main_raw, -1)
 	if len(res) < 1 || len(res[0]) != 2 {
@@ -29,9 +30,9 @@ func (p Parser_MANGAONLINE_BIZ) ParseName() string {
 	return res[0][1]
 }
 
-func (p Parser_MANGAONLINE_BIZ) ParsePages() []Page {
+func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []Page {
 	result := make([]Page, 0)
-	pcDataRaw, err := RequestString(p.url)
+	pcDataRaw, err := RequestString(ctx, p.url)
 	if err != nil {
 		return result
 	}
@@ -54,7 +55,7 @@ func (p Parser_MANGAONLINE_BIZ) ParsePages() []Page {
 	}
 	return result
 }
-func (p Parser_MANGAONLINE_BIZ) ParseTags() []string {
+func (p Parser_MANGAONLINE_BIZ) ParseTags(ctx context.Context) []string {
 	result := make([]string, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<a onclick="App.Analytics.track('Genre', 'Click', 'Manga');" href="`) + `.+?` +
 		regexp.QuoteMeta(`" target="_blank" class="ui label">`) + `(.+?)` + regexp.QuoteMeta(`</a>`)
@@ -66,9 +67,17 @@ func (p Parser_MANGAONLINE_BIZ) ParseTags() []string {
 	return result
 }
 
-func (p Parser_MANGAONLINE_BIZ) ParseAuthors() []string    { return []string{} }
-func (p Parser_MANGAONLINE_BIZ) ParseCharacters() []string { return []string{} }
-func (p Parser_MANGAONLINE_BIZ) ParseLanguages() []string  { return []string{} }
-func (p Parser_MANGAONLINE_BIZ) ParseCategories() []string { return []string{} }
-func (p Parser_MANGAONLINE_BIZ) ParseParodies() []string   { return []string{} }
-func (p Parser_MANGAONLINE_BIZ) ParseGroups() []string     { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseAuthors(ctx context.Context) []string { return []string{} }
+func (p Parser_MANGAONLINE_BIZ) ParseCharacters(ctx context.Context) []string {
+	return []string{}
+}
+func (p Parser_MANGAONLINE_BIZ) ParseLanguages(ctx context.Context) []string {
+	return []string{}
+}
+func (p Parser_MANGAONLINE_BIZ) ParseCategories(ctx context.Context) []string {
+	return []string{}
+}
+func (p Parser_MANGAONLINE_BIZ) ParseParodies(ctx context.Context) []string {
+	return []string{}
+}
+func (p Parser_MANGAONLINE_BIZ) ParseGroups(ctx context.Context) []string { return []string{} }

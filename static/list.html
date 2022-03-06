@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>HGrabber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+    <script src="/main.js"></script>
+  </head>
+
+  <body>
+    <style>
+      body {
+        text-align: center;
+      }
+    </style>
+    <div id="paginator"></div>
+    <div id="title-list"></div>
+    <script>
+      let api = new Api();
+      let rendering = new Rendering();
+      let serverInfo = {};
+      let countOnPage = 12;
+      let totalPageCount = 1;
+      async function loadTitleList(pageNumber = 1) {
+        let data = await api.getTitleList(
+          countOnPage,
+          (pageNumber - 1) * countOnPage
+        );
+        let tl = document.getElementById("title-list");
+        tl.innerHTML = "";
+        data.map((info) =>
+          tl.appendChild(rendering.generateHTMLFromTitleInfo(info))
+        );
+      }
+      function renderPages(page) {
+        let paginator = document.getElementById("paginator");
+        paginator.innerHTML = "";
+        for (let pn = 1; pn <= totalPageCount; pn++) {
+          let pg = document.createElement("span");
+          pg.innerText = pn;
+          pg.className = "page";
+          pg.setAttribute("current", pn == page ? "true" : "false");
+          pg.onclick = () => {
+            const page = pn;
+            renderPages(page);
+          };
+          paginator.appendChild(pg);
+        }
+        loadTitleList(page);
+      }
+      window.addEventListener("load", function () {
+        api.getMainInfo().then((data) => {
+          serverInfo = data;
+          totalPageCount =
+            Math.floor(serverInfo.count / countOnPage) +
+            (serverInfo.count % countOnPage > 0 ? 1 : 0);
+          renderPages(1);
+          console.log(1111);
+        });
+      });
+    </script>
+  </body>
+</html>

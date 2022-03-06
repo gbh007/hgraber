@@ -1,0 +1,95 @@
+span.tag {
+  border-radius: 3px;
+  padding: 3px;
+  margin: 2px;
+  background: lightgrey;
+  display: inline-block;
+}
+
+span.page {
+  border-radius: 3px;
+  padding: 3px;
+  margin: 2px;
+  min-width: 20px;
+  background: lightgrey;
+  display: inline-block;
+  cursor: pointer;
+}
+span.page[current="true"] {
+  background: grey;
+}
+
+/* a.title {
+  text-decoration: none;
+  color: black;
+} */
+
+.title {
+  display: inline-grid;
+  grid-template-areas:
+    "img name name name name"
+    "img id pgc pgp dt"
+    "img tag tag tag tag";
+  grid-template-rows: none;
+  grid-template-columns: 130px 1fr 1fr 1fr 1fr;
+  border-spacing: 0px;
+  max-width: 500px;
+}
+
+.title *[t="red"] {
+  color: red;
+}
+
+.title *[t="bred"] {
+  background: pink;
+}
+
+.title:hover .title-details {
+  display: grid;
+}
+
+.title-details {
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 5px;
+  position: absolute;
+  display: none;
+  grid-template-areas:
+    "img name name name name"
+    "img id pgc pgp dt"
+    "img tag tag tag tag"
+    "img authors authors authors authors"
+    "img char char char char"
+    "img lang lang lang lang"
+    "img cat cat cat cat"
+    "img par par par par"
+    "img gr gr gr gr"
+    "img load load read read";
+  /*grid-template-rows: 1fr 1fr 1fr;*/
+  grid-template-columns: 200px 1fr 1fr 1fr 1fr;
+  border-spacing: 0px;
+  margin-bottom: 20px;
+  background: #ffffffef;
+}
+.title-details *[t="red"] {
+  color: red;
+}
+.title-details *[t="bred"] {
+  background: pink;
+}
+.title-details a.read {
+  grid-area: read;
+  text-decoration: none;
+  color: green;
+  background: lightgreen;
+  border-radius: 10px;
+  padding: 10px;
+}
+.title-details a.load {
+  grid-area: load;
+  text-decoration: none;
+  color: blue;
+  background: lightblue;
+  border-radius: 10px;
+  padding: 10px;
+}

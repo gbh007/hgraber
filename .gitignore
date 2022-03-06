@@ -3,5 +3,8 @@ loads
 main.exe
 main
 main.db
-log.txt
+log*.txt
 .hidden
+.build
+_build
+exported-*.json

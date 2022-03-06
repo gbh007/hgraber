@@ -1,84 +1,90 @@
-package file
+package fileStorage
 
 import (
-	"app/config"
 	"app/db"
-	"app/parser"
+	"app/service/parser"
+	"app/system"
 	"archive/zip"
 	"bytes"
+	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 )
 
-func Load(id, page int, URL, ext string) error {
+func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error {
 	// создаем папку с тайтлом
-	err := os.MkdirAll(fmt.Sprintf("%s/%d", config.DefaultFilePath, id), 0777)
+	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), 0666)
 	if err != nil && !os.IsExist(err) {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
 	// скачиваем изображение
-	data, err := parser.RequestBytes(URL)
+	data, err := parser.RequestBytes(ctx, URL)
 	if err != nil {
 		return err
 	}
 	// создаем файл и загружаем туда изображение
-	f, err := os.Create(fmt.Sprintf("%s/%d/%d.%s", config.DefaultFilePath, id, page, ext))
+	f, err := os.Create(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, page, ext))
 	if err != nil {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
 	_, err = f.Write(data)
 	if err != nil {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
 	return f.Close()
 }
 
-// LoadToZip сохраняет тайтлы на диск zip архивом
-func LoadToZip(id int) error {
+// SaveToZip сохраняет тайтлы на диск zip архивом
+func SaveToZip(ctx context.Context, id int) error {
 
-	titleInfo, err := db.SelectTitleByID(id)
+	titleInfo, err := db.SelectTitleByID(ctx, id)
 	if err != nil {
 		return err
 	}
-	pages := db.SelectPagesByTitleID(id)
+	pages := db.SelectPagesByTitleID(ctx, id)
 
 	buff := &bytes.Buffer{}
 	zw := zip.NewWriter(buff)
+
 	for _, p := range pages {
-		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", config.DefaultFilePath, id, p.PageNumber, p.Ext))
-		defer f.Close()
+		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, p.PageNumber, p.Ext))
+		defer system.IfErrFunc(ctx, f.Close)
 		if err != nil {
-			log.Println(err)
+			system.Error(ctx, err)
 			return err
 		}
+
 		tmpBuff := &bytes.Buffer{}
+
 		_, err = tmpBuff.ReadFrom(f)
 		if err != nil {
-			log.Println(err)
+			system.Error(ctx, err)
 			return err
 		}
+
 		w, err := zw.Create(fmt.Sprintf("%d.%s", p.PageNumber, p.Ext))
 		if err != nil {
-			log.Println(err)
+			system.Error(ctx, err)
 			return err
 		}
+
 		_, err = w.Write(tmpBuff.Bytes())
 		if err != nil {
-			log.Println(err)
+			system.Error(ctx, err)
 			return err
 		}
 	}
 
 	w, err := zw.Create("info.txt")
 	if err != nil {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
+
 	_, err = fmt.Fprintf(
 		w,
 		"URL:%s\nNAME:%s\nPAGE-COUNT:%d\nINNER-ID:%d",
@@ -88,28 +94,32 @@ func LoadToZip(id int) error {
 		titleInfo.ID,
 	)
 	if err != nil {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
+
 	err = zw.Close()
 	if err != nil {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
+
 	f, err := os.Create(fmt.Sprintf(
 		"%s/%d)_%s.zip",
-		config.DefaultFilePath,
+		system.GetFileStoragePath(ctx),
 		id,
 		escapeFileName(titleInfo.Name),
 	))
-	defer f.Close()
+
+	defer system.IfErrFunc(ctx, f.Close)
+
 	if err != nil {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
 	_, err = buff.WriteTo(f)
 	if err != nil {
-		log.Println(err)
+		system.Error(ctx, err)
 		return err
 	}
 	return nil
