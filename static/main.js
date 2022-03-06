@@ -78,7 +78,7 @@ class Api {
 }
 class Rendering {
   calcAvg(pages) {
-    if (!pages) {
+    if (!pages || !pages.length) {
       return 0;
     }
     return (
@@ -107,7 +107,7 @@ class Rendering {
     title.className = "title-details";
     title.setAttribute("t", titleData.info.parsed.name ? "" : "bred");
 
-    if (!titleData.pages) {
+    if (!titleData.pages || !titleData.pages.length) {
       let tImg = document.createElement("span");
       tImg.style = "grid-area: img;";
       title.appendChild(tImg);
@@ -183,7 +183,7 @@ class Rendering {
     title.className = "title";
     title.setAttribute("t", titleData.info.parsed.name ? "" : "bred");
 
-    if (!titleData.pages) {
+    if (!titleData.pages || !titleData.pages.length) {
       let tImg = document.createElement("span");
       tImg.style = "grid-area: img;";
       title.appendChild(tImg);
@@ -224,14 +224,14 @@ class Rendering {
 
     node = document.createElement("span");
     node.style = "grid-area: tag;";
-    titleData.info.tags.map((tagname, ind) => {
+    (titleData.info.tags || []).map((tagname, ind) => {
       if (ind >= 8) return;
       let tag = document.createElement("span");
       tag.className = "tag";
       tag.innerText = tagname;
       node.appendChild(tag);
     });
-    if (titleData.info.tags.length > 7) {
+    if (titleData.info.tags && titleData.info.tags.length > 7) {
       let more = document.createElement("b");
       more.innerText = "и больше!";
       node.appendChild(more);

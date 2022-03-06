@@ -73,6 +73,7 @@ func AddUnloadedPagesToQueue(ctx context.Context) {
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
 func FirstHandle(ctx context.Context, u string) error {
 	system.Info(ctx, "начата обработка", u)
+	defer system.Info(ctx, "завершена обработка", u)
 	p, ok, err := parser.Load(ctx, u)
 	if err != nil {
 		return err
@@ -81,13 +82,13 @@ func FirstHandle(ctx context.Context, u string) error {
 	if err != nil {
 		return err
 	}
-	system.Info(ctx, "завершена обработка", u)
 	return nil
 }
 
 // Update обрабатывает данные тайтла (только недостающие)
 func Update(ctx context.Context, title jdb.Title) error {
 	system.Info(ctx, "начата обработка", title.ID, title.URL)
+	defer system.Info(ctx, "завершена обработка", title.ID, title.URL)
 	p, ok, err := parser.Load(ctx, title.URL)
 	if err != nil {
 		return err
@@ -153,20 +154,21 @@ func Update(ctx context.Context, title jdb.Title) error {
 	}
 	if !title.Data.Parsed.Page {
 		pages := p.ParsePages(ctx)
-		pagesDB := make([]jdb.Page, len(pages))
-		for i, page := range pages {
-			pagesDB[i] = jdb.Page{
-				URL: page.URL,
-				Ext: page.Ext,
+		if len(pages) > 0 {
+			pagesDB := make([]jdb.Page, len(pages))
+			for i, page := range pages {
+				pagesDB[i] = jdb.Page{
+					URL: page.URL,
+					Ext: page.Ext,
+				}
 			}
-		}
 
-		err = jdb.Get().UpdateTitlePages(ctx, title.ID, pagesDB)
-		if err != nil {
-			return err
+			err = jdb.Get().UpdateTitlePages(ctx, title.ID, pagesDB)
+			if err != nil {
+				return err
+			}
+			system.Info(ctx, "обновлены страницы", title.ID, title.URL)
 		}
-		system.Info(ctx, "обновлены страницы", title.ID, title.URL)
 	}
-	system.Info(ctx, "завершена обработка", title.ID, title.URL)
 	return nil
 }

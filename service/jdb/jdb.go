@@ -16,6 +16,7 @@ type DatabaseData struct {
 type Database struct {
 	data        DatabaseData
 	lastTitleID int
+	uniqueURLs  map[string]struct{}
 	mutex       *sync.RWMutex
 	ctx         context.Context
 	needSave    bool
@@ -31,7 +32,8 @@ func Init(ctx context.Context) {
 		data: DatabaseData{
 			Titles: make(map[int]Title),
 		},
-		ctx: system.NewSystemContext(ctx, "JBD"),
+		ctx:        system.NewSystemContext(ctx, "JBD"),
+		uniqueURLs: make(map[string]struct{}),
 	}
 }
 
@@ -67,8 +69,10 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	}
 
 	db.lastTitleID = 0
+	db.uniqueURLs = make(map[string]struct{})
 
-	for id := range newData.Titles {
+	for id, title := range newData.Titles {
+		db.uniqueURLs[title.URL] = struct{}{}
 		if id > db.lastTitleID {
 			db.lastTitleID = id
 		}

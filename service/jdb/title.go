@@ -29,6 +29,10 @@ func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool)
 
 	defer system.Stopwatch(ctx, "NewTitle")()
 
+	if _, found := db.uniqueURLs[URL]; found {
+		return 0, TitleDuplicateError
+	}
+
 	db.lastTitleID++
 
 	db.data.Titles[db.lastTitleID] = Title{
@@ -50,8 +54,8 @@ func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool)
 			Groups:     []string{},
 		},
 	}
-
 	db.needSave = true
+	db.uniqueURLs[URL] = struct{}{}
 
 	return db.lastTitleID, nil
 }
@@ -129,7 +133,7 @@ func (db *Database) GetUnsuccessedPages(ctx context.Context) []PageFullInfo {
 			if !p.Success {
 				res = append(res, PageFullInfo{
 					TitleID:    t.ID,
-					PageNumber: i,
+					PageNumber: i + 1,
 					URL:        p.URL,
 					Ext:        p.Ext,
 					Success:    p.Success,
