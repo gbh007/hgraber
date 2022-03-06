@@ -1,6 +1,7 @@
 package main
 
 import (
+	"app/service/async"
 	"app/service/jdb"
 	"app/service/titleHandler"
 	"app/service/webServer"
@@ -37,7 +38,7 @@ func main() {
 	notifyCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
 
-	mainContext := system.NewSystemContext(notifyCtx, "MAIN")
+	mainContext := system.NewSystemContext(notifyCtx, "Main")
 
 	if *debugMode {
 		system.EnableDebug(mainContext)
@@ -61,11 +62,8 @@ func main() {
 	}
 
 	if !*onlyView {
-		go autosaveDB(mainContext, *dbFileName)
-		go loadPages(mainContext)
-		go completeTitle(mainContext)
 		go parseTaskFile(mainContext)
-		system.Info(mainContext, "Запущены асинхронные обработчики")
+		async.Init(mainContext, *dbFileName)
 	}
 
 	webServer.Run(mainContext, fmt.Sprintf(":%d", *webPort))
@@ -77,7 +75,7 @@ func main() {
 	if jdb.Get().Save(mainContext, *dbFileName) == nil {
 		system.Info(mainContext, "База сохранена")
 	} else {
-		system.Info(mainContext, "База не сохранена")
+		system.Warning(mainContext, "База не сохранена")
 	}
 	system.Info(mainContext, "Выход")
 }
@@ -85,33 +83,10 @@ func main() {
 func exportData(ctx context.Context) {
 	system.Info(ctx, "Экспорт начат")
 	exporter := jdb.Get()
-	// system.Info(ctx, "Конвертирование данных")
-	// exporter.FetchFromSQL(ctx)
-	// system.Info(ctx, "Сохранение данных")
 	_ = exporter.Save(ctx, fmt.Sprintf("exported-%s.json", time.Now().Format("2006-01-02-150405")))
 	system.Info(ctx, "Экспорт завершен")
 	os.Exit(0)
 
-}
-
-func loadPages(ctx context.Context) {
-	titleHandler.Init(ctx)
-	timer := time.NewTimer(time.Minute)
-	for range timer.C {
-		titleHandler.AddUnloadedPagesToQueue(ctx)
-		time.Sleep(time.Second)
-		titleHandler.FileWait()
-		timer.Reset(time.Minute)
-	}
-}
-
-func completeTitle(ctx context.Context) {
-	timer := time.NewTicker(time.Minute)
-	for range timer.C {
-		for _, t := range jdb.Get().UnloadedTitles(ctx) {
-			_ = titleHandler.Update(ctx, t)
-		}
-	}
 }
 
 func parseTaskFile(ctx context.Context) {
@@ -130,15 +105,5 @@ func parseTaskFile(ctx context.Context) {
 			continue
 		}
 		_ = titleHandler.FirstHandle(ctx, sc.Text())
-	}
-}
-
-func autosaveDB(parentCtx context.Context, filename string) {
-	ctx := system.NewSystemContext(parentCtx, "DB-AUTOSAVE")
-	timer := time.NewTicker(time.Minute)
-	for range timer.C {
-		if jdb.Get().Save(ctx, filename) == nil {
-			system.Debug(ctx, "Автосохранение прошло успешно")
-		}
 	}
 }

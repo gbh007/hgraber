@@ -9,14 +9,14 @@ var requestIDKey = 1
 
 func NewSystemContext(parent context.Context, name string) context.Context {
 	if name == "" {
-		name = "SYSTEM-" + hash(time.Now().String())
+		name = "System-" + hash(time.Now().String())
 	}
 
 	return withRequestIDContext(parent, name)
 }
 
 func NewUserContext(parent context.Context) context.Context {
-	return withRequestIDContext(parent, "USER-"+hash(time.Now().String()))
+	return withRequestIDContext(parent, "User-"+hash(time.Now().String()))
 }
 
 func GetRequestID(ctx context.Context) string {

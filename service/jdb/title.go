@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (db *Database) UnloadedTitles(ctx context.Context) []Title {
+func (db *Database) GetUnloadedTitles(ctx context.Context) []Title {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 

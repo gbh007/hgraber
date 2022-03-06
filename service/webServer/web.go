@@ -11,7 +11,7 @@ import (
 
 // Run запускает веб сервер
 func Run(parentCtx context.Context, addr string) {
-	ctx := system.NewSystemContext(parentCtx, "WEB-SRV")
+	ctx := system.NewSystemContext(parentCtx, "Web-srv")
 	mux := http.NewServeMux()
 
 	// обработчик статики

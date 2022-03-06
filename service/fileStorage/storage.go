@@ -7,12 +7,14 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
 )
 
 func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error {
+	defer system.Stopwatch(ctx, "DownloadTitlePage")()
 	// создаем папку с тайтлом
 	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), 0666)
 	if err != nil && !os.IsExist(err) {
@@ -40,7 +42,7 @@ func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error
 
 // SaveToZip сохраняет тайтлы на диск zip архивом
 func SaveToZip(ctx context.Context, id int) error {
-
+	defer system.Stopwatch(ctx, "SaveToZip")()
 	titleInfo, err := jdb.Get().GetTitle(ctx, id)
 	if err != nil {
 		return err
@@ -92,6 +94,17 @@ func SaveToZip(ctx context.Context, id int) error {
 		len(titleInfo.Pages),
 		titleInfo.ID,
 	)
+	if err != nil {
+		system.Error(ctx, err)
+		return err
+	}
+
+	w, err = zw.Create("data.json")
+	if err != nil {
+		system.Error(ctx, err)
+		return err
+	}
+	err = json.NewEncoder(w).Encode(titleInfo)
 	if err != nil {
 		system.Error(ctx, err)
 		return err
