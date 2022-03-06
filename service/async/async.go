@@ -28,7 +28,9 @@ func Init(parentCtx context.Context, dbFilename string) {
 		mutex: &sync.RWMutex{},
 	}
 	go _pl.Run()
+
 	go autosaveDB(ctx, dbFilename)
+
 	_tl = &TitleLoader{
 		queue: make(chan jdb.Title, titleQueueSize),
 		ctx:   system.NewSystemContext(ctx, "Title-loader"),

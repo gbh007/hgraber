@@ -8,12 +8,14 @@ import (
 
 var copyStopwatch = false
 
-func DisableCopyStopwatch() {
+func DisableCopyStopwatch(ctx context.Context) {
 	copyStopwatch = false
+	system.Warning(ctx, "Отключен режим отладки копирования")
 }
 
-func EnableCopyStopwatch() {
+func EnableCopyStopwatch(ctx context.Context) {
 	copyStopwatch = true
+	system.Warning(ctx, "Включен режим отладки копирования")
 }
 
 func CopyStopwatchStatus() bool {

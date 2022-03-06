@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-// Run запускает веб сервер
-func Run(parentCtx context.Context, addr string) {
+// Start запускает веб сервер
+func Start(parentCtx context.Context, addr string) {
 	ctx := system.NewSystemContext(parentCtx, "Web-srv")
 	mux := http.NewServeMux()
 
@@ -37,13 +37,13 @@ func Run(parentCtx context.Context, addr string) {
 	go func() {
 		defer system.DoneWaiting(ctx)
 		system.Info(ctx, "Запущен веб сервер")
+		defer system.Info(ctx, "Веб сервер остановлен")
 
 		err := server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			system.Error(ctx, err)
 		}
 
-		system.Info(ctx, "Веб сервер остановлен")
 	}()
 
 	go func() {

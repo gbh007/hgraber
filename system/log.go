@@ -10,6 +10,22 @@ import (
 	"time"
 )
 
+var fullpathMode = false
+
+func DisableFullpath(ctx context.Context) {
+	fullpathMode = false
+	Warning(ctx, "Данные файла в логе теперь отображаются в сокращенном виде")
+}
+
+func EnableFullpath(ctx context.Context) {
+	fullpathMode = true
+	Warning(ctx, "Данные файла в логе теперь отображаются в полном виде")
+}
+
+func FullpathStatus() bool {
+	return fullpathMode
+}
+
 const timeFormat = "2006-01-02 15:04:05"
 
 const (
@@ -102,7 +118,7 @@ func from(depth int) string {
 	from := "???"
 	_, file, line, ok := runtime.Caller(depth)
 	if ok {
-		if !debugMode {
+		if !fullpathMode {
 			_, file = path.Split(file)
 		}
 		from = fmt.Sprintf("%s:%d", file, line)
