@@ -5,12 +5,13 @@ import (
 	"app/handler"
 	"app/jdb"
 	"app/system"
-	"app/webgin"
+	"app/web"
 	"bufio"
 	"context"
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"time"
 )
 
@@ -23,6 +24,7 @@ func main() {
 	disableFileErr := flag.Bool("no-stdfile", false, "отключить поток ошибок в файл")
 	enableAppendFileErr := flag.Bool("stdfile-append", false, "режим дозаписи файла потока ошибок")
 	fileStorage := flag.String("fs", "loads", "директория для данных")
+	debugMode := flag.Bool("debug", false, "активировать режим отладки")
 	flag.Parse()
 
 	system.Init(system.LogConfig{
@@ -31,7 +33,14 @@ func main() {
 		EnableStdErr: !*disableStdErr,
 	})
 
-	mainContext := system.NewSystemContext(context.Background(), "MAIN")
+	notifyCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	mainContext := system.NewSystemContext(notifyCtx, "MAIN")
+
+	if *debugMode {
+		system.EnableDebug(mainContext)
+	}
 
 	err := system.SetFileStoragePath(mainContext, *fileStorage)
 	if err != nil {
@@ -40,19 +49,11 @@ func main() {
 
 	err = db.Connect(mainContext)
 	if err != nil {
-		system.Error(mainContext, err)
 		os.Exit(2)
 	}
 
 	if *export {
-		system.Info(mainContext, "Экспорт начат")
-		exporter := jdb.New()
-		system.Info(mainContext, "Конвертирование данных")
-		exporter.FetchFromSQL(mainContext)
-		system.Info(mainContext, "Сохранение данных")
-		_ = exporter.Save(mainContext, fmt.Sprintf("exported-%s.json", time.Now().Format("2006-01-02-150405")))
-		system.Info(mainContext, "Экспорт завершен")
-		os.Exit(0)
+		exportData(mainContext)
 	}
 
 	if !*onlyView {
@@ -62,9 +63,24 @@ func main() {
 		system.Info(mainContext, "Запущены асинхронные обработчики")
 	}
 
-	system.Info(mainContext, "Запущен веб сервер")
-	done := webgin.Run(mainContext, fmt.Sprintf(":%d", *webPort))
-	<-done
+	web.Run(mainContext, fmt.Sprintf(":%d", *webPort))
+
+	<-mainContext.Done()
+	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
+	<-system.WaitingChan(mainContext)
+	system.Info(mainContext, "Процессы завершены, выход")
+}
+
+func exportData(ctx context.Context) {
+	system.Info(ctx, "Экспорт начат")
+	exporter := jdb.New()
+	system.Info(ctx, "Конвертирование данных")
+	exporter.FetchFromSQL(ctx)
+	system.Info(ctx, "Сохранение данных")
+	_ = exporter.Save(ctx, fmt.Sprintf("exported-%s.json", time.Now().Format("2006-01-02-150405")))
+	system.Info(ctx, "Экспорт завершен")
+	os.Exit(0)
+
 }
 
 func loadPages(ctx context.Context) {

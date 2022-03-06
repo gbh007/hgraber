@@ -197,7 +197,7 @@ class Rendering {
     title.appendChild(node);
 
     node = document.createElement("a");
-    node.href = `/read?title=${info.id}`;
+    node.href = `/read.html?title=${info.id}`;
     node.className = "read";
     node.innerText = "Читать";
     title.appendChild(node);
@@ -206,7 +206,7 @@ class Rendering {
   }
   generateHTMLFromTitleInfo(info) {
     let title = document.createElement("div");
-    // title.href = `/read?title=${info.id}`;
+    // title.href = `/read.html?title=${info.id}`;
     title.className = "title";
     title.setAttribute("t", info.loaded ? "" : "bred");
 
