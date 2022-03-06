@@ -42,18 +42,13 @@ type TitleInfo struct {
 	Groups     []string        `json:"groups,omitempty"`
 }
 
-type TitlePages struct {
-	Count int    `json:"count"`
-	Pages []Page `json:"pages"`
-}
-
 type Title struct {
 	ID      int       `json:"id"`
 	Created time.Time `json:"created"`
 	URL     string    `json:"url"`
 
-	Pages TitlePages `json:"pages"`
-	Data  TitleInfo  `json:"info"`
+	Pages []Page    `json:"pages"`
+	Data  TitleInfo `json:"info"`
 }
 
 type DatabaseData struct {
@@ -126,14 +121,11 @@ func (dtb *Database) FetchFromSQL(ctx context.Context) {
 				Parodies:   title.Parodies,
 				Groups:     title.Groups,
 			},
-			Pages: TitlePages{
-				Count: title.PageCount,
-				Pages: make([]Page, title.PageCount),
-			},
+			Pages: make([]Page, title.PageCount),
 		}
 
 		for _, page := range db.SelectPagesByTitleID(ctx, t.ID) {
-			t.Pages.Pages[page.PageNumber-1] = Page{
+			t.Pages[page.PageNumber-1] = Page{
 				URL:     page.URL,
 				Ext:     page.Ext,
 				Success: true,
