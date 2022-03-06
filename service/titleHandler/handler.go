@@ -1,9 +1,9 @@
-package handler
+package titleHandler
 
 import (
 	"app/db"
-	"app/file"
-	"app/parser"
+	"app/service/fileStorage"
+	"app/service/parser"
 	"app/system"
 	"context"
 	"fmt"
@@ -43,7 +43,7 @@ func Init(parentCtx context.Context) {
 func handleFileQueue(ctx context.Context) {
 	for page := range fileQueue {
 		fileWG.Add(1)
-		err := file.Load(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
+		err := fileStorage.DownloadTitlePage(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
 		if err == nil {
 			_ = db.UpdatePageSuccess(ctx, page.TitleID, page.PageNumber, true)
 		}

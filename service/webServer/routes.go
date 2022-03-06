@@ -1,10 +1,10 @@
-package web
+package webServer
 
 import (
 	"app/db"
-	"app/file"
-	"app/handler"
-	"app/web/base"
+	"app/service/fileStorage"
+	"app/service/titleHandler"
+	"app/service/webServer/base"
 	"net/http"
 )
 
@@ -24,12 +24,14 @@ func NewTitle() http.Handler {
 		request := struct {
 			URL string `json:"url"`
 		}{}
+
 		err := base.ParseJSON(r, &request)
 		if err != nil {
 			base.SetError(r, err)
 			return
 		}
-		err = handler.FirstHandle(r.Context(), request.URL)
+
+		err = titleHandler.FirstHandle(r.Context(), request.URL)
 		if err != nil {
 			base.SetError(r, err)
 		} else {
@@ -105,7 +107,7 @@ func SaveToZIP() http.Handler {
 			return
 		}
 		for i := request.From; i <= request.To; i++ {
-			err = file.LoadToZip(r.Context(), i)
+			err = fileStorage.SaveToZip(r.Context(), i)
 			if err != nil {
 				base.SetError(r, err)
 				return

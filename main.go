@@ -2,10 +2,10 @@ package main
 
 import (
 	"app/db"
-	"app/handler"
-	"app/jdb"
+	"app/service/jdb"
+	"app/service/titleHandler"
+	"app/service/webServer"
 	"app/system"
-	"app/web"
 	"bufio"
 	"context"
 	"flag"
@@ -63,7 +63,7 @@ func main() {
 		system.Info(mainContext, "Запущены асинхронные обработчики")
 	}
 
-	web.Run(mainContext, fmt.Sprintf(":%d", *webPort))
+	webServer.Run(mainContext, fmt.Sprintf(":%d", *webPort))
 
 	<-mainContext.Done()
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
@@ -84,12 +84,12 @@ func exportData(ctx context.Context) {
 }
 
 func loadPages(ctx context.Context) {
-	handler.Init(ctx)
+	titleHandler.Init(ctx)
 	timer := time.NewTimer(time.Minute)
 	for range timer.C {
-		handler.AddUnloadedPagesToQueue(ctx)
+		titleHandler.AddUnloadedPagesToQueue(ctx)
 		time.Sleep(time.Second)
-		handler.FileWait()
+		titleHandler.FileWait()
 		timer.Reset(time.Minute)
 	}
 }
@@ -98,7 +98,7 @@ func completeTitle(ctx context.Context) {
 	timer := time.NewTicker(time.Minute)
 	for range timer.C {
 		for _, t := range db.SelectUnloadTitles(ctx) {
-			_ = handler.Update(ctx, t)
+			_ = titleHandler.Update(ctx, t)
 		}
 	}
 }
@@ -115,6 +115,6 @@ func parseTaskFile(ctx context.Context) {
 		if sc.Text() == "" {
 			continue
 		}
-		_ = handler.FirstHandle(ctx, sc.Text())
+		_ = titleHandler.FirstHandle(ctx, sc.Text())
 	}
 }

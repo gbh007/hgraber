@@ -1,8 +1,8 @@
-package web
+package webServer
 
 import (
+	"app/service/webServer/base"
 	"app/system"
-	"app/web/base"
 	"context"
 	"errors"
 	"net/http"

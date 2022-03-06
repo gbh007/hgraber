@@ -1,8 +1,8 @@
-package file
+package fileStorage
 
 import (
 	"app/db"
-	"app/parser"
+	"app/service/parser"
 	"app/system"
 	"archive/zip"
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func Load(ctx context.Context, id, page int, URL, ext string) error {
+func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error {
 	// создаем папку с тайтлом
 	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), 0666)
 	if err != nil && !os.IsExist(err) {
@@ -38,8 +38,8 @@ func Load(ctx context.Context, id, page int, URL, ext string) error {
 	return f.Close()
 }
 
-// LoadToZip сохраняет тайтлы на диск zip архивом
-func LoadToZip(ctx context.Context, id int) error {
+// SaveToZip сохраняет тайтлы на диск zip архивом
+func SaveToZip(ctx context.Context, id int) error {
 
 	titleInfo, err := db.SelectTitleByID(ctx, id)
 	if err != nil {
