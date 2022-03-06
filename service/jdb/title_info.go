@@ -20,6 +20,7 @@ func (db *Database) UpdateTitleName(ctx context.Context, id int, name string) er
 	title.Data.Parsed.Name = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 
@@ -40,6 +41,7 @@ func (db *Database) UpdateTitleAuthors(ctx context.Context, id int, authors []st
 	title.Data.Parsed.Authors = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 
@@ -60,6 +62,7 @@ func (db *Database) UpdateTitleTags(ctx context.Context, id int, tags []string) 
 	title.Data.Parsed.Tags = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 
@@ -80,6 +83,7 @@ func (db *Database) UpdateTitleCharacters(ctx context.Context, id int, character
 	title.Data.Parsed.Characters = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 
@@ -100,6 +104,7 @@ func (db *Database) UpdateTitleCategories(ctx context.Context, id int, categorie
 	title.Data.Parsed.Categories = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 
@@ -120,6 +125,7 @@ func (db *Database) UpdateTitleGroups(ctx context.Context, id int, groups []stri
 	title.Data.Parsed.Groups = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 
@@ -140,6 +146,7 @@ func (db *Database) UpdateTitleLanguages(ctx context.Context, id int, languages 
 	title.Data.Parsed.Languages = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 
@@ -160,6 +167,7 @@ func (db *Database) UpdateTitleParodies(ctx context.Context, id int, parodies []
 	title.Data.Parsed.Parodies = true
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 

@@ -51,6 +51,8 @@ func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool)
 		},
 	}
 
+	db.needSave = true
+
 	return db.lastTitleID, nil
 }
 
@@ -77,6 +79,7 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, page int, success
 	}
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 }
@@ -154,6 +157,7 @@ func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []Page) 
 	title.Data.Parsed.Page = len(pages) > 0
 
 	db.data.Titles[id] = title
+	db.needSave = true
 
 	return nil
 

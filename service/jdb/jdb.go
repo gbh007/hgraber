@@ -4,6 +4,7 @@ import (
 	"app/system"
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"sync"
 )
@@ -17,6 +18,7 @@ type Database struct {
 	lastTitleID int
 	mutex       *sync.RWMutex
 	ctx         context.Context
+	needSave    bool
 }
 
 var (
@@ -44,12 +46,15 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	defer system.Stopwatch(ctx, "jdb.Load")()
 
 	file, err := os.Open(path)
-	defer system.IfErrFunc(ctx, file.Close)
-
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			system.Debug(ctx, "Файл базы данных отсутствует")
+			return nil
+		}
 		system.Error(ctx, err)
 		return err
 	}
+	defer system.IfErrFunc(ctx, file.Close)
 
 	decoder := json.NewDecoder(file)
 
@@ -80,13 +85,17 @@ func (db *Database) Save(ctx context.Context, path string) error {
 
 	defer system.Stopwatch(ctx, "jdb.Save")()
 
-	file, err := os.Create(path)
-	defer system.IfErrFunc(ctx, file.Close)
+	if !db.needSave {
+		system.Debug(ctx, "Сохранение данных не требуется, пропускаю")
+		return nil
+	}
 
+	file, err := os.Create(path)
 	if err != nil {
 		system.Error(ctx, err)
 		return err
 	}
+	defer system.IfErrFunc(ctx, file.Close)
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
@@ -96,6 +105,8 @@ func (db *Database) Save(ctx context.Context, path string) error {
 		system.Error(ctx, err)
 		return err
 	}
+
+	db.needSave = false
 
 	return nil
 }

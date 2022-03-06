@@ -51,11 +51,11 @@ func SaveToZip(ctx context.Context, id int) error {
 
 	for pageNumber, p := range titleInfo.Pages {
 		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, pageNumber+1, p.Ext))
-		defer system.IfErrFunc(ctx, f.Close)
 		if err != nil {
 			system.Error(ctx, err)
 			return err
 		}
+		defer system.IfErrFunc(ctx, f.Close)
 
 		tmpBuff := &bytes.Buffer{}
 
@@ -109,13 +109,12 @@ func SaveToZip(ctx context.Context, id int) error {
 		id,
 		escapeFileName(titleInfo.Data.Name),
 	))
-
-	defer system.IfErrFunc(ctx, f.Close)
-
 	if err != nil {
 		system.Error(ctx, err)
 		return err
 	}
+	defer system.IfErrFunc(ctx, f.Close)
+
 	_, err = buff.WriteTo(f)
 	if err != nil {
 		system.Error(ctx, err)

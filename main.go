@@ -7,6 +7,7 @@ import (
 	"app/system"
 	"bufio"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -24,6 +25,7 @@ func main() {
 	enableAppendFileErr := flag.Bool("stdfile-append", false, "режим дозаписи файла потока ошибок")
 	fileStorage := flag.String("fs", "loads", "директория для данных")
 	debugMode := flag.Bool("debug", false, "активировать режим отладки")
+	dbFileName := flag.String("db", "db.json", "файл базы")
 	flag.Parse()
 
 	system.Init(system.LogConfig{
@@ -32,7 +34,7 @@ func main() {
 		EnableStdErr: !*disableStdErr,
 	})
 
-	notifyCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	notifyCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer stop()
 
 	mainContext := system.NewSystemContext(notifyCtx, "MAIN")
@@ -43,7 +45,7 @@ func main() {
 
 	system.Info(mainContext, "Инициализация базы")
 	jdb.Init(mainContext)
-	err := jdb.Get().Load(mainContext, "db.json")
+	err := jdb.Get().Load(mainContext, *dbFileName)
 	if err != nil {
 		os.Exit(2)
 	}
@@ -59,6 +61,7 @@ func main() {
 	}
 
 	if !*onlyView {
+		go autosaveDB(mainContext, *dbFileName)
 		go loadPages(mainContext)
 		go completeTitle(mainContext)
 		go parseTaskFile(mainContext)
@@ -71,8 +74,10 @@ func main() {
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
 	<-system.WaitingChan(mainContext)
 	system.Info(mainContext, "Процессы завершены")
-	if jdb.Get().Save(mainContext, "db.json") == nil {
+	if jdb.Get().Save(mainContext, *dbFileName) == nil {
 		system.Info(mainContext, "База сохранена")
+	} else {
+		system.Info(mainContext, "База не сохранена")
 	}
 	system.Info(mainContext, "Выход")
 }
@@ -111,16 +116,29 @@ func completeTitle(ctx context.Context) {
 
 func parseTaskFile(ctx context.Context) {
 	f, err := os.Open("task.txt")
-	defer system.IfErrFunc(ctx, f.Close)
 	if err != nil {
-		system.Error(ctx, err)
+		if !errors.Is(err, os.ErrNotExist) {
+			system.Error(ctx, err)
+		}
 		return
 	}
+	defer system.IfErrFunc(ctx, f.Close)
+
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
 		if sc.Text() == "" {
 			continue
 		}
 		_ = titleHandler.FirstHandle(ctx, sc.Text())
+	}
+}
+
+func autosaveDB(parentCtx context.Context, filename string) {
+	ctx := system.NewSystemContext(parentCtx, "DB-AUTOSAVE")
+	timer := time.NewTicker(time.Minute)
+	for range timer.C {
+		if jdb.Get().Save(ctx, filename) == nil {
+			system.Debug(ctx, "Автосохранение прошло успешно")
+		}
 	}
 }

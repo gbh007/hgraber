@@ -102,7 +102,9 @@ func from(depth int) string {
 	from := "???"
 	_, file, line, ok := runtime.Caller(depth)
 	if ok {
-		_, file = path.Split(file)
+		if !debugMode {
+			_, file = path.Split(file)
+		}
 		from = fmt.Sprintf("%s:%d", file, line)
 	}
 	return from
