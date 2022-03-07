@@ -1,158 +1,110 @@
 package titleHandler
 
 import (
-	"app/db"
-	"app/service/fileStorage"
+	"app/service/jdb"
 	"app/service/parser"
 	"app/system"
 	"context"
-	"fmt"
-	"sync"
-	"time"
 )
-
-// maxQueueSize максимальный размер очереди для загрузки файлов
-const maxQueueSize = 100000
-
-// fileQueue очередь для загрузки файлов
-var fileQueue chan db.Page
-
-// maxFileHandlersCount количество одновременно запущенных файловых загрузчиков
-const maxFileHandlersCount = 10
-
-// fileWG группа ожидания для фаловых обработчиков
-var fileWG *sync.WaitGroup = &sync.WaitGroup{}
-
-// FileWait ожидает завершения файловых обработчиков
-func FileWait() {
-	for len(fileQueue) > 0 {
-		time.Sleep(time.Second)
-	}
-	fileWG.Wait()
-}
-
-func Init(parentCtx context.Context) {
-	ctx := system.NewSystemContext(parentCtx, "FILE-HANDLE")
-	fileQueue = make(chan db.Page, maxQueueSize)
-	for i := 0; i < maxFileHandlersCount; i++ {
-		go handleFileQueue(ctx)
-	}
-}
-
-// handleFileQueue обработчик файловой очереди
-func handleFileQueue(ctx context.Context) {
-	for page := range fileQueue {
-		fileWG.Add(1)
-		err := fileStorage.DownloadTitlePage(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
-		if err == nil {
-			_ = db.UpdatePageSuccess(ctx, page.TitleID, page.PageNumber, true)
-		}
-		fileWG.Done()
-	}
-}
-
-// AddUnloadedPagesToQueue добавляет незагруженные страницы в очередь
-func AddUnloadedPagesToQueue(ctx context.Context) {
-	for _, p := range db.SelectUnsuccessPages(ctx) {
-		fileQueue <- p
-	}
-}
 
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
 func FirstHandle(ctx context.Context, u string) error {
 	system.Info(ctx, "начата обработка", u)
-	p, ok, err := parser.Load(ctx, u)
+	defer system.Info(ctx, "завершена обработка", u)
+	_, err := parser.Parse(ctx, u)
 	if err != nil {
 		return err
 	}
-	_, err = db.InsertTitle(ctx, p.ParseName(ctx), u, ok)
+	_, err = jdb.Get().NewTitle(ctx, "", u, false)
 	if err != nil {
 		return err
 	}
-	system.Info(ctx, "завершена обработка", u)
 	return nil
 }
 
 // Update обрабатывает данные тайтла (только недостающие)
-func Update(ctx context.Context, title db.TitleShortInfo) error {
-	system.Info(ctx, "начата обработка", title.URL)
+func Update(ctx context.Context, title jdb.Title) {
+	system.Info(ctx, "начата обработка", title.ID, title.URL)
+	defer system.Info(ctx, "завершена обработка", title.ID, title.URL)
 	p, ok, err := parser.Load(ctx, title.URL)
 	if err != nil {
-		return err
+		return
 	}
 	if !ok {
-		return fmt.Errorf("not load")
+		return
 	}
-	if !title.Loaded {
-		err = db.UpdateTitle(ctx, title.ID, p.ParseName(ctx), ok)
+	if !title.Data.Parsed.Name {
+		err = jdb.Get().UpdateTitleName(ctx, title.ID, p.ParseName(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлено название", title.URL)
+		system.Info(ctx, "обновлено название", title.ID, title.URL)
 	}
-	if !title.ParsedAuthors {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.AuthorsMetaType, p.ParseAuthors(ctx))
+	if !title.Data.Parsed.Authors {
+		err = jdb.Get().UpdateTitleAuthors(ctx, title.ID, p.ParseAuthors(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлены авторы", title.URL)
+		system.Info(ctx, "обновлены авторы", title.ID, title.URL)
 	}
-	if !title.ParsedTags {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.TagsMetaType, p.ParseTags(ctx))
+	if !title.Data.Parsed.Tags {
+		err = jdb.Get().UpdateTitleTags(ctx, title.ID, p.ParseTags(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлены теги", title.URL)
+		system.Info(ctx, "обновлены теги", title.ID, title.URL)
 	}
-	if !title.ParsedCharacters {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.CharactersMetaType, p.ParseCharacters(ctx))
+	if !title.Data.Parsed.Characters {
+		err = jdb.Get().UpdateTitleCharacters(ctx, title.ID, p.ParseCharacters(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлены персонажи", title.URL)
+		system.Info(ctx, "обновлены персонажи", title.ID, title.URL)
 	}
-	if !title.ParsedCategories {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.CategoriesMetaType, p.ParseCategories(ctx))
+	if !title.Data.Parsed.Categories {
+		err = jdb.Get().UpdateTitleCategories(ctx, title.ID, p.ParseCategories(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлены категории", title.URL)
+		system.Info(ctx, "обновлены категории", title.ID, title.URL)
 	}
-	if !title.ParsedGroups {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.GroupsMetaType, p.ParseGroups(ctx))
+	if !title.Data.Parsed.Groups {
+		err = jdb.Get().UpdateTitleGroups(ctx, title.ID, p.ParseGroups(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлены группы", title.URL)
+		system.Info(ctx, "обновлены группы", title.ID, title.URL)
 	}
-	if !title.ParsedLanguages {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.LanguagesMetaType, p.ParseLanguages(ctx))
+	if !title.Data.Parsed.Languages {
+		err = jdb.Get().UpdateTitleLanguages(ctx, title.ID, p.ParseLanguages(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлены языки", title.URL)
+		system.Info(ctx, "обновлены языки", title.ID, title.URL)
 	}
-	if !title.ParsedParodies {
-		err = db.UpdateTitleMeta(ctx, title.ID, db.ParodiesMetaType, p.ParseParodies(ctx))
+	if !title.Data.Parsed.Parodies {
+		err = jdb.Get().UpdateTitleParodies(ctx, title.ID, p.ParseParodies(ctx))
 		if err != nil {
-			return err
+			return
 		}
-		system.Info(ctx, "обновлены пародии", title.URL)
+		system.Info(ctx, "обновлены пародии", title.ID, title.URL)
 	}
-	if !title.ParsedPage {
-		pp := true
+	if !title.Data.Parsed.Page {
 		pages := p.ParsePages(ctx)
-		for _, page := range pages {
-			if db.InsertPage(ctx, title.ID, page.Ext, page.URL, page.Number) != nil {
-				pp = false
+		if len(pages) > 0 {
+			pagesDB := make([]jdb.Page, len(pages))
+			for i, page := range pages {
+				pagesDB[i] = jdb.Page{
+					URL: page.URL,
+					Ext: page.Ext,
+				}
 			}
+
+			err = jdb.Get().UpdateTitlePages(ctx, title.ID, pagesDB)
+			if err != nil {
+				return
+			}
+			system.Info(ctx, "обновлены страницы", title.ID, title.URL)
 		}
-		err = db.UpdateTitleParsedPage(ctx, title.ID, len(pages), pp && (len(pages) > 0))
-		if err != nil {
-			return err
-		}
-		system.Info(ctx, "обновлены страницы", title.URL)
 	}
-	system.Info(ctx, "завершена обработка", title.URL)
-	return nil
 }

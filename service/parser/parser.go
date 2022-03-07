@@ -24,12 +24,7 @@ type Page struct {
 	Ext    string
 }
 
-func Load(ctx context.Context, URL string) (Parser, bool, error) {
-	var (
-		p   Parser
-		err error
-		ok  bool
-	)
+func Parse(ctx context.Context, URL string) (p Parser, err error) {
 	switch {
 	case strings.Index(URL, "https://imhentai.xxx/") == 0:
 		p = &Parser_IMHENTAI_XXX{}
@@ -38,6 +33,11 @@ func Load(ctx context.Context, URL string) (Parser, bool, error) {
 	default:
 		err = fmt.Errorf("не корректная ссылка")
 	}
+	return p, err
+}
+
+func Load(ctx context.Context, URL string) (p Parser, ok bool, err error) {
+	p, err = Parse(ctx, URL)
 	if err == nil {
 		ok = p.Load(ctx, URL)
 	}

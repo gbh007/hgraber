@@ -9,6 +9,7 @@ import (
 
 var (
 	fileStoragePath string
+	fileExportPath  string
 )
 
 func GetFileStoragePath(ctx context.Context) string {
@@ -23,6 +24,22 @@ func SetFileStoragePath(ctx context.Context, dirPath string) error {
 	}
 
 	fileStoragePath = dirPath
+
+	return nil
+}
+
+func GetFileExportPath(ctx context.Context) string {
+	return fileExportPath
+}
+
+func SetFileExportPath(ctx context.Context, dirPath string) error {
+	err := createDir(ctx, dirPath)
+	if err != nil {
+		Warning(ctx, dirPath, "не является директорией для FileExport")
+		return err
+	}
+
+	fileExportPath = dirPath
 
 	return nil
 }
