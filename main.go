@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -46,7 +47,13 @@ func main() {
 		EnableStdErr: !*disableStdErr,
 	})
 
-	notifyCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	notifyCtx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+	)
 	defer stop()
 
 	mainContext := system.NewSystemContext(notifyCtx, "Main")
