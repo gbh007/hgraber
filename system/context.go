@@ -2,10 +2,18 @@ package system
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
-var requestIDKey = 1
+type contextKey struct {
+	name string
+}
+
+var (
+	requestIDKey               = &contextKey{"requestIDKey"}
+	ContextAlreadyStoppedError = errors.New("ContextAlreadyStoppedError")
+)
 
 func NewSystemContext(parent context.Context, name string) context.Context {
 	if name == "" {
@@ -20,7 +28,7 @@ func NewUserContext(parent context.Context) context.Context {
 }
 
 func GetRequestID(ctx context.Context) string {
-	id, ok := ctx.Value(&requestIDKey).(string)
+	id, ok := ctx.Value(requestIDKey).(string)
 	if !ok {
 		id = "???"
 	}
@@ -41,9 +49,19 @@ type requestIDContext struct {
 }
 
 func (rc *requestIDContext) Value(key interface{}) interface{} {
-	if key == &requestIDKey {
+	if key == requestIDKey {
 		return rc.requestID
 	}
 
 	return rc.Context.Value(key)
+}
+
+func IsAliveContext(ctx context.Context) error {
+	select {
+	case <-ctx.Done():
+		return ContextAlreadyStoppedError
+	default:
+	}
+
+	return nil
 }

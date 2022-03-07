@@ -65,7 +65,11 @@ func (pl *PageLoader) handle(page qPage) {
 }
 
 func (pl *PageLoader) runQueueHandler() {
+	defer system.Debug(pl.ctx, "PageLoader-handler остановлен")
 	for page := range pl.queue {
+		if system.IsAliveContext(pl.ctx) != nil {
+			return
+		}
 		pl.handle(page)
 	}
 }

@@ -42,7 +42,12 @@ func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error
 
 func ExportTitlesToZip(ctx context.Context, from, to int) error {
 	for i := from; i <= to; i++ {
-		err := SaveToZip(ctx, i)
+		err := system.IsAliveContext(ctx)
+		if err != nil {
+			return err
+		}
+
+		err = SaveToZip(ctx, i)
 		if err != nil {
 			return err
 		}
@@ -53,6 +58,8 @@ func ExportTitlesToZip(ctx context.Context, from, to int) error {
 // SaveToZip сохраняет тайтлы на диск zip архивом
 func SaveToZip(ctx context.Context, id int) error {
 	defer system.Stopwatch(ctx, "SaveToZip")()
+	system.AddWaiting(ctx)
+	defer system.DoneWaiting(ctx)
 
 	titleInfo, err := jdb.Get().GetTitle(ctx, id)
 	if err != nil {

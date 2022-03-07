@@ -55,7 +55,11 @@ func (tl *TitleLoader) handle(title jdb.Title) {
 }
 
 func (tl *TitleLoader) runQueueHandler() {
+	defer system.Debug(tl.ctx, "TitleLoader-handler остановлен")
 	for page := range tl.queue {
+		if system.IsAliveContext(tl.ctx) != nil {
+			return
+		}
 		tl.handle(page)
 	}
 }
