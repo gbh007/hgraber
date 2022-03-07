@@ -18,5 +18,10 @@ build_amd64: create_build_dir
 	GOOS=linux GOARCH=amd64 go build -o ./_build/hgraber-amd64
 	GOOS=windows GOARCH=amd64 go build -o ./_build/hgraber-amd64.exe
 
-run: build_amd64
-	./_build/hgraber-amd64 -v
+run: create_build_dir
+	go build -o ./_build/hgraber-bin 
+	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath
+	
+view: create_build_dir
+	go build -o ./_build/hgraber-bin 
+	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath -v

@@ -5,10 +5,10 @@ import (
 	"app/service/parser"
 	"app/system"
 	"archive/zip"
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
@@ -40,47 +40,61 @@ func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error
 	return f.Close()
 }
 
+func ExportTitlesToZip(ctx context.Context, from, to int) error {
+	for i := from; i <= to; i++ {
+		err := SaveToZip(ctx, i)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // SaveToZip сохраняет тайтлы на диск zip архивом
 func SaveToZip(ctx context.Context, id int) error {
 	defer system.Stopwatch(ctx, "SaveToZip")()
+
 	titleInfo, err := jdb.Get().GetTitle(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	buff := &bytes.Buffer{}
-	zw := zip.NewWriter(buff)
+	zipFile, err := os.Create(fmt.Sprintf(
+		"%s/%d)_%s.zip",
+		system.GetFileExportPath(ctx),
+		id,
+		escapeFileName(titleInfo.Data.Name),
+	))
+	if err != nil {
+		system.Error(ctx, err)
+		return err
+	}
+	defer system.IfErrFunc(ctx, zipFile.Close)
+
+	zipWriter := zip.NewWriter(zipFile)
 
 	for pageNumber, p := range titleInfo.Pages {
-		f, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, pageNumber+1, p.Ext))
+		pageReader, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, pageNumber+1, p.Ext))
 		if err != nil {
 			system.Error(ctx, err)
 			return err
 		}
-		defer system.IfErrFunc(ctx, f.Close)
+		defer system.IfErrFunc(ctx, pageReader.Close)
 
-		tmpBuff := &bytes.Buffer{}
-
-		_, err = tmpBuff.ReadFrom(f)
-		if err != nil {
-			system.Error(ctx, err)
-			return err
-		}
-
-		w, err := zw.Create(fmt.Sprintf("%d.%s", pageNumber+1, p.Ext))
+		w, err := zipWriter.Create(fmt.Sprintf("%d.%s", pageNumber+1, p.Ext))
 		if err != nil {
 			system.Error(ctx, err)
 			return err
 		}
 
-		_, err = w.Write(tmpBuff.Bytes())
+		_, err = io.Copy(w, pageReader)
 		if err != nil {
 			system.Error(ctx, err)
 			return err
 		}
 	}
 
-	w, err := zw.Create("info.txt")
+	w, err := zipWriter.Create("info.txt")
 	if err != nil {
 		system.Error(ctx, err)
 		return err
@@ -99,7 +113,7 @@ func SaveToZip(ctx context.Context, id int) error {
 		return err
 	}
 
-	w, err = zw.Create("data.json")
+	w, err = zipWriter.Create("data.json")
 	if err != nil {
 		system.Error(ctx, err)
 		return err
@@ -110,29 +124,12 @@ func SaveToZip(ctx context.Context, id int) error {
 		return err
 	}
 
-	err = zw.Close()
+	err = zipWriter.Close()
 	if err != nil {
 		system.Error(ctx, err)
 		return err
 	}
 
-	f, err := os.Create(fmt.Sprintf(
-		"%s/%d)_%s.zip",
-		system.GetFileStoragePath(ctx),
-		id,
-		escapeFileName(titleInfo.Data.Name),
-	))
-	if err != nil {
-		system.Error(ctx, err)
-		return err
-	}
-	defer system.IfErrFunc(ctx, f.Close)
-
-	_, err = buff.WriteTo(f)
-	if err != nil {
-		system.Error(ctx, err)
-		return err
-	}
 	return nil
 }
 

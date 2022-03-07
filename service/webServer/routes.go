@@ -106,12 +106,10 @@ func SaveToZIP() http.Handler {
 			base.SetError(r, err)
 			return
 		}
-		for i := request.From; i <= request.To; i++ {
-			err = fileStorage.SaveToZip(r.Context(), i)
-			if err != nil {
-				base.SetError(r, err)
-				return
-			}
+		err = fileStorage.ExportTitlesToZip(r.Context(), request.From, request.To)
+		if err != nil {
+			base.SetError(r, err)
+			return
 		}
 		base.SetResponse(r, struct{}{})
 	})

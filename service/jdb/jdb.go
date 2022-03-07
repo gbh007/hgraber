@@ -83,13 +83,13 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	return nil
 }
 
-func (db *Database) Save(ctx context.Context, path string) error {
+func (db *Database) Save(ctx context.Context, path string, force bool) error {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	defer system.Stopwatch(ctx, "jdb.Save")()
 
-	if !db.needSave {
+	if !db.needSave && !force {
 		system.Debug(ctx, "Сохранение данных не требуется, пропускаю")
 		return nil
 	}

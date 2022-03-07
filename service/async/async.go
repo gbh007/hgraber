@@ -51,7 +51,7 @@ func autosaveDB(parentCtx context.Context, filename string) {
 		case <-ctx.Done():
 			return
 		case <-timer.C:
-			if jdb.Get().Save(ctx, filename) == nil {
+			if jdb.Get().Save(ctx, filename, false) == nil {
 				system.Debug(ctx, "Автосохранение прошло успешно")
 			}
 		}

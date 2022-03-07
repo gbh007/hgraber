@@ -30,6 +30,7 @@ func main() {
 
 	// размещение данных
 	fileStorage := flag.String("fs", "loads", "директория для данных")
+	fileExport := flag.String("fe", "exported", "директория для экспорта файлов")
 	dbFileName := flag.String("db", "db.json", "файл базы")
 
 	// отладка
@@ -64,17 +65,23 @@ func main() {
 	jdb.Init(mainContext)
 	err := jdb.Get().Load(mainContext, *dbFileName)
 	if err != nil {
-		os.Exit(2)
+		os.Exit(1)
 	}
 	system.Info(mainContext, "База загружена")
 
 	err = system.SetFileStoragePath(mainContext, *fileStorage)
 	if err != nil {
-		os.Exit(1)
+		os.Exit(2)
+	}
+
+	err = system.SetFileExportPath(mainContext, *fileExport)
+	if err != nil {
+		os.Exit(3)
 	}
 
 	if *export {
 		exportData(mainContext)
+		os.Exit(0)
 	}
 
 	if !*onlyView {
@@ -88,7 +95,7 @@ func main() {
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
 	<-system.WaitingChan(mainContext)
 	system.Info(mainContext, "Процессы завершены")
-	if jdb.Get().Save(mainContext, *dbFileName) == nil {
+	if jdb.Get().Save(mainContext, *dbFileName, false) == nil {
 		system.Info(mainContext, "База сохранена")
 	} else {
 		system.Warning(mainContext, "База не сохранена")
@@ -99,10 +106,16 @@ func main() {
 func exportData(ctx context.Context) {
 	system.Info(ctx, "Экспорт начат")
 	exporter := jdb.Get()
-	_ = exporter.Save(ctx, fmt.Sprintf("exported-%s.json", time.Now().Format("2006-01-02-150405")))
+	_ = exporter.Save(
+		ctx,
+		fmt.Sprintf(
+			"%s/db-%s.json",
+			system.GetFileExportPath(ctx),
+			time.Now().Format("2006-01-02-150405"),
+		),
+		true,
+	)
 	system.Info(ctx, "Экспорт завершен")
-	os.Exit(0)
-
 }
 
 func parseTaskFile(ctx context.Context) {
