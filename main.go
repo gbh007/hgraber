@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -46,7 +47,13 @@ func main() {
 		EnableStdErr: !*disableStdErr,
 	})
 
-	notifyCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	notifyCtx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+	)
 	defer stop()
 
 	mainContext := system.NewSystemContext(notifyCtx, "Main")
@@ -60,6 +67,10 @@ func main() {
 	if *debugFullpathMode {
 		system.EnableFullpath(mainContext)
 	}
+
+	system.Debug(mainContext, "Версия", system.Version)
+	system.Debug(mainContext, "Коммит", system.Commit)
+	system.Debug(mainContext, "Собрано", system.BuildAt)
 
 	system.Info(mainContext, "Инициализация базы")
 	jdb.Init(mainContext)

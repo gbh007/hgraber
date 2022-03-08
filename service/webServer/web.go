@@ -25,6 +25,7 @@ func Start(parentCtx context.Context, addr string) {
 	base.AddHandler(mux, "/title/details", TitleInfo())
 	base.AddHandler(mux, "/title/page", TitlePage())
 	base.AddHandler(mux, "/to-zip", SaveToZIP())
+	base.AddHandler(mux, "/app/info", AppInfo())
 
 	server := http.Server{
 		Addr:        addr,
