@@ -92,10 +92,10 @@ class Settings {
   updateTItleOnPageCount(count) {
     let data = JSON.parse(localStorage.getItem("settings")) || {};
     data.title_on_page = parseInt(count);
+    localStorage.setItem("settings", JSON.stringify(data));
     window.dispatchEvent(
       new CustomEvent("app-settings-changed", { detail: data })
     );
-    localStorage.setItem("settings", JSON.stringify(data));
   }
   getTItleOnPageCount() {
     let data = JSON.parse(localStorage.getItem("settings")) || {};
