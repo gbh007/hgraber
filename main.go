@@ -68,6 +68,10 @@ func main() {
 		system.EnableFullpath(mainContext)
 	}
 
+	system.Debug(mainContext, "Версия", system.Version)
+	system.Debug(mainContext, "Коммит", system.Commit)
+	system.Debug(mainContext, "Собрано", system.BuildAt)
+
 	system.Info(mainContext, "Инициализация базы")
 	jdb.Init(mainContext)
 	err := jdb.Get().Load(mainContext, *dbFileName)
