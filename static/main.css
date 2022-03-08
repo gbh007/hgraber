@@ -2,6 +2,8 @@
   --app-background: #fff;
   --app-color: #000;
   --app-popup-background: #2c2c2cc2;
+  --app-popup-message-background: #005afd47;
+  --app-popup-message-error-background: #fd000047;
 }
 
 body {
@@ -130,6 +132,7 @@ span.page[current="true"] {
   padding: 5px;
   background: #c4c2c2;
   cursor: pointer;
+  margin-right: 5px;
 }
 #top-bar .top-bar-settings {
   top: 0px;
@@ -164,4 +167,26 @@ span.page[current="true"] {
 #top-bar .top-bar-settings > table td.head {
   border-bottom: 2px dashed black;
   font-weight: bold;
+}
+
+#messages {
+  display: block;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}
+
+#messages > .message {
+  display: block;
+  width: 300px;
+  min-height: 20px;
+  background: var(--app-popup-message-background);
+  border-radius: 5px;
+  padding: 5px;
+  margin-bottom: 5px;
+  z-index: 999;
+}
+
+#messages > .message[level="error"] {
+  background: var(--app-popup-message-error-background);
 }

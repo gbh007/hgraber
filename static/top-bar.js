@@ -5,12 +5,19 @@ class TopBar {
     this.goMainPage = this.goMainPage.bind(this);
     this.showSettings = this.showSettings.bind(this);
     this.hideSettings = this.hideSettings.bind(this);
+    this.goToTitles = this.goToTitles.bind(this);
 
     // Главная
     this.mainLink = document.createElement("span");
     this.mainLink.innerText = "Главная";
     this.mainLink.onclick = this.goMainPage;
     this.coreNode.appendChild(this.mainLink);
+
+    // Список тайтлов
+    this.titleListLink = document.createElement("span");
+    this.titleListLink.innerText = "Список тайтлов";
+    this.titleListLink.onclick = this.goToTitles;
+    this.coreNode.appendChild(this.titleListLink);
 
     // Настройки
     this.settingsLink = document.createElement("span");
@@ -25,6 +32,10 @@ class TopBar {
   goMainPage() {
     console.log(document.location.href);
     document.location.href = "/";
+  }
+  goToTitles() {
+    console.log(document.location.href);
+    document.location.href = "/list.html";
   }
   showSettings() {
     this.renderSettings().then(() => {
@@ -117,5 +128,8 @@ class TopBar {
 let topBar = null;
 
 window.addEventListener("load", function () {
-  topBar = new TopBar(document.getElementById("top-bar"));
+  let node = document.createElement("div");
+  node.id = "top-bar";
+  document.body.insertBefore(node, document.body.firstChild);
+  topBar = new TopBar(node);
 });

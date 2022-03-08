@@ -1,10 +1,17 @@
 class Api {
+  alert(text) {
+    window.dispatchEvent(
+      new CustomEvent("new-message", {
+        detail: { text: text, level: "error", autoclose: 20 },
+      })
+    );
+  }
   async getAppInfo() {
     try {
       let response = await fetch("/app/info", { method: "GET" });
       return await response.json();
     } catch (err) {
-      console.log(err);
+      this.alert(err);
       return {};
     }
   }
@@ -13,7 +20,7 @@ class Api {
       let response = await fetch("/info", { method: "GET" });
       return await response.json();
     } catch (err) {
-      console.log(err);
+      this.alert(err);
       return {};
     }
   }
@@ -25,14 +32,14 @@ class Api {
       });
       if (!response.ok) {
         response
-          .text()
-          .then((text) => alert(text))
-          .catch((err) => alert(err));
+          .json()
+          .then((text) => this.alert(text))
+          .catch((err) => this.alert(err));
       } else {
         return await response.json();
       }
     } catch (err) {
-      console.log(err);
+      this.alert(err);
     }
     return {};
   }
@@ -44,9 +51,9 @@ class Api {
       });
       return await response.json();
     } catch (err) {
-      console.log(err);
-      return {};
+      this.alert(err);
     }
+    return {};
   }
   async getTitleInfo(id) {
     try {
@@ -56,9 +63,9 @@ class Api {
       });
       return await response.json();
     } catch (err) {
-      console.log(err);
-      return {};
+      this.alert(err);
     }
+    return {};
   }
   async getTitlePageInfo(id, page) {
     try {
@@ -68,9 +75,9 @@ class Api {
       });
       return await response.json();
     } catch (err) {
-      console.log(err);
-      return {};
+      this.alert(err);
     }
+    return {};
   }
   async saveToZIP(from, to) {
     try {
@@ -80,9 +87,9 @@ class Api {
       });
       return await response.json();
     } catch (err) {
-      console.log(err);
-      return {};
+      this.alert(err);
     }
+    return {};
   }
 }
 
