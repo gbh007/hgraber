@@ -6,10 +6,14 @@
     <title>HGrabber</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
-    <script src="/main.js"></script>
+    <script src="/messages.js"></script>
+    <script src="/api.js"></script>
+    <script src="/top-bar.js"></script>
+    <script src="/rendering.js"></script>
   </head>
 
   <body>
+    <div id="top-bar"></div>
     <style>
       body {
         text-align: center;
@@ -21,8 +25,9 @@
       let api = new Api();
       let rendering = new Rendering();
       let serverInfo = {};
-      let countOnPage = 12;
+      let countOnPage = SETTINGS.getTItleOnPageCount();
       let totalPageCount = 1;
+      let currentPage = 1;
       async function loadTitleList(pageNumber = 1) {
         let data = await api.getTitleList(
           countOnPage,
@@ -35,6 +40,9 @@
         );
       }
       function renderPages(page) {
+        totalPageCount =
+          Math.floor(serverInfo.count / countOnPage) +
+          (serverInfo.count % countOnPage > 0 ? 1 : 0);
         let paginator = document.getElementById("paginator");
         paginator.innerHTML = "";
         for (let pn = 1; pn <= totalPageCount; pn++) {
@@ -44,6 +52,7 @@
           pg.setAttribute("current", pn == page ? "true" : "false");
           pg.onclick = () => {
             const page = pn;
+            currentPage = page;
             renderPages(page);
           };
           paginator.appendChild(pg);
@@ -53,10 +62,11 @@
       window.addEventListener("load", function () {
         api.getMainInfo().then((data) => {
           serverInfo = data;
-          totalPageCount =
-            Math.floor(serverInfo.count / countOnPage) +
-            (serverInfo.count % countOnPage > 0 ? 1 : 0);
-          renderPages(1);
+          renderPages(currentPage);
+          window.addEventListener("app-settings-changed", function () {
+            countOnPage = SETTINGS.getTItleOnPageCount();
+            renderPages(currentPage);
+          });
         });
       });
     </script>

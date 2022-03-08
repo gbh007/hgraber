@@ -33,7 +33,9 @@ span.page[current="true"] {
   grid-template-rows: none;
   grid-template-columns: 130px 1fr 1fr 1fr 1fr;
   border-spacing: 0px;
-  max-width: 500px;
+  /* max-width: 500px; */
+  width: 500px;
+  height: 200px;
 }
 
 .title *[t="red"] {
@@ -92,4 +94,55 @@ span.page[current="true"] {
   background: lightblue;
   border-radius: 10px;
   padding: 10px;
+}
+
+#index-info ul {
+  padding: 0px;
+  margin: 0px;
+  list-style: none;
+}
+
+#top-bar {
+  border-bottom: 1px solid gray;
+  margin-bottom: 5px;
+  padding: 7px;
+  text-align: left;
+}
+
+#top-bar > span {
+  border-radius: 5px;
+  padding: 5px;
+  background: #c4c2c2;
+  cursor: pointer;
+}
+#top-bar .top-bar-settings {
+  top: 0px;
+  left: 0px;
+  background: #dbdbdbd0;
+  position: fixed;
+  display: none;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  overflow: scroll;
+  text-align: center;
+}
+
+#top-bar .top-bar-settings[show="1"] {
+  display: block;
+}
+
+#top-bar .top-bar-settings > table {
+  display: inline;
+}
+
+#top-bar .top-bar-settings > table td {
+  padding: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+#top-bar .top-bar-settings > table td.head {
+  border-bottom: 2px dashed black;
+  font-weight: bold;
 }
