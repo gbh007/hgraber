@@ -91,6 +91,44 @@ class Api {
     }
     return {};
   }
+  async updateTitleRate(id, rate) {
+    return new Promise((resolve, reject) => {
+      fetch("/title/rate", {
+        method: "POST",
+        body: JSON.stringify({ id: id, rate: rate }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            this.alert(response.statusText);
+            reject();
+          }
+          resolve();
+        })
+        .catch((err) => {
+          this.alert(err);
+          reject();
+        });
+    });
+  }
+  async updatePageRate(id, page, rate) {
+    return new Promise((resolve, reject) => {
+      fetch("/title/page/rate", {
+        method: "POST",
+        body: JSON.stringify({ id: id, page: page, rate: rate }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            this.alert(response.statusText);
+            reject();
+          }
+          resolve();
+        })
+        .catch((err) => {
+          this.alert(err);
+          reject();
+        });
+    });
+  }
 }
 
 const API = new Api();

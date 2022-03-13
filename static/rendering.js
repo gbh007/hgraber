@@ -53,6 +53,7 @@ class Rendering {
     node = document.createElement("span");
     node.style = "grid-area: id;";
     node.innerText = `#${titleData.id}`;
+    node.appendChild(new Rate(titleData.id, titleData.info.rate).node);
     title.appendChild(node);
 
     node = document.createElement("span");
@@ -129,6 +130,7 @@ class Rendering {
     node = document.createElement("span");
     node.style = "grid-area: id;";
     node.innerText = `#${titleData.id}`;
+    node.appendChild(new Rate(titleData.id, titleData.info.rate).node);
     title.appendChild(node);
 
     node = document.createElement("span");
