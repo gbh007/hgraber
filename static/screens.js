@@ -3,6 +3,7 @@ class Screen {
     this.BindClose = this.BindClose.bind(this);
     this.Close = this.Close.bind(this);
     this.Node = this.Node.bind(this);
+    this.move = this.move.bind(this);
 
     this.node = document.createElement("div");
     this.node.className = "screen";
@@ -14,28 +15,19 @@ class Screen {
     let headNode = document.createElement("div");
     headNode.className = "screen-head";
 
-    let titleNode = document.createElement("div");
-    titleNode.className = "screen-head-title";
-    titleNode.innerText = title;
-    titleNode.title = title;
-    titleNode.onmouseup = () => {
-      this.moveOn = false;
+    this.titleNode = document.createElement("div");
+    this.titleNode.className = "screen-head-title";
+    this.titleNode.innerText = title;
+    this.titleNode.title = title;
+    this.titleNode.onmouseup = () => {
+      window.removeEventListener("mousemove", this.move);
     };
-    titleNode.onmouseleave = () => {
-      this.moveOn = false;
+
+    this.titleNode.onmousedown = () => {
+      window.addEventListener("mousemove", this.move);
     };
-    titleNode.onmousedown = () => {
-      this.moveOn = true;
-    };
-    titleNode.onmousemove = (event) => {
-      if (!this.moveOn) {
-        return;
-      }
-      let pos = titleNode.getBoundingClientRect();
-      this.node.style.top = event.pageY - (pos.bottom - pos.top) / 2 + "px";
-      this.node.style.left = event.pageX - (pos.right - pos.left) / 2 + "px";
-    };
-    headNode.appendChild(titleNode);
+
+    headNode.appendChild(this.titleNode);
 
     let actionsNode = document.createElement("div");
     actionsNode.className = "screen-head-actions";
@@ -52,6 +44,11 @@ class Screen {
     this.contentNode = document.createElement("div");
     this.contentNode.className = "screen-content";
     this.node.appendChild(this.contentNode);
+  }
+  move(event) {
+    let pos = this.titleNode.getBoundingClientRect();
+    this.node.style.top = event.pageY - (pos.bottom - pos.top) / 2 + "px";
+    this.node.style.left = event.pageX - (pos.right - pos.left) / 2 + "px";
   }
   Close() {
     if (this.close) {
