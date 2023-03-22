@@ -26,9 +26,11 @@ type Page struct {
 
 func Parse(ctx context.Context, URL string) (p Parser, err error) {
 	switch {
-	case strings.Index(URL, "https://imhentai.xxx/") == 0:
+	case strings.HasPrefix(URL, "https://imhentai.xxx/"):
 		p = &Parser_IMHENTAI_XXX{}
-	case strings.Index(URL, "https://manga-online.biz/") == 0:
+	case strings.HasPrefix(URL, "https://www.3hentai1.buzz/"):
+		p = &Parser_3HENTAI1_BUZZ{}
+	case strings.HasPrefix(URL, "https://manga-online.biz/"):
 		p = &Parser_MANGAONLINE_BIZ{}
 	default:
 		err = fmt.Errorf("не корректная ссылка")

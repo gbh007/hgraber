@@ -16,7 +16,7 @@ import (
 func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error {
 	defer system.Stopwatch(ctx, "DownloadTitlePage")()
 	// создаем папку с тайтлом
-	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), 0666)
+	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), os.ModeDir|os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		system.Error(ctx, err)
 		return err

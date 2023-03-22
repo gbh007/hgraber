@@ -24,7 +24,7 @@ build_amd64: create_build_dir
 
 run: create_build_dir
 	go build $(LDFLAGS) -o ./_build/hgraber-bin 
-	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath
+	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath -p 8081
 	
 view: create_build_dir
 	go build $(LDFLAGS) -o ./_build/hgraber-bin 
