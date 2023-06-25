@@ -65,7 +65,6 @@ func (p Parser_3HENTAI1_BUZZ) parsePages(s string) []string {
 	return result
 }
 
-// TODO
 func (p Parser_3HENTAI1_BUZZ) ParsePages(ctx context.Context) []Page {
 	result := make([]Page, 0)
 	res := p.parsePages(p.main_raw)
@@ -93,12 +92,14 @@ func (p Parser_3HENTAI1_BUZZ) ParsePages(ctx context.Context) []Page {
 
 	return result
 }
+
 func (p Parser_3HENTAI1_BUZZ) ParseAuthors(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `Artists:`) {
 		return []string{}
 	}
 	return p.parseTags(p.main_raw, "?artists")
 }
+
 func (p Parser_3HENTAI1_BUZZ) ParseCharacters(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `Characters:`) {
 		return []string{}
@@ -112,18 +113,21 @@ func (p Parser_3HENTAI1_BUZZ) ParseLanguages(ctx context.Context) []string {
 	}
 	return p.parseTags(p.main_raw, "?language")
 }
+
 func (p Parser_3HENTAI1_BUZZ) ParseCategories(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `Categories:`) {
 		return []string{}
 	}
 	return p.parseTags(p.main_raw, "?category")
 }
+
 func (p Parser_3HENTAI1_BUZZ) ParseParodies(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `Series:`) {
 		return []string{}
 	}
 	return p.parseTags(p.main_raw, "?series")
 }
+
 func (p Parser_3HENTAI1_BUZZ) ParseGroups(ctx context.Context) []string {
 	if !strings.Contains(p.main_raw, `Groups:`) {
 		return []string{}

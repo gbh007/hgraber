@@ -33,6 +33,7 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !ok {
 		return
 	}
+
 	if !title.Data.Parsed.Name {
 		err = jdb.Get().UpdateTitleName(ctx, title.ID, p.ParseName(ctx))
 		if err != nil {
@@ -40,6 +41,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлено название", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Authors {
 		err = jdb.Get().UpdateTitleAuthors(ctx, title.ID, p.ParseAuthors(ctx))
 		if err != nil {
@@ -47,6 +49,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлены авторы", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Tags {
 		err = jdb.Get().UpdateTitleTags(ctx, title.ID, p.ParseTags(ctx))
 		if err != nil {
@@ -54,6 +57,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлены теги", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Characters {
 		err = jdb.Get().UpdateTitleCharacters(ctx, title.ID, p.ParseCharacters(ctx))
 		if err != nil {
@@ -61,6 +65,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлены персонажи", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Categories {
 		err = jdb.Get().UpdateTitleCategories(ctx, title.ID, p.ParseCategories(ctx))
 		if err != nil {
@@ -68,6 +73,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлены категории", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Groups {
 		err = jdb.Get().UpdateTitleGroups(ctx, title.ID, p.ParseGroups(ctx))
 		if err != nil {
@@ -75,6 +81,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлены группы", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Languages {
 		err = jdb.Get().UpdateTitleLanguages(ctx, title.ID, p.ParseLanguages(ctx))
 		if err != nil {
@@ -82,6 +89,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлены языки", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Parodies {
 		err = jdb.Get().UpdateTitleParodies(ctx, title.ID, p.ParseParodies(ctx))
 		if err != nil {
@@ -89,6 +97,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		}
 		system.Info(ctx, "обновлены пародии", title.ID, title.URL)
 	}
+
 	if !title.Data.Parsed.Page {
 		pages := p.ParsePages(ctx)
 		if len(pages) > 0 {

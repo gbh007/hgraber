@@ -9,6 +9,7 @@ import (
 
 // Parser_MANGAONLINE_BIZ парсер для сайта https://manga-online.biz/
 type Parser_MANGAONLINE_BIZ struct {
+	baseParser
 	main_raw string
 	url      string
 }
@@ -55,6 +56,7 @@ func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []Page {
 	}
 	return result
 }
+
 func (p Parser_MANGAONLINE_BIZ) ParseTags(ctx context.Context) []string {
 	result := make([]string, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<a onclick="App.Analytics.track('Genre', 'Click', 'Manga');" href="`) + `.+?` +
@@ -66,18 +68,3 @@ func (p Parser_MANGAONLINE_BIZ) ParseTags(ctx context.Context) []string {
 	}
 	return result
 }
-
-func (p Parser_MANGAONLINE_BIZ) ParseAuthors(ctx context.Context) []string { return []string{} }
-func (p Parser_MANGAONLINE_BIZ) ParseCharacters(ctx context.Context) []string {
-	return []string{}
-}
-func (p Parser_MANGAONLINE_BIZ) ParseLanguages(ctx context.Context) []string {
-	return []string{}
-}
-func (p Parser_MANGAONLINE_BIZ) ParseCategories(ctx context.Context) []string {
-	return []string{}
-}
-func (p Parser_MANGAONLINE_BIZ) ParseParodies(ctx context.Context) []string {
-	return []string{}
-}
-func (p Parser_MANGAONLINE_BIZ) ParseGroups(ctx context.Context) []string { return []string{} }

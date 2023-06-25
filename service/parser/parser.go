@@ -32,6 +32,8 @@ func Parse(ctx context.Context, URL string) (p Parser, err error) {
 		p = &Parser_3HENTAI1_BUZZ{}
 	case strings.HasPrefix(URL, "https://manga-online.biz/"):
 		p = &Parser_MANGAONLINE_BIZ{}
+	case strings.HasPrefix(URL, "https://doujins.com/"):
+		p = &Parser_DOUJINS_COM{}
 	default:
 		err = fmt.Errorf("не корректная ссылка")
 	}
@@ -60,15 +62,18 @@ type Parser interface {
 	ParseGroups(ctx context.Context) []string
 }
 
-/*
-func (p *Parser) Load(URL string) bool     { return false }
-func (p Parser) ParseName(ctx context.Context) string         { return "" }
-func (p Parser) ParsePages(ctx context.Context) []Page        { return []Page{} }
-func (p Parser) ParseTags(ctx context.Context) []string       { return []string{} }
-func (p Parser) ParseAuthors(ctx context.Context) []string    { return []string{} }
-func (p Parser) ParseCharacters(ctx context.Context) []string { return []string{} }
-func (p Parser) ParseLanguages(ctx context.Context) []string  { return []string{} }
-func (p Parser) ParseCategories(ctx context.Context) []string { return []string{} }
-func (p Parser) ParseParodies(ctx context.Context) []string   { return []string{} }
-func (p Parser) ParseGroups(ctx context.Context) []string     { return []string{} }
-*/
+// Проверка соответствия базового типа
+var _ Parser = &baseParser{}
+
+type baseParser struct{}
+
+func (p baseParser) Load(ctx context.Context, URL string) bool    { return false }
+func (p baseParser) ParseName(ctx context.Context) string         { return "" }
+func (p baseParser) ParsePages(ctx context.Context) []Page        { return []Page{} }
+func (p baseParser) ParseTags(ctx context.Context) []string       { return []string{} }
+func (p baseParser) ParseAuthors(ctx context.Context) []string    { return []string{} }
+func (p baseParser) ParseCharacters(ctx context.Context) []string { return []string{} }
+func (p baseParser) ParseLanguages(ctx context.Context) []string  { return []string{} }
+func (p baseParser) ParseCategories(ctx context.Context) []string { return []string{} }
+func (p baseParser) ParseParodies(ctx context.Context) []string   { return []string{} }
+func (p baseParser) ParseGroups(ctx context.Context) []string     { return []string{} }
