@@ -45,7 +45,9 @@ func autosaveDB(parentCtx context.Context, filename string) {
 	ctx := system.NewSystemContext(parentCtx, "DB-autosave")
 	system.Info(ctx, "autosaveDB запущен")
 	defer system.Info(ctx, "autosaveDB остановлен")
-	timer := time.NewTicker(time.Minute)
+
+	timer := time.NewTicker(dbSaveInterval)
+
 	for {
 		select {
 		case <-ctx.Done():

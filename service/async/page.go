@@ -80,7 +80,9 @@ func (pl *PageLoader) Run() {
 	}
 	system.Info(pl.ctx, "PageLoader запущен")
 	defer system.Info(pl.ctx, "PageLoader остановлен")
-	timer := time.NewTicker(time.Minute)
+
+	timer := time.NewTicker(pageInterval)
+
 	for {
 		select {
 		case <-pl.ctx.Done():

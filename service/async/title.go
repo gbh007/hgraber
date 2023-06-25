@@ -68,9 +68,12 @@ func (tl *TitleLoader) Run() {
 	for i := 0; i < titleHandlersCount; i++ {
 		go tl.runQueueHandler()
 	}
+
 	system.Info(tl.ctx, "TitleLoader запущен")
 	defer system.Info(tl.ctx, "TitleLoader остановлен")
-	timer := time.NewTicker(time.Minute)
+
+	timer := time.NewTicker(titleInterval)
+
 	for {
 		select {
 		case <-tl.ctx.Done():

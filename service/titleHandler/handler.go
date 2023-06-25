@@ -5,6 +5,7 @@ import (
 	"app/service/parser"
 	"app/system"
 	"context"
+	"strings"
 )
 
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
@@ -26,8 +27,11 @@ func FirstHandle(ctx context.Context, u string) error {
 func Update(ctx context.Context, title jdb.Title) {
 	system.Info(ctx, "начата обработка", title.ID, title.URL)
 	defer system.Info(ctx, "завершена обработка", title.ID, title.URL)
-	p, ok, err := parser.Load(ctx, title.URL)
+
+	p, ok, err := parser.Load(ctx, strings.TrimSpace(title.URL))
 	if err != nil {
+		system.Error(ctx, err)
+
 		return
 	}
 	if !ok {
@@ -37,6 +41,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Name {
 		err = jdb.Get().UpdateTitleName(ctx, title.ID, p.ParseName(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлено название", title.ID, title.URL)
@@ -45,6 +51,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Authors {
 		err = jdb.Get().UpdateTitleAuthors(ctx, title.ID, p.ParseAuthors(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлены авторы", title.ID, title.URL)
@@ -53,6 +61,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Tags {
 		err = jdb.Get().UpdateTitleTags(ctx, title.ID, p.ParseTags(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлены теги", title.ID, title.URL)
@@ -61,6 +71,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Characters {
 		err = jdb.Get().UpdateTitleCharacters(ctx, title.ID, p.ParseCharacters(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлены персонажи", title.ID, title.URL)
@@ -69,6 +81,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Categories {
 		err = jdb.Get().UpdateTitleCategories(ctx, title.ID, p.ParseCategories(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлены категории", title.ID, title.URL)
@@ -77,6 +91,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Groups {
 		err = jdb.Get().UpdateTitleGroups(ctx, title.ID, p.ParseGroups(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлены группы", title.ID, title.URL)
@@ -85,6 +101,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Languages {
 		err = jdb.Get().UpdateTitleLanguages(ctx, title.ID, p.ParseLanguages(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлены языки", title.ID, title.URL)
@@ -93,6 +111,8 @@ func Update(ctx context.Context, title jdb.Title) {
 	if !title.Data.Parsed.Parodies {
 		err = jdb.Get().UpdateTitleParodies(ctx, title.ID, p.ParseParodies(ctx))
 		if err != nil {
+			system.Error(ctx, err)
+
 			return
 		}
 		system.Info(ctx, "обновлены пародии", title.ID, title.URL)
@@ -102,6 +122,7 @@ func Update(ctx context.Context, title jdb.Title) {
 		pages := p.ParsePages(ctx)
 		if len(pages) > 0 {
 			pagesDB := make([]jdb.Page, len(pages))
+
 			for i, page := range pages {
 				pagesDB[i] = jdb.Page{
 					URL: page.URL,
@@ -111,8 +132,11 @@ func Update(ctx context.Context, title jdb.Title) {
 
 			err = jdb.Get().UpdateTitlePages(ctx, title.ID, pagesDB)
 			if err != nil {
+				system.Error(ctx, err)
+
 				return
 			}
+
 			system.Info(ctx, "обновлены страницы", title.ID, title.URL)
 		}
 	}
