@@ -9,6 +9,7 @@
     <script src="/messages.js"></script>
     <script src="/api.js"></script>
     <script src="/top-bar.js"></script>
+    <script src="/rate.js"></script>
   </head>
   <body>
     <style>
@@ -17,6 +18,7 @@
       }
       div.view {
         height: 90vh;
+        white-space: nowrap;
       }
       span.page-switch {
         text-decoration: none;
@@ -36,17 +38,11 @@
       }
     </style>
     <div>
-      <a href="/">на главную</a>
       Страница <span id="page-number">1</span> из <span id="page-count">1</span>
+      <span id="rate"></span>
     </div>
     <div class="view">
-      <span class="page-switch"
-        ><h1 class="page-switch" onclick="prevPage();">Назад</h1></span
-      >
       <img src="" id="main-image" style="max-width: 100%; max-height: 100%" />
-      <span class="page-switch"
-        ><h1 class="page-switch" onclick="nextPage();">Вперед</h1></span
-      >
     </div>
     <script>
       let api = new Api();
@@ -62,8 +58,11 @@
             "src",
             `/file/${titleID}/${info.page_number}.${info.ext}`
           );
-        document.getElementById("page-number").innerText = info.page_number;
         page = info.page_number;
+        document.getElementById("page-number").innerText = page;
+        let rate = document.getElementById("rate");
+        rate.innerHTML = "";
+        rate.appendChild(new Rate(titleID, info.rate, page).node);
       }
       function prevPage() {
         if (page == 1) return;
@@ -78,6 +77,17 @@
         });
       }
       window.addEventListener("load", function () {
+        document.getElementById("main-image").onclick = (event) => {
+          const pos = document
+            .getElementById("main-image")
+            .getBoundingClientRect();
+          const dx = (event.pageX - pos.left) / (pos.right - pos.left);
+          if (dx < 0.3) {
+            prevPage();
+          } else {
+            nextPage();
+          }
+        };
         api.getTitleInfo(titleID).then((data) => {
           pageCount = data.pages.length || 0;
           document.getElementById("page-count").innerText = pageCount;

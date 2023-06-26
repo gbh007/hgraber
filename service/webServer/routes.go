@@ -130,3 +130,44 @@ func AppInfo() http.Handler {
 		base.SetResponse(r, response)
 	})
 }
+
+func SetTitleRate() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		request := struct {
+			ID   int `json:"id"`
+			Rate int `json:"rate"`
+		}{}
+		err := base.ParseJSON(r, &request)
+		if err != nil {
+			base.SetError(r, err)
+			return
+		}
+		err = jdb.Get().UpdateTitleRate(r.Context(), request.ID, request.Rate)
+		if err != nil {
+			base.SetError(r, err)
+			return
+		}
+		base.SetResponse(r, struct{}{})
+	})
+}
+
+func SetPageRate() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		request := struct {
+			ID   int `json:"id"`
+			Page int `json:"page"`
+			Rate int `json:"rate"`
+		}{}
+		err := base.ParseJSON(r, &request)
+		if err != nil {
+			base.SetError(r, err)
+			return
+		}
+		err = jdb.Get().UpdatePageRate(r.Context(), request.ID, request.Page, request.Rate)
+		if err != nil {
+			base.SetError(r, err)
+			return
+		}
+		base.SetResponse(r, struct{}{})
+	})
+}

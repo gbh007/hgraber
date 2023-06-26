@@ -24,7 +24,7 @@ class Rendering {
     return node;
   }
 
-  generateHTMLTItleDetailsFromTitleInfo(titleData) {
+  generateHTMLTItleDetailsFromTitleInfo(titleData, withName = true) {
     let title = document.createElement("div");
     title.className = "title-details";
     title.setAttribute("t", titleData.info.parsed.name ? "" : "bred");
@@ -40,15 +40,20 @@ class Rendering {
       title.appendChild(tImg);
     }
 
-    let node = document.createElement("span");
-    node.style = "grid-area: name;";
-    node.setAttribute("t", titleData.info.parsed.name ? "" : "red");
-    node.innerText = titleData.info.name;
-    title.appendChild(node);
+    var node;
+
+    if (withName) {
+      node = document.createElement("span");
+      node.style = "grid-area: name;";
+      node.setAttribute("t", titleData.info.parsed.name ? "" : "red");
+      node.innerText = titleData.info.name;
+      title.appendChild(node);
+    }
 
     node = document.createElement("span");
     node.style = "grid-area: id;";
     node.innerText = `#${titleData.id}`;
+    node.appendChild(new Rate(titleData.id, titleData.info.rate).node);
     title.appendChild(node);
 
     node = document.createElement("span");
@@ -125,6 +130,7 @@ class Rendering {
     node = document.createElement("span");
     node.style = "grid-area: id;";
     node.innerText = `#${titleData.id}`;
+    node.appendChild(new Rate(titleData.id, titleData.info.rate).node);
     title.appendChild(node);
 
     node = document.createElement("span");
@@ -160,7 +166,13 @@ class Rendering {
     }
     title.appendChild(node);
 
-    title.appendChild(this.generateHTMLTItleDetailsFromTitleInfo(titleData));
+    title.onclick = (e) => {
+      let s = new Screen(titleData.info.name, e.pageX, e.pageY);
+      s.Node().appendChild(
+        this.generateHTMLTItleDetailsFromTitleInfo(titleData, false)
+      );
+      SCREENS.AddScreen(s);
+    };
 
     return title;
   }

@@ -27,6 +27,7 @@ type Page struct {
 	Ext      string    `json:"ext"`
 	Success  bool      `json:"success"`
 	LoadedAt time.Time `json:"loaded_at"`
+	Rate     int       `json:"rate,omitempty"`
 }
 
 func (p Page) Copy(ctx context.Context) Page {
@@ -39,6 +40,7 @@ func (p Page) Copy(ctx context.Context) Page {
 		Ext:      p.Ext,
 		Success:  p.Success,
 		LoadedAt: p.LoadedAt,
+		Rate:     p.Rate,
 	}
 }
 
@@ -49,6 +51,7 @@ type PageFullInfo struct {
 	Ext        string    `json:"ext"`
 	Success    bool      `json:"success"`
 	LoadedAt   time.Time `json:"loaded_at"`
+	Rate       int       `json:"rate,omitempty"`
 }
 
 type TitleInfoParsed struct {
@@ -96,6 +99,7 @@ func (tip TitleInfoParsed) IsFullParsed(ctx context.Context) bool {
 type TitleInfo struct {
 	Parsed     TitleInfoParsed `json:"parsed,omitempty"`
 	Name       string          `json:"name,omitempty"`
+	Rate       int             `json:"rate,omitempty"`
 	Tags       []string        `json:"tags,omitempty"`
 	Authors    []string        `json:"authors,omitempty"`
 	Characters []string        `json:"characters,omitempty"`
@@ -113,6 +117,7 @@ func (ti TitleInfo) Copy(ctx context.Context) TitleInfo {
 	c := TitleInfo{
 		Parsed:     ti.Parsed.Copy(ctx),
 		Name:       ti.Name,
+		Rate:       ti.Rate,
 		Tags:       make([]string, len(ti.Tags)),
 		Authors:    make([]string, len(ti.Authors)),
 		Characters: make([]string, len(ti.Characters)),

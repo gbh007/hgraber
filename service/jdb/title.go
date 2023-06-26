@@ -88,6 +88,31 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, page int, success
 	return nil
 }
 
+func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
+	defer system.Stopwatch(ctx, "UpdatePageRate")()
+
+	title, ok := db.data.Titles[id]
+	if !ok {
+		return TitleIndexError
+	}
+
+	page--
+
+	if page < 0 || page >= len(title.Pages) {
+		return PageIndexError
+	}
+
+	title.Pages[page].Rate = rate
+
+	db.data.Titles[id] = title
+	db.needSave = true
+
+	return nil
+}
+
 func (db *Database) GetTitle(ctx context.Context, id int) (Title, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
@@ -167,6 +192,25 @@ func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []Page) 
 
 }
 
+func (db *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error {
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
+
+	defer system.Stopwatch(ctx, "UpdateTitleRate")()
+
+	title, ok := db.data.Titles[id]
+	if !ok {
+		return TitleIndexError
+	}
+
+	title.Data.Rate = rate
+
+	db.data.Titles[id] = title
+	db.needSave = true
+
+	return nil
+}
+
 func (db *Database) GetPage(ctx context.Context, id, page int) (*PageFullInfo, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
@@ -193,5 +237,6 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*PageFullInfo, e
 		Ext:        p.Ext,
 		Success:    p.Success,
 		LoadedAt:   p.LoadedAt,
+		Rate:       p.Rate,
 	}, nil
 }
