@@ -2,9 +2,11 @@ package parser
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"strings"
 )
+
+var ErrInvalidLink = errors.New("не корректная ссылка")
 
 func trimLastSlash(URL string, count int) string {
 	c := 0
@@ -35,8 +37,9 @@ func Parse(ctx context.Context, URL string) (p Parser, err error) {
 	case strings.HasPrefix(URL, "https://doujins.com/"):
 		p = &Parser_DOUJINS_COM{}
 	default:
-		err = fmt.Errorf("не корректная ссылка")
+		err = ErrInvalidLink
 	}
+
 	return p, err
 }
 

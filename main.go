@@ -3,6 +3,7 @@ package main
 import (
 	"app/service/async"
 	"app/service/jdb"
+	"app/service/parser"
 	"app/service/titleHandler"
 	"app/service/webServer"
 	"app/system"
@@ -139,11 +140,44 @@ func parseTaskFile(ctx context.Context) {
 	}
 	defer system.IfErrFunc(ctx, f.Close)
 
+	var (
+		totalCount     = 0
+		loadedCount    = 0
+		duplicateCount = 0
+		errorCount     = 0
+	)
+
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
-		if sc.Text() == "" {
+		u := sc.Text()
+		if u == "" {
 			continue
 		}
-		_ = titleHandler.FirstHandle(ctx, sc.Text())
+
+		totalCount++
+
+		err = titleHandler.FirstHandle(ctx, u)
+
+		switch {
+		case errors.Is(err, jdb.TitleDuplicateError):
+			duplicateCount++
+
+		case errors.Is(err, parser.ErrInvalidLink):
+			errorCount++
+
+			system.Warning(ctx, "не поддерживаемая ссылка", u)
+		case err != nil:
+			errorCount++
+
+			system.Error(ctx, err)
+		default:
+			loadedCount++
+		}
 	}
+
+	system.Info(ctx,
+		fmt.Sprintf(
+			"всего: %d загружено: %d дубликаты: %d ошибки: %d",
+			totalCount, loadedCount, duplicateCount, errorCount,
+		))
 }
