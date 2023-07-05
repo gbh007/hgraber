@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -72,7 +73,8 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	db.uniqueURLs = make(map[string]struct{})
 
 	for id, title := range newData.Titles {
-		db.uniqueURLs[title.URL] = struct{}{}
+		db.uniqueURLs[strings.TrimSpace(title.URL)] = struct{}{}
+
 		if id > db.lastTitleID {
 			db.lastTitleID = id
 		}

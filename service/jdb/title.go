@@ -3,6 +3,7 @@ package jdb
 import (
 	"app/system"
 	"context"
+	"strings"
 	"time"
 )
 
@@ -28,6 +29,8 @@ func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool)
 	defer db.mutex.Unlock()
 
 	defer system.Stopwatch(ctx, "NewTitle")()
+
+	URL = strings.TrimSpace(URL)
 
 	if _, found := db.uniqueURLs[URL]; found {
 		return 0, TitleDuplicateError

@@ -34,6 +34,7 @@ func main() {
 	fileStorage := flag.String("fs", "loads", "директория для данных")
 	fileExport := flag.String("fe", "exported", "директория для экспорта файлов")
 	dbFileName := flag.String("db", "db.json", "файл базы")
+	staticDirName := flag.String("static", "", "папка со статическими файлами")
 
 	// отладка
 	debugMode := flag.Bool("debug", false, "активировать режим отладки (дебага)")
@@ -75,10 +76,12 @@ func main() {
 
 	system.Info(mainContext, "Инициализация базы")
 	jdb.Init(mainContext)
+
 	err := jdb.Get().Load(mainContext, *dbFileName)
 	if err != nil {
 		os.Exit(1)
 	}
+
 	system.Info(mainContext, "База загружена")
 
 	err = system.SetFileStoragePath(mainContext, *fileStorage)
@@ -101,17 +104,20 @@ func main() {
 		async.Init(mainContext, *dbFileName)
 	}
 
-	webServer.Start(mainContext, fmt.Sprintf(":%d", *webPort))
+	webServer.Start(mainContext, fmt.Sprintf(":%d", *webPort), *staticDirName)
 
 	<-mainContext.Done()
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
+
 	<-system.WaitingChan(mainContext)
 	system.Info(mainContext, "Процессы завершены")
+
 	if jdb.Get().Save(mainContext, *dbFileName, false) == nil {
 		system.Info(mainContext, "База сохранена")
 	} else {
 		system.Warning(mainContext, "База не сохранена")
 	}
+
 	system.Info(mainContext, "Выход")
 }
 

@@ -2,6 +2,7 @@ package webServer
 
 import (
 	"app/service/webServer/base"
+	"app/service/webServer/static"
 	"app/system"
 	"context"
 	"errors"
@@ -10,12 +11,18 @@ import (
 )
 
 // Start запускает веб сервер
-func Start(parentCtx context.Context, addr string) {
+func Start(parentCtx context.Context, addr string, staticDir string) {
 	ctx := system.NewSystemContext(parentCtx, "Web-srv")
 	mux := http.NewServeMux()
 
 	// обработчик статики
-	mux.Handle("/", http.FileServer(http.Dir("./static")))
+	if staticDir != "" {
+		mux.Handle("/", http.FileServer(http.Dir(staticDir)))
+	} else {
+		mux.Handle("/", http.FileServer(http.FS(static.StaticDir)))
+	}
+
+	// обработчик файлов
 	mux.Handle("/file/", http.StripPrefix("/file/", http.FileServer(http.Dir(system.GetFileStoragePath(ctx)))))
 
 	// API

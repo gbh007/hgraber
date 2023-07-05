@@ -24,8 +24,13 @@ build_amd64: create_build_dir
 
 run: create_build_dir
 	go build $(LDFLAGS) -o ./_build/hgraber-bin 
-	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath -p 8081
+	./_build/hgraber-bin -p 8081
 	
 view: create_build_dir
 	go build $(LDFLAGS) -o ./_build/hgraber-bin 
-	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath -v
+	./_build/hgraber-bin -v -p 8081
+
+debug: create_build_dir
+	go build $(LDFLAGS) -o ./_build/hgraber-bin 
+	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath -p 8081 -static="service/webServer/static"
+	
