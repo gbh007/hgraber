@@ -65,3 +65,17 @@ func IsAliveContext(ctx context.Context) error {
 
 	return nil
 }
+
+// WithDetach - отделяет любые операция завершения оборачивая контекст
+func WithDetach(ctx context.Context) context.Context {
+	return detachedContext{ctx}
+}
+
+type detachedContext struct {
+	parent context.Context
+}
+
+func (_ detachedContext) Deadline() (time.Time, bool)         { return time.Time{}, false }
+func (_ detachedContext) Done() <-chan struct{}               { return nil }
+func (_ detachedContext) Err() error                          { return nil }
+func (ctx detachedContext) Value(key interface{}) interface{} { return ctx.parent.Value(key) }

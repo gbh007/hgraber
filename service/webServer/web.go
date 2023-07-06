@@ -11,7 +11,7 @@ import (
 )
 
 // Start запускает веб сервер
-func Start(parentCtx context.Context, addr string, staticDir string) {
+func Start(parentCtx context.Context, addr string, staticDir string, token string) {
 	ctx := system.NewSystemContext(parentCtx, "Web-srv")
 	mux := http.NewServeMux()
 
@@ -23,22 +23,28 @@ func Start(parentCtx context.Context, addr string, staticDir string) {
 	}
 
 	// обработчик файлов
-	mux.Handle("/file/", http.StripPrefix("/file/", http.FileServer(http.Dir(system.GetFileStoragePath(ctx)))))
+	mux.Handle("/file/", base.TokenHandler(token,
+		http.StripPrefix(
+			"/file/",
+			http.FileServer(http.Dir(system.GetFileStoragePath(ctx))),
+		),
+	))
 
 	// API
-	base.AddHandler(mux, "/info", MainInfo())
-	base.AddHandler(mux, "/new", NewTitle())
-	base.AddHandler(mux, "/title/list", TitleList())
-	base.AddHandler(mux, "/title/details", TitleInfo())
-	base.AddHandler(mux, "/title/page", TitlePage())
-	base.AddHandler(mux, "/to-zip", SaveToZIP())
-	base.AddHandler(mux, "/app/info", AppInfo())
-	base.AddHandler(mux, "/title/rate", SetTitleRate())
-	base.AddHandler(mux, "/title/page/rate", SetPageRate())
+	mux.Handle("/auth/login", Login(token))
+	mux.Handle("/info", base.TokenHandler(token, MainInfo()))
+	mux.Handle("/new", base.TokenHandler(token, NewTitle()))
+	mux.Handle("/title/list", base.TokenHandler(token, TitleList()))
+	mux.Handle("/title/details", base.TokenHandler(token, TitleInfo()))
+	mux.Handle("/title/page", base.TokenHandler(token, TitlePage()))
+	mux.Handle("/to-zip", base.TokenHandler(token, SaveToZIP()))
+	mux.Handle("/app/info", base.TokenHandler(token, AppInfo()))
+	mux.Handle("/title/rate", base.TokenHandler(token, SetTitleRate()))
+	mux.Handle("/title/page/rate", base.TokenHandler(token, SetPageRate()))
 
 	server := http.Server{
 		Addr:        addr,
-		Handler:     mux,
+		Handler:     base.PanicDefender(mux),
 		ErrorLog:    system.StdErrorLogger(ctx),
 		BaseContext: base.NewBaseContext(ctx),
 	}

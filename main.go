@@ -24,6 +24,7 @@ func main() {
 	webPort := flag.Int("p", 8080, "порт веб сервера")
 	onlyView := flag.Bool("v", false, "режим только просмотра")
 	export := flag.Bool("e", false, "экспортировать данные и выйти")
+	token := flag.String("access-token", "", "токен для доступа к контенту")
 
 	// потоки логирования
 	disableStdErr := flag.Bool("no-stderr", false, "отключить стандартный поток ошибок")
@@ -104,7 +105,7 @@ func main() {
 		async.Init(mainContext, *dbFileName)
 	}
 
-	webServer.Start(mainContext, fmt.Sprintf(":%d", *webPort), *staticDirName)
+	webServer.Start(mainContext, fmt.Sprintf(":%d", *webPort), *staticDirName, *token)
 
 	<-mainContext.Done()
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")

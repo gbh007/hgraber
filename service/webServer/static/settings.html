@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>HGrabber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+    <script src="/messages.js"></script>
+    <script src="/api.js"></script>
+    <script src="/top-bar.js"></script>
+</head>
+
+<body>
+    <div class="top-bar-settings">
+        <table>
+            <tbody>
+                <tr>
+                    <td class="head" colspan="2">Данные сервера</td>
+                </tr>
+                <tr>
+                    <td>Версия</td>
+                    <td id="info-version"></td>
+                </tr>
+                <tr>
+                    <td>Коммит</td>
+                    <td id="info-commit"></td>
+                </tr>
+                <tr>
+                    <td>Время сборки</td>
+                    <td id="info-build-time"></td>
+                </tr>
+                <tr>
+                    <td class="head" colspan="2">Данные приложения</td>
+                </tr>
+                <tr>
+                    <td>Количество на странице</td>
+                    <td><input type="number" id="on-page"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+        function login() {
+            let token = document.getElementById("token");
+            API.login(token.value);
+        }
+
+        window.addEventListener("load", async function () {
+            let info = await API.getAppInfo();
+
+            document.getElementById("info-version").innerText = info.version
+            document.getElementById("info-commit").innerText = info.commit
+            document.getElementById("info-build-time").innerText = info.build_at
+            let onPageInputNode = document.getElementById("on-page")
+
+            onPageInputNode.value = SETTINGS.getTItleOnPageCount();
+            onPageInputNode.oninput = (v) => SETTINGS.updateTItleOnPageCount(v.target.value);
+        });
+    </script>
+</body>
+
+</html>

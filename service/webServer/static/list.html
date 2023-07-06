@@ -1,75 +1,211 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>HGrabber</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
-    <script src="/messages.js"></script>
-    <script src="/api.js"></script>
-    <script src="/top-bar.js"></script>
-    <script src="/screens.js"></script>
-    <script src="/rate.js"></script>
-    <script src="/rendering.js"></script>
-  </head>
 
-  <body>
-    <style>
-      body {
-        text-align: center;
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HGrabber</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+  <script src="/messages.js"></script>
+  <script src="/api.js"></script>
+  <script src="/top-bar.js"></script>
+  <script src="/rate.js"></script>
+</head>
+
+<body>
+  <style>
+    body {
+      text-align: center;
+    }
+
+    #title-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    }
+
+    a.title {
+      text-decoration: none;
+      color: black;
+    }
+
+    .title {
+      display: inline-grid;
+      grid-template-areas:
+        "img name name name name"
+        "img id pgc pgp dt"
+        "img tag tag tag tag";
+      grid-template-rows: none;
+      grid-template-columns: 130px 1fr 1fr 1fr 1fr;
+      border-spacing: 0px;
+      /* max-width: 500px; */
+      width: 500px;
+      height: 200px;
+    }
+
+    .title *[t="red"] {
+      color: red;
+    }
+
+    .title *[t="bred"] {
+      background: pink;
+    }
+
+
+    span.page {
+      border-radius: 3px;
+      padding: 3px;
+      margin: 2px;
+      min-width: 20px;
+      background: lightgrey;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    span.page[current="true"] {
+      background: grey;
+    }
+
+
+    span.tag {
+      border-radius: 3px;
+      padding: 3px;
+      margin: 2px;
+      background: lightgrey;
+      display: inline-block;
+    }
+  </style>
+  <div id="paginator"></div>
+  <div id="title-list"></div>
+  <script>
+    let api = new Api();
+    let serverInfo = {};
+    let countOnPage = SETTINGS.getTItleOnPageCount();
+    let totalPageCount = 1;
+    let currentPage = 1;
+
+    async function loadTitleList(pageNumber = 1) {
+      let data = await api.getTitleList(
+        countOnPage,
+        (pageNumber - 1) * countOnPage
+      );
+      let tl = document.getElementById("title-list");
+      tl.innerHTML = "";
+      data.map((info) =>
+        tl.appendChild(generateHTMLFromTitleInfo(info))
+      );
+    }
+
+    function renderPages(page) {
+      totalPageCount =
+        Math.floor(serverInfo.count / countOnPage) +
+        (serverInfo.count % countOnPage > 0 ? 1 : 0);
+      let paginator = document.getElementById("paginator");
+      paginator.innerHTML = "";
+      for (let pn = 1; pn <= totalPageCount; pn++) {
+        let pg = document.createElement("span");
+        pg.innerText = pn;
+        pg.className = "page";
+        pg.setAttribute("current", pn == page ? "true" : "false");
+        pg.onclick = () => {
+          const page = pn;
+          currentPage = page;
+          renderPages(page);
+        };
+        paginator.appendChild(pg);
       }
-    </style>
-    <div id="paginator"></div>
-    <div id="title-list"></div>
-    <script>
-      let api = new Api();
-      let rendering = new Rendering();
-      let serverInfo = {};
-      let countOnPage = SETTINGS.getTItleOnPageCount();
-      let totalPageCount = 1;
-      let currentPage = 1;
-      async function loadTitleList(pageNumber = 1) {
-        let data = await api.getTitleList(
-          countOnPage,
-          (pageNumber - 1) * countOnPage
-        );
-        let tl = document.getElementById("title-list");
-        tl.innerHTML = "";
-        data.map((info) =>
-          tl.appendChild(rendering.generateHTMLFromTitleInfo(info))
-        );
-      }
-      function renderPages(page) {
-        totalPageCount =
-          Math.floor(serverInfo.count / countOnPage) +
-          (serverInfo.count % countOnPage > 0 ? 1 : 0);
-        let paginator = document.getElementById("paginator");
-        paginator.innerHTML = "";
-        for (let pn = 1; pn <= totalPageCount; pn++) {
-          let pg = document.createElement("span");
-          pg.innerText = pn;
-          pg.className = "page";
-          pg.setAttribute("current", pn == page ? "true" : "false");
-          pg.onclick = () => {
-            const page = pn;
-            currentPage = page;
-            renderPages(page);
-          };
-          paginator.appendChild(pg);
-        }
-        loadTitleList(page);
-      }
-      window.addEventListener("load", function () {
-        api.getMainInfo().then((data) => {
-          serverInfo = data;
+      loadTitleList(page);
+    }
+
+    window.addEventListener("load", function () {
+      api.getMainInfo().then((data) => {
+        serverInfo = data;
+        renderPages(currentPage);
+        window.addEventListener("app-settings-changed", function () {
+          countOnPage = SETTINGS.getTItleOnPageCount();
           renderPages(currentPage);
-          window.addEventListener("app-settings-changed", function () {
-            countOnPage = SETTINGS.getTItleOnPageCount();
-            renderPages(currentPage);
-          });
         });
       });
-    </script>
-  </body>
+    });
+
+
+
+    function calcAvg(pages) {
+      if (!pages || !pages.length) {
+        return 0;
+      }
+      return (
+        Math.round(
+          (pages.filter((p) => p.success).length * 10000) / pages.length
+        ) / 100
+      );
+    }
+
+    function generateHTMLFromTitleInfo(titleData) {
+      let title = document.createElement("a");
+      title.href = `/details.html?title=${titleData.id}`;
+      title.className = "title";
+      title.setAttribute("t", titleData.info.parsed.name ? "" : "bred");
+
+      if (!titleData.pages || !titleData.pages.length) {
+        let tImg = document.createElement("span");
+        tImg.style = "grid-area: img;";
+        title.appendChild(tImg);
+      } else {
+        let tImg = document.createElement("img");
+        tImg.style = "max-width: 100%; max-height: 100%; grid-area: img;";
+        tImg.src = `/file/${titleData.id}/1.${titleData.pages[0].ext}`;
+        title.appendChild(tImg);
+      }
+
+      let node = document.createElement("span");
+      node.style = "grid-area: name;";
+      node.setAttribute("t", titleData.info.parsed.name ? "" : "red");
+      node.innerText = titleData.info.name;
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: id;";
+      node.innerText = `#${titleData.id}`;
+      node.appendChild(new Rate(titleData.id, titleData.info.rate).node);
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: pgc;";
+      node.setAttribute("t", titleData.info.parsed.page ? "" : "red");
+      node.innerText = `Страниц: ${titleData.pages.length}`;
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: pgp;";
+      node.setAttribute("t", calcAvg(titleData.pages) != 100.0 ? "red" : "");
+      node.innerText = `Загружено: ${calcAvg(titleData.pages)}%`;
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: dt;";
+      node.innerText = new Date(titleData.created).toLocaleString();
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: tag;";
+      (titleData.info.tags || []).map((tagname, ind) => {
+        if (ind >= 8) return;
+        let tag = document.createElement("span");
+        tag.className = "tag";
+        tag.innerText = tagname;
+        node.appendChild(tag);
+      });
+      if (titleData.info.tags && titleData.info.tags.length > 7) {
+        let more = document.createElement("b");
+        more.innerText = "и больше!";
+        node.appendChild(more);
+      }
+      title.appendChild(node);
+
+      return title;
+    }
+  </script>
+</body>
+
 </html>

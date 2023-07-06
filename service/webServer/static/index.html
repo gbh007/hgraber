@@ -1,69 +1,74 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>HGrabber</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
-    <script src="/messages.js"></script>
-    <script src="/api.js"></script>
-    <script src="/top-bar.js"></script>
-  </head>
-  <body>
-    <div>
-      <input
-        value=""
-        placeholder="Загрузить новый тайтл"
-        id="new-title-url"
-        title="Пример&#xA;https://imhentai.xxx/gallery/653578/&#xA;https://manga-online.biz/rebirth_of_the_urban_immortal_cultivator/1/401/1/&#xA;https://www.3hentai1.buzz/?d/1"
-      />
-      <button onclick="loadTitle();">Загрузить</button>
-    </div>
-    <div id="index-info">
-      <ul>
-        <li>Всего <b id="info-count"></b> тайтлов</li>
-        <li>Всего незагруженно <b id="info-not_load_count"></b> тайтлов</li>
-        <li>Всего <b id="info-page_count"></b> страниц</li>
-        <li>
-          Всего незагруженно <b id="info-not_load_page_count"></b> страниц
-        </li>
-        <li><a href="/list.html">Список тайтлов</a></li>
-      </ul>
-    </div>
-    <div>
-      Скачать архивы С
-      <input value="" placeholder="С" id="load-from" />
-      По
-      <input value="" placeholder="По" id="load-to" />
-      <button onclick="saveToZIP();">Загрузить</button>
-    </div>
-    <script>
-      function remakeInfo() {
-        API.getMainInfo().then((data) => {
-          document.getElementById("info-count").innerText = data.count;
-          document.getElementById("info-not_load_count").innerText =
-            data.not_load_count;
-          document.getElementById("info-page_count").innerText =
-            data.page_count;
-          document.getElementById("info-not_load_page_count").innerText =
-            data.not_load_page_count;
-        });
-      }
-      function loadTitle() {
-        let urlInput = document.getElementById("new-title-url");
-        API.newTitle(urlInput.value).then(() => {
-          document.getElementById("new-title-url").value = "";
-        });
-      }
-      function saveToZIP() {
-        let loadFrom = document.getElementById("load-from");
-        let loadTo = document.getElementById("load-to");
-        API.saveToZIP(parseInt(loadFrom.value), parseInt(loadTo.value));
-      }
-      window.addEventListener("load", function () {
-        remakeInfo();
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HGrabber</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+  <script src="/messages.js"></script>
+  <script src="/api.js"></script>
+  <script src="/top-bar.js"></script>
+</head>
+
+<body>
+  <style>
+    #index-info ul {
+      padding: 0px;
+      margin: 0px;
+      list-style: none;
+    }
+  </style>
+  <div>
+    <input value="" placeholder="Загрузить новый тайтл" id="new-title-url"
+      title="Пример&#xA;https://imhentai.xxx/gallery/653578/&#xA;https://manga-online.biz/rebirth_of_the_urban_immortal_cultivator/1/401/1/&#xA;https://www.3hentai1.buzz/?d/1" />
+    <button onclick="loadTitle();">Загрузить</button>
+  </div>
+  <div id="index-info">
+    <ul>
+      <li>Всего <b id="info-count"></b> тайтлов</li>
+      <li>Всего незагруженно <b id="info-not_load_count"></b> тайтлов</li>
+      <li>Всего <b id="info-page_count"></b> страниц</li>
+      <li>
+        Всего незагруженно <b id="info-not_load_page_count"></b> страниц
+      </li>
+    </ul>
+  </div>
+  <div>
+    Скачать архивы С
+    <input value="" placeholder="С" id="load-from" />
+    По
+    <input value="" placeholder="По" id="load-to" />
+    <button onclick="saveToZIP();">Загрузить</button>
+  </div>
+  <script>
+    function remakeInfo() {
+      API.getMainInfo().then((data) => {
+        document.getElementById("info-count").innerText = data.count;
+        document.getElementById("info-not_load_count").innerText =
+          data.not_load_count;
+        document.getElementById("info-page_count").innerText =
+          data.page_count;
+        document.getElementById("info-not_load_page_count").innerText =
+          data.not_load_page_count;
       });
-    </script>
-  </body>
+    }
+    function loadTitle() {
+      let urlInput = document.getElementById("new-title-url");
+      API.newTitle(urlInput.value).then(() => {
+        document.getElementById("new-title-url").value = "";
+      });
+    }
+    function saveToZIP() {
+      let loadFrom = document.getElementById("load-from");
+      let loadTo = document.getElementById("load-to");
+      API.saveToZIP(parseInt(loadFrom.value), parseInt(loadTo.value));
+    }
+    window.addEventListener("load", function () {
+      remakeInfo();
+    });
+  </script>
+</body>
+
 </html>

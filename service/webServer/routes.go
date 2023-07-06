@@ -11,7 +11,7 @@ import (
 
 func MainInfo() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		base.SetResponse(r, map[string]interface{}{
+		base.WriteJSON(r.Context(), w, http.StatusOK, map[string]interface{}{
 			"count":               jdb.Get().TitlesCount(r.Context()),
 			"not_load_count":      jdb.Get().UnloadedTitlesCount(r.Context()),
 			"page_count":          jdb.Get().PagesCount(r.Context()),
@@ -28,15 +28,15 @@ func NewTitle() http.Handler {
 
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
 			return
 		}
 
 		err = titleHandler.FirstHandle(r.Context(), request.URL)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusInternalServerError, err)
 		} else {
-			base.SetResponse(r, struct{}{})
+			base.WriteJSON(r.Context(), w, http.StatusOK, struct{}{})
 		}
 	})
 }
@@ -47,13 +47,15 @@ func TitleList() http.Handler {
 			Count  int `json:"count"`
 			Offset int `json:"offset,omitempty"`
 		}{}
+
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
 			return
 		}
+
 		data := jdb.Get().GetTitles(r.Context(), request.Offset, request.Count)
-		base.SetResponse(r, data)
+		base.WriteJSON(r.Context(), w, http.StatusOK, data)
 	})
 }
 
@@ -64,15 +66,17 @@ func TitleInfo() http.Handler {
 		}{}
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
 			return
 		}
+
 		data, err := jdb.Get().GetTitle(r.Context(), request.ID)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusInternalServerError, err)
 			return
 		}
-		base.SetResponse(r, data)
+
+		base.WriteJSON(r.Context(), w, http.StatusOK, data)
 	})
 }
 
@@ -82,17 +86,20 @@ func TitlePage() http.Handler {
 			ID   int `json:"id"`
 			Page int `json:"page"`
 		}{}
+
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
 			return
 		}
+
 		data, err := jdb.Get().GetPage(r.Context(), request.ID, request.Page)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusInternalServerError, err)
 			return
 		}
-		base.SetResponse(r, data)
+
+		base.WriteJSON(r.Context(), w, http.StatusOK, data)
 	})
 }
 
@@ -102,17 +109,20 @@ func SaveToZIP() http.Handler {
 			From int `json:"from"`
 			To   int `json:"to"`
 		}{}
+
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
 			return
 		}
+
 		err = fileStorage.ExportTitlesToZip(r.Context(), request.From, request.To)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusInternalServerError, err)
 			return
 		}
-		base.SetResponse(r, struct{}{})
+
+		base.WriteJSON(r.Context(), w, http.StatusOK, struct{}{})
 	})
 }
 
@@ -127,7 +137,8 @@ func AppInfo() http.Handler {
 			Commit:  system.Commit,
 			BuildAt: system.BuildAt,
 		}
-		base.SetResponse(r, response)
+
+		base.WriteJSON(r.Context(), w, http.StatusOK, response)
 	})
 }
 
@@ -137,17 +148,20 @@ func SetTitleRate() http.Handler {
 			ID   int `json:"id"`
 			Rate int `json:"rate"`
 		}{}
+
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
 			return
 		}
+
 		err = jdb.Get().UpdateTitleRate(r.Context(), request.ID, request.Rate)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusInternalServerError, err)
 			return
 		}
-		base.SetResponse(r, struct{}{})
+
+		base.WriteJSON(r.Context(), w, http.StatusOK, struct{}{})
 	})
 }
 
@@ -158,16 +172,19 @@ func SetPageRate() http.Handler {
 			Page int `json:"page"`
 			Rate int `json:"rate"`
 		}{}
+
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
 			return
 		}
+
 		err = jdb.Get().UpdatePageRate(r.Context(), request.ID, request.Page, request.Rate)
 		if err != nil {
-			base.SetError(r, err)
+			base.WriteJSON(r.Context(), w, http.StatusInternalServerError, err)
 			return
 		}
-		base.SetResponse(r, struct{}{})
+
+		base.WriteJSON(r.Context(), w, http.StatusOK, struct{}{})
 	})
 }

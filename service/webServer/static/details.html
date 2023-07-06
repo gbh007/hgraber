@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>HGrabber</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
+  <script src="/messages.js"></script>
+  <script src="/api.js"></script>
+  <script src="/top-bar.js"></script>
+  <script src="/rate.js"></script>
+</head>
+
+<body>
+  <style>
+    .title-details {
+      display: grid;
+      grid-template-areas:
+        "img name name name name"
+        "img id pgc pgp dt"
+        "img tag tag tag tag"
+        "img authors authors authors authors"
+        "img char char char char"
+        "img lang lang lang lang"
+        "img cat cat cat cat"
+        "img par par par par"
+        "img gr gr gr gr"
+        "img load load read read"
+        "preview preview preview preview preview";
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      gap: 10px 10px;
+    }
+
+    .title-details *[t="red"] {
+      color: red;
+    }
+
+    .title-details *[t="bred"] {
+      background: pink;
+    }
+
+    .title-details a.read {
+      grid-area: read;
+      text-decoration: none;
+      color: green;
+      background: lightgreen;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    .title-details a.load {
+      grid-area: load;
+      text-decoration: none;
+      color: blue;
+      background: lightblue;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    span.tag {
+      border-radius: 3px;
+      padding: 3px;
+      margin: 2px;
+      background: lightgrey;
+      display: inline-block;
+    }
+
+    div.preview {
+      grid-area: preview;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 10px;
+    }
+
+    div.preview>div {
+      display: flex;
+      flex-direction: column;
+    }
+
+    div.preview>div>img {
+      max-width: 100px;
+      max-height: 300px;
+    }
+  </style>
+  <div id="title"></div>
+  <script>
+    let api = new Api();
+
+    const titleID = parseInt(
+      new URLSearchParams(window.location.search).get("title")
+    );
+
+
+    window.addEventListener("load", function () {
+      api.getTitleInfo(titleID).then((data) => {
+        document.getElementById("title").appendChild(
+          generateHTMLTItleDetailsFromTitleInfo(data)
+        )
+      });
+    });
+
+    function generateHTMLTTagArea(tags, areaName) {
+      let node = document.createElement("span");
+      node.style = `grid-area: ${areaName};`;
+      if (tags) {
+        tags.map((tagname) => {
+          let tag = document.createElement("span");
+          tag.className = "tag";
+          tag.innerText = tagname;
+          node.appendChild(tag);
+        });
+      }
+      return node;
+    }
+
+    function generateHTMLTItleDetailsFromTitleInfo(titleData) {
+      let title = document.createElement("div");
+      title.className = "title-details";
+      title.setAttribute("t", titleData.info.parsed.name ? "" : "bred");
+
+      if (!titleData.pages || !titleData.pages.length) {
+        let tImg = document.createElement("span");
+        tImg.style = "grid-area: img;";
+        title.appendChild(tImg);
+      } else {
+        let tImg = document.createElement("img");
+        tImg.style = "max-width: 100%; max-height: 100%; grid-area: img;";
+        tImg.src = `/file/${titleData.id}/1.${titleData.pages[0].ext}`;
+        title.appendChild(tImg);
+      }
+
+      var node;
+
+      node = document.createElement("h1");
+      node.style = "grid-area: name;";
+      node.setAttribute("t", titleData.info.parsed.name ? "" : "red");
+      node.innerText = titleData.info.name;
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: id;";
+      node.innerText = `#${titleData.id}`;
+      node.appendChild(new Rate(titleData.id, titleData.info.rate).node);
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: pgc;";
+      node.setAttribute("t", titleData.info.parsed.page ? "" : "red");
+      node.innerText = `Страниц: ${titleData.pages.length}`;
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: pgp;";
+      node.setAttribute("t", calcAvg(titleData.pages) != 100.0 ? "red" : "");
+      node.innerText = `Загружено: ${calcAvg(titleData.pages)}%`;
+      title.appendChild(node);
+
+      node = document.createElement("span");
+      node.style = "grid-area: dt;";
+      node.innerText = new Date(titleData.created).toLocaleString();
+      title.appendChild(node);
+
+      title.appendChild(generateHTMLTTagArea(titleData.info.tags, "tag"));
+      title.appendChild(
+        generateHTMLTTagArea(titleData.info.authors, "authors")
+      );
+      title.appendChild(
+        generateHTMLTTagArea(titleData.info.characters, "char")
+      );
+      title.appendChild(
+        generateHTMLTTagArea(titleData.info.languages, "lang")
+      );
+      title.appendChild(
+        generateHTMLTTagArea(titleData.info.categories, "cat")
+      );
+      title.appendChild(
+        generateHTMLTTagArea(titleData.info.parodies, "par")
+      );
+      title.appendChild(generateHTMLTTagArea(titleData.info.groups, "gr"));
+
+      node = document.createElement("a");
+      node.className = "load";
+      node.innerText = "Скачать";
+      title.appendChild(node);
+
+      node = document.createElement("a");
+      node.href = `/read.html?title=${titleData.id}`;
+      node.className = "read";
+      node.innerText = "Читать";
+      title.appendChild(node);
+
+
+      if (titleData.pages && titleData.pages.length) {
+        node = document.createElement("div");
+        node.className = "preview";
+
+        titleData.pages.forEach((element, index) => {
+          if (!element.success) return;
+          let previewNode = document.createElement("div");
+
+          let previewImageNode = document.createElement("img");
+          previewImageNode.src = `/file/${titleData.id}/${index + 1}.${element.ext}`;
+
+          previewNode.appendChild(previewImageNode);
+          previewNode.appendChild(new Rate(titleData.id, element.rate, index + 1).node);
+
+          node.appendChild(previewNode)
+        });
+
+        title.appendChild(node);
+      }
+
+      return title;
+    }
+
+    function calcAvg(pages) {
+      if (!pages || !pages.length) {
+        return 0;
+      }
+      return (
+        Math.round(
+          (pages.filter((p) => p.success).length * 10000) / pages.length
+        ) / 100
+      );
+    }
+
+  </script>
+</body>
+
+</html>

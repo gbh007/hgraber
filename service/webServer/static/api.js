@@ -6,6 +6,7 @@ class Api {
       })
     );
   }
+
   async getAppInfo() {
     try {
       let response = await fetch("/app/info", { method: "GET" });
@@ -15,6 +16,7 @@ class Api {
       return {};
     }
   }
+
   async getMainInfo() {
     try {
       let response = await fetch("/info", { method: "GET" });
@@ -24,6 +26,7 @@ class Api {
       return {};
     }
   }
+
   async newTitle(url) {
     try {
       let response = await fetch("/new", {
@@ -43,6 +46,7 @@ class Api {
     }
     return {};
   }
+
   async getTitleList(count, offset) {
     try {
       let response = await fetch("/title/list", {
@@ -55,6 +59,7 @@ class Api {
     }
     return {};
   }
+
   async getTitleInfo(id) {
     try {
       let response = await fetch("/title/details", {
@@ -67,6 +72,7 @@ class Api {
     }
     return {};
   }
+
   async getTitlePageInfo(id, page) {
     try {
       let response = await fetch("/title/page", {
@@ -79,6 +85,7 @@ class Api {
     }
     return {};
   }
+
   async saveToZIP(from, to) {
     try {
       let response = await fetch("/to-zip", {
@@ -91,6 +98,7 @@ class Api {
     }
     return {};
   }
+
   async updateTitleRate(id, rate) {
     return new Promise((resolve, reject) => {
       fetch("/title/rate", {
@@ -110,6 +118,7 @@ class Api {
         });
     });
   }
+
   async updatePageRate(id, page, rate) {
     return new Promise((resolve, reject) => {
       fetch("/title/page/rate", {
@@ -128,6 +137,19 @@ class Api {
           reject();
         });
     });
+  }
+
+  async login(token) {
+    try {
+      let response = await fetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ token: token }),
+      });
+      return await response.json();
+    } catch (err) {
+      this.alert(err);
+    }
+    return {};
   }
 }
 
