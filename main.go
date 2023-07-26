@@ -62,7 +62,7 @@ func main() {
 	mainContext := system.NewSystemContext(notifyCtx, "Main")
 
 	if *debugMode {
-		system.EnableDebug(mainContext)
+		mainContext = system.WithDebug(mainContext)
 	}
 
 	if *debugFullpathMode {
@@ -87,8 +87,8 @@ func main() {
 	titleService := titleHandler.Init(storage)
 	pageService := fileStorage.Init(storage)
 
-	so := super.NewObject(storage, titleService)
-	so.RegisterRunner(mainContext, storage)
+	controller := super.NewObject(storage, titleService)
+	controller.RegisterRunner(mainContext, storage)
 
 	err = system.SetFileStoragePath(mainContext, *fileStoragePath)
 	if err != nil {
@@ -103,8 +103,8 @@ func main() {
 	if !*onlyView {
 		go parseTaskFile(mainContext, titleService)
 
-		so.RegisterRunner(mainContext, titleService)
-		so.RegisterRunner(mainContext, pageService)
+		controller.RegisterRunner(mainContext, titleService)
+		controller.RegisterRunner(mainContext, pageService)
 	}
 
 	webServer := &webServer.WebServer{
@@ -115,17 +115,14 @@ func main() {
 		StaticDir: *staticDirName,
 		Token:     *token,
 	}
-	so.RegisterRunner(mainContext, webServer)
+	controller.RegisterRunner(mainContext, webServer)
 
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
 
-	err = so.Run(mainContext)
+	err = controller.Run(mainContext)
 	if err != nil {
 		os.Exit(4)
 	}
-
-	// FIXME: удалить
-	<-system.WaitingChan(mainContext)
 
 	system.Info(mainContext, "Процессы завершены")
 

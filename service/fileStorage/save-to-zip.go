@@ -1,6 +1,7 @@
 package fileStorage
 
 import (
+	"app/service/webServer/rendering"
 	"app/system"
 	"archive/zip"
 	"context"
@@ -28,10 +29,10 @@ func (s *Service) ExportTitlesToZip(ctx context.Context, from, to int) error {
 
 // saveToZip сохраняет тайтлы на диск zip архивом
 func (s *Service) saveToZip(ctx context.Context, id int) error {
-	defer system.Stopwatch(ctx, "SaveToZip")()
+	defer system.Stopwatch(ctx, "saveToZip")()
 
-	system.AddWaiting(ctx)
-	defer system.DoneWaiting(ctx)
+	s.asyncPathWG.Add(1)
+	defer s.asyncPathWG.Done()
 
 	titleInfo, err := s.Storage.GetTitle(ctx, id)
 	if err != nil {
@@ -99,8 +100,8 @@ func (s *Service) saveToZip(ctx context.Context, id int) error {
 		return err
 	}
 
-	// FIXME: формат
-	err = json.NewEncoder(w).Encode(titleInfo)
+	// TODO: на данный момент используется формат веб сервера, это очень плохо, необходимо продублировать и разделить
+	err = json.NewEncoder(w).Encode(rendering.TitleFromStorage(titleInfo))
 	if err != nil {
 		system.Error(ctx, err)
 		return err

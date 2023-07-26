@@ -31,5 +31,5 @@ view: create_build_dir
 
 debug: create_build_dir
 	go build $(LDFLAGS) -o ./_build/hgraber-bin 
-	./_build/hgraber-bin -stdfile-append -debug -debug-copy -debug-fullpath -p 8081 -static="service/webServer/static" --access-token=123
+	./_build/hgraber-bin -stdfile-append -debug -debug-fullpath -p 8081 -static="service/webServer/static" --access-token=local-debug
 	

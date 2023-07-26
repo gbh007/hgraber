@@ -121,6 +121,7 @@ func from(depth int) string {
 		if !fullpathMode {
 			_, file = path.Split(file)
 		}
+		
 		from = fmt.Sprintf("%s:%d", file, line)
 	}
 	return from

@@ -5,9 +5,13 @@ import (
 	"time"
 )
 
-// Stopwatch секундомер для defer
+// Stopwatch секундомер для defer.
+//
+// Пример использования:
+//
+//	defer system.Stopwatch(ctx, "some name")()
 func Stopwatch(ctx context.Context, text string) func() {
-	if !debugMode {
+	if !IsDebug(ctx) {
 		return func() {}
 	}
 

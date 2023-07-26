@@ -20,7 +20,7 @@ func WriteJSON(ctx context.Context, w http.ResponseWriter, statusCode int, data 
 		data = errData.Error()
 	}
 
-	if system.DebugStatus() {
+	if system.IsDebug(ctx) {
 		enc.SetIndent("", "  ")
 	}
 

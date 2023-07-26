@@ -12,6 +12,8 @@ type Service struct {
 	titleQueue              chan schema.Title
 	inWorkRunnersCount      int
 	inWorkRunnersCountMutex *sync.RWMutex
+
+	asyncPathWG *sync.WaitGroup
 }
 
 func Init(storage super.Storage) *Service {
@@ -19,5 +21,6 @@ func Init(storage super.Storage) *Service {
 		Storage:                 storage,
 		titleQueue:              make(chan schema.Title, titleQueueSize),
 		inWorkRunnersCountMutex: &sync.RWMutex{},
+		asyncPathWG:             &sync.WaitGroup{},
 	}
 }

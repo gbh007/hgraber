@@ -6,9 +6,7 @@ import (
 	"app/super"
 	"app/system"
 	"context"
-	"errors"
 	"net/http"
-	"time"
 )
 
 type WebServer struct {
@@ -20,9 +18,7 @@ type WebServer struct {
 	Token     string
 }
 
-// Start запускает веб сервер
-func Start(parentCtx context.Context, ws *WebServer) {
-	ctx := system.NewSystemContext(parentCtx, "Web-srv")
+func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	mux := http.NewServeMux()
 
 	// обработчик статики
@@ -36,7 +32,7 @@ func Start(parentCtx context.Context, ws *WebServer) {
 	mux.Handle("/file/", base.TokenHandler(ws.Token,
 		http.StripPrefix(
 			"/file/",
-			http.FileServer(http.Dir(system.GetFileStoragePath(ctx))),
+			http.FileServer(http.Dir(system.GetFileStoragePath(parentCtx))),
 		),
 	))
 
@@ -52,33 +48,14 @@ func Start(parentCtx context.Context, ws *WebServer) {
 	mux.Handle("/title/rate", base.TokenHandler(ws.Token, ws.routeSetTitleRate()))
 	mux.Handle("/title/page/rate", base.TokenHandler(ws.Token, ws.routeSetPageRate()))
 
-	server := http.Server{
-		Addr:        ws.Addr,
-		Handler:     base.PanicDefender(mux),
-		ErrorLog:    system.StdErrorLogger(ctx),
-		BaseContext: base.NewBaseContext(ctx),
+	server := &http.Server{
+		Addr: ws.Addr,
+		Handler: base.PanicDefender(
+			base.Stopwatch(mux),
+		),
+		ErrorLog:    system.StdErrorLogger(parentCtx),
+		BaseContext: base.NewBaseContext(parentCtx),
 	}
 
-	system.AddWaiting(ctx)
-	go func() {
-		defer system.DoneWaiting(ctx)
-		system.Info(ctx, "Запущен веб сервер")
-		defer system.Info(ctx, "Веб сервер остановлен")
-
-		err := server.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			system.Error(ctx, err)
-		}
-
-	}()
-
-	go func() {
-		<-ctx.Done()
-		system.Info(ctx, "Остановка веб сервера")
-
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-
-		system.IfErr(ctx, server.Shutdown(shutdownCtx))
-	}()
+	return server
 }

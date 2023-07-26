@@ -10,6 +10,8 @@ type Service struct {
 	queue       chan qPage
 	inWork      int
 	inWorkMutex *sync.RWMutex
+
+	asyncPathWG *sync.WaitGroup
 }
 
 func Init(storage super.Storage) *Service {
@@ -17,5 +19,6 @@ func Init(storage super.Storage) *Service {
 		Storage:     storage,
 		queue:       make(chan qPage, pageQueueSize),
 		inWorkMutex: &sync.RWMutex{},
+		asyncPathWG: &sync.WaitGroup{},
 	}
 }

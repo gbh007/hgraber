@@ -47,8 +47,8 @@ func (s *Service) InWorkCount() int {
 }
 
 func (s *Service) handle(ctx context.Context, page qPage) {
-	system.AddWaiting(ctx)
-	defer system.DoneWaiting(ctx)
+	s.asyncPathWG.Add(1)
+	defer s.asyncPathWG.Done()
 
 	s.workStarted()
 	defer s.workEnded()
@@ -87,6 +87,9 @@ func (s *Service) runFull(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
+			// Дожидаемся завершения всех подпроцессов
+			s.asyncPathWG.Wait()
+
 			return
 
 		case <-timer.C:
@@ -97,6 +100,9 @@ func (s *Service) runFull(ctx context.Context) {
 			for _, p := range s.Storage.GetUnsuccessedPages(ctx) {
 				select {
 				case <-ctx.Done():
+					// Дожидаемся завершения всех подпроцессов
+					s.asyncPathWG.Wait()
+
 					return
 
 				default:

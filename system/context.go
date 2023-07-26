@@ -12,6 +12,7 @@ type contextKey struct {
 
 var (
 	requestIDKey               = &contextKey{"requestIDKey"}
+	debugKey                   = &contextKey{"debugKey"}
 	ContextAlreadyStoppedError = errors.New("ContextAlreadyStoppedError")
 )
 
@@ -20,12 +21,13 @@ func NewSystemContext(parent context.Context, name string) context.Context {
 		name = "System-" + hash(time.Now().String())
 	}
 
-	// TODO: рефакторинг на WIthValue
-	return withRequestIDContext(parent, name)
+	return context.WithValue(parent, requestIDKey, name)
 }
 
 func NewUserContext(parent context.Context) context.Context {
-	return withRequestIDContext(parent, "User-"+hash(time.Now().String()))
+	name := "User-" + hash(time.Now().String())
+
+	return context.WithValue(parent, requestIDKey, name)
 }
 
 func GetRequestID(ctx context.Context) string {
@@ -35,26 +37,6 @@ func GetRequestID(ctx context.Context) string {
 	}
 
 	return id
-}
-
-func withRequestIDContext(parent context.Context, id string) context.Context {
-	return &requestIDContext{
-		Context:   parent,
-		requestID: id,
-	}
-}
-
-type requestIDContext struct {
-	context.Context
-	requestID string
-}
-
-func (rc *requestIDContext) Value(key interface{}) interface{} {
-	if key == requestIDKey {
-		return rc.requestID
-	}
-
-	return rc.Context.Value(key)
 }
 
 func IsAliveContext(ctx context.Context) error {

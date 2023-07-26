@@ -2,24 +2,29 @@ package system
 
 import "context"
 
-var debugMode = false
+func WithDebug(ctx context.Context) context.Context {
+	ctx = context.WithValue(ctx, debugKey, true)
 
-func EnableDebug(ctx context.Context) {
-	debugMode = true
 	print(ctx, logLevelWarning, 0, "Включен режим отладки")
+
+	return ctx
 }
 
-func DisableDebug(ctx context.Context) {
-	debugMode = false
-	print(ctx, logLevelWarning, 0, "Отключен режим отладки")
-}
+func IsDebug(ctx context.Context) bool {
+	v := ctx.Value(debugKey)
+	if v == nil {
+		return false
+	}
 
-func DebugStatus() bool {
-	return debugMode
+	// Значение интересует только если истина;
+	// его отсутствие, неправильный формат, лож эквивалентны
+	debug, _ := v.(bool)
+
+	return debug
 }
 
 func Debug(ctx context.Context, args ...interface{}) {
-	if !debugMode {
+	if !IsDebug(ctx) {
 		return
 	}
 
