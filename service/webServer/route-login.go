@@ -5,21 +5,22 @@ import (
 	"net/http"
 )
 
-func Login(token string) http.Handler {
+func (ws *WebServer) routeLogin(token string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
 			Token string `json:"token"`
 		}{}
+		ctx := r.Context()
 
 		err := base.ParseJSON(r, &request)
 		if err != nil {
-			base.WriteJSON(r.Context(), w, http.StatusBadRequest, err)
+			base.WriteJSON(ctx, w, http.StatusBadRequest, err)
 
 			return
 		}
 
 		if request.Token != token {
-			base.WriteJSON(r.Context(), w, http.StatusBadRequest, false)
+			base.WriteJSON(ctx, w, http.StatusBadRequest, false)
 
 			return
 		}
@@ -31,6 +32,6 @@ func Login(token string) http.Handler {
 			HttpOnly: true,
 		})
 
-		base.WriteJSON(r.Context(), w, http.StatusOK, struct{}{})
+		base.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 	})
 }

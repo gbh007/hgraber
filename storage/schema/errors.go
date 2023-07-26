@@ -1,4 +1,4 @@
-package jdb
+package schema
 
 import "errors"
 

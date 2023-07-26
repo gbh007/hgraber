@@ -1,11 +1,13 @@
 package main
 
 import (
-	"app/service/async"
-	"app/service/jdb"
+	"app/service/fileStorage"
 	"app/service/parser"
 	"app/service/titleHandler"
 	"app/service/webServer"
+	"app/storage/jdb"
+	"app/storage/schema"
+	"app/super"
 	"app/system"
 	"bufio"
 	"context"
@@ -15,7 +17,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
@@ -23,7 +24,6 @@ func main() {
 	// базовые опции
 	webPort := flag.Int("p", 8080, "порт веб сервера")
 	onlyView := flag.Bool("v", false, "режим только просмотра")
-	export := flag.Bool("e", false, "экспортировать данные и выйти")
 	token := flag.String("access-token", "", "токен для доступа к контенту")
 
 	// потоки логирования
@@ -32,14 +32,14 @@ func main() {
 	enableAppendFileErr := flag.Bool("stdfile-append", false, "режим дозаписи файла потока ошибок")
 
 	// размещение данных
-	fileStorage := flag.String("fs", "loads", "директория для данных")
+	fileStoragePath := flag.String("fs", "loads", "директория для данных")
 	fileExport := flag.String("fe", "exported", "директория для экспорта файлов")
 	dbFileName := flag.String("db", "db.json", "файл базы")
 	staticDirName := flag.String("static", "", "папка со статическими файлами")
 
 	// отладка
 	debugMode := flag.Bool("debug", false, "активировать режим отладки (дебага)")
-	debugCopyMode := flag.Bool("debug-copy", false, "включает при активном дебаге, информацию о копировании данных в памяти")
+	// debugCopyMode := flag.Bool("debug-copy", false, "включает при активном дебаге, информацию о копировании данных в памяти")
 	debugFullpathMode := flag.Bool("debug-fullpath", false, "включает длинные пути файлов в логах")
 
 	flag.Parse()
@@ -64,9 +64,7 @@ func main() {
 	if *debugMode {
 		system.EnableDebug(mainContext)
 	}
-	if *debugCopyMode {
-		jdb.EnableCopyStopwatch(mainContext)
-	}
+
 	if *debugFullpathMode {
 		system.EnableFullpath(mainContext)
 	}
@@ -76,16 +74,23 @@ func main() {
 	system.Debug(mainContext, "Собрано", system.BuildAt)
 
 	system.Info(mainContext, "Инициализация базы")
-	jdb.Init(mainContext)
 
-	err := jdb.Get().Load(mainContext, *dbFileName)
+	storage := jdb.Init(mainContext, *dbFileName)
+
+	err := storage.Load(mainContext, *dbFileName)
 	if err != nil {
 		os.Exit(1)
 	}
 
 	system.Info(mainContext, "База загружена")
 
-	err = system.SetFileStoragePath(mainContext, *fileStorage)
+	titleService := titleHandler.Init(storage)
+	pageService := fileStorage.Init(storage)
+
+	so := super.NewObject(storage, titleService)
+	so.RegisterRunner(mainContext, storage)
+
+	err = system.SetFileStoragePath(mainContext, *fileStoragePath)
 	if err != nil {
 		os.Exit(2)
 	}
@@ -95,25 +100,36 @@ func main() {
 		os.Exit(3)
 	}
 
-	if *export {
-		exportData(mainContext)
-		os.Exit(0)
-	}
-
 	if !*onlyView {
-		go parseTaskFile(mainContext)
-		async.Init(mainContext, *dbFileName)
+		go parseTaskFile(mainContext, titleService)
+
+		so.RegisterRunner(mainContext, titleService)
+		so.RegisterRunner(mainContext, pageService)
 	}
 
-	webServer.Start(mainContext, fmt.Sprintf(":%d", *webPort), *staticDirName, *token)
+	webServer := &webServer.WebServer{
+		Storage:   storage,
+		Title:     titleService,
+		Page:      pageService,
+		Addr:      fmt.Sprintf(":%d", *webPort),
+		StaticDir: *staticDirName,
+		Token:     *token,
+	}
+	so.RegisterRunner(mainContext, webServer)
 
-	<-mainContext.Done()
 	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
 
+	err = so.Run(mainContext)
+	if err != nil {
+		os.Exit(4)
+	}
+
+	// FIXME: удалить
 	<-system.WaitingChan(mainContext)
+
 	system.Info(mainContext, "Процессы завершены")
 
-	if jdb.Get().Save(mainContext, *dbFileName, false) == nil {
+	if storage.Save(mainContext, *dbFileName, false) == nil {
 		system.Info(mainContext, "База сохранена")
 	} else {
 		system.Warning(mainContext, "База не сохранена")
@@ -122,22 +138,7 @@ func main() {
 	system.Info(mainContext, "Выход")
 }
 
-func exportData(ctx context.Context) {
-	system.Info(ctx, "Экспорт начат")
-	exporter := jdb.Get()
-	_ = exporter.Save(
-		ctx,
-		fmt.Sprintf(
-			"%s/db-%s.json",
-			system.GetFileExportPath(ctx),
-			time.Now().Format("2006-01-02-150405"),
-		),
-		true,
-	)
-	system.Info(ctx, "Экспорт завершен")
-}
-
-func parseTaskFile(ctx context.Context) {
+func parseTaskFile(ctx context.Context, titleService super.TitleHandler) {
 	f, err := os.Open("task.txt")
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -163,10 +164,10 @@ func parseTaskFile(ctx context.Context) {
 
 		totalCount++
 
-		err = titleHandler.FirstHandle(ctx, u)
+		err = titleService.FirstHandle(ctx, u)
 
 		switch {
-		case errors.Is(err, jdb.TitleDuplicateError):
+		case errors.Is(err, schema.TitleDuplicateError):
 			duplicateCount++
 
 		case errors.Is(err, parser.ErrInvalidLink):

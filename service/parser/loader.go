@@ -17,6 +17,7 @@ func requestBuffer(ctx context.Context, URL string) (bytes.Buffer, error) {
 		system.Error(ctx, err)
 		return buff, err
 	}
+
 	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36")
 	req.Close = true
 	// выполняем запрос
@@ -28,21 +29,28 @@ func requestBuffer(ctx context.Context, URL string) (bytes.Buffer, error) {
 		// 	},
 		// },
 	}).Do(req)
+
 	if err != nil {
 		system.Error(ctx, err)
 		return buff, err
 	}
+
 	defer response.Body.Close()
+
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		err = fmt.Errorf("%s ошибка %s", URL, response.Status)
 		system.Error(ctx, err)
+
 		return buff, err
 	}
+
 	_, err = buff.ReadFrom(response.Body)
 	if err != nil {
 		system.Error(ctx, err)
+
 		return buff, err
 	}
+
 	return buff, nil
 }
 

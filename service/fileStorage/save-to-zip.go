@@ -1,8 +1,6 @@
 package fileStorage
 
 import (
-	"app/service/jdb"
-	"app/service/parser"
 	"app/system"
 	"archive/zip"
 	"context"
@@ -13,41 +11,14 @@ import (
 	"strings"
 )
 
-func DownloadTitlePage(ctx context.Context, id, page int, URL, ext string) error {
-	defer system.Stopwatch(ctx, "DownloadTitlePage")()
-	// создаем папку с тайтлом
-	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), os.ModeDir|os.ModePerm)
-	if err != nil && !os.IsExist(err) {
-		system.Error(ctx, err)
-		return err
-	}
-	// скачиваем изображение
-	data, err := parser.RequestBytes(ctx, URL)
-	if err != nil {
-		return err
-	}
-	// создаем файл и загружаем туда изображение
-	f, err := os.Create(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, page, ext))
-	if err != nil {
-		system.Error(ctx, err)
-		return err
-	}
-	_, err = f.Write(data)
-	if err != nil {
-		system.Error(ctx, err)
-		return err
-	}
-	return f.Close()
-}
-
-func ExportTitlesToZip(ctx context.Context, from, to int) error {
+func (s *Service) ExportTitlesToZip(ctx context.Context, from, to int) error {
 	for i := from; i <= to; i++ {
 		err := system.IsAliveContext(ctx)
 		if err != nil {
 			return err
 		}
 
-		err = SaveToZip(ctx, i)
+		err = s.saveToZip(ctx, i)
 		if err != nil {
 			return err
 		}
@@ -55,13 +26,14 @@ func ExportTitlesToZip(ctx context.Context, from, to int) error {
 	return nil
 }
 
-// SaveToZip сохраняет тайтлы на диск zip архивом
-func SaveToZip(ctx context.Context, id int) error {
+// saveToZip сохраняет тайтлы на диск zip архивом
+func (s *Service) saveToZip(ctx context.Context, id int) error {
 	defer system.Stopwatch(ctx, "SaveToZip")()
+
 	system.AddWaiting(ctx)
 	defer system.DoneWaiting(ctx)
 
-	titleInfo, err := jdb.Get().GetTitle(ctx, id)
+	titleInfo, err := s.Storage.GetTitle(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -76,6 +48,7 @@ func SaveToZip(ctx context.Context, id int) error {
 		system.Error(ctx, err)
 		return err
 	}
+
 	defer system.IfErrFunc(ctx, zipFile.Close)
 
 	zipWriter := zip.NewWriter(zipFile)
@@ -125,6 +98,8 @@ func SaveToZip(ctx context.Context, id int) error {
 		system.Error(ctx, err)
 		return err
 	}
+
+	// FIXME: формат
 	err = json.NewEncoder(w).Encode(titleInfo)
 	if err != nil {
 		system.Error(ctx, err)
@@ -141,12 +116,15 @@ func SaveToZip(ctx context.Context, id int) error {
 }
 
 func escapeFileName(n string) string {
-	const r = " "
+	const replacer = " "
+
 	if len([]rune(n)) > 200 {
 		n = string([]rune(n)[:200])
 	}
+
 	for _, e := range []string{`\`, `/`, `|`, `:`, `"`, `*`, `?`, `<`, `>`} {
-		n = strings.ReplaceAll(n, e, r)
+		n = strings.ReplaceAll(n, e, replacer)
 	}
+
 	return n
 }

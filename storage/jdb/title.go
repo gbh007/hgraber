@@ -1,23 +1,25 @@
 package jdb
 
 import (
+	"app/storage/jdb/internal/model"
+	"app/storage/schema"
 	"app/system"
 	"context"
 	"strings"
 	"time"
 )
 
-func (db *Database) GetUnloadedTitles(ctx context.Context) []Title {
+func (db *Database) GetUnloadedTitles(ctx context.Context) []schema.Title {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	defer system.Stopwatch(ctx, "UnloadedTitles")()
 
-	res := []Title{}
+	res := []schema.Title{}
 
 	for _, t := range db.data.Titles {
 		if !t.Data.Parsed.IsFullParsed(ctx) {
-			res = append(res, t.Copy(ctx))
+			res = append(res, t.Super(ctx))
 		}
 	}
 
@@ -33,18 +35,18 @@ func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool)
 	URL = strings.TrimSpace(URL)
 
 	if _, found := db.uniqueURLs[URL]; found {
-		return 0, TitleDuplicateError
+		return 0, schema.TitleDuplicateError
 	}
 
 	db.lastTitleID++
 
-	db.data.Titles[db.lastTitleID] = Title{
+	db.data.Titles[db.lastTitleID] = model.RawTitle{
 		ID:      db.lastTitleID,
 		Created: time.Now(),
 		URL:     URL,
-		Pages:   []Page{},
-		Data: TitleInfo{
-			Parsed: TitleInfoParsed{
+		Pages:   []model.RawPage{},
+		Data: model.RawTitleInfo{
+			Parsed: model.RawTitleInfoParsed{
 				Name: loaded,
 			},
 			Name:       name,
@@ -71,13 +73,13 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, page int, success
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return TitleIndexError
+		return schema.TitleIndexError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return PageIndexError
+		return schema.PageIndexError
 	}
 
 	title.Pages[page].Success = success
@@ -99,13 +101,13 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return TitleIndexError
+		return schema.TitleIndexError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return PageIndexError
+		return schema.PageIndexError
 	}
 
 	title.Pages[page].Rate = rate
@@ -116,7 +118,7 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 	return nil
 }
 
-func (db *Database) GetTitle(ctx context.Context, id int) (Title, error) {
+func (db *Database) GetTitle(ctx context.Context, id int) (schema.Title, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
@@ -124,42 +126,42 @@ func (db *Database) GetTitle(ctx context.Context, id int) (Title, error) {
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return Title{}, TitleIndexError
+		return schema.Title{}, schema.TitleIndexError
 	}
 
-	return title.Copy(ctx), nil
+	return title.Super(ctx), nil
 }
 
-func (db *Database) GetTitles(ctx context.Context, offset, limit int) []Title {
+func (db *Database) GetTitles(ctx context.Context, offset, limit int) []schema.Title {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	defer system.Stopwatch(ctx, "GetTitles")()
 
-	res := []Title{}
+	res := []schema.Title{}
 
 	for i := db.lastTitleID - offset; i > db.lastTitleID-offset-limit; i-- {
 
 		if title, ok := db.data.Titles[i]; ok {
-			res = append(res, title.Copy(ctx))
+			res = append(res, title.Super(ctx))
 		}
 	}
 
 	return res
 }
 
-func (db *Database) GetUnsuccessedPages(ctx context.Context) []PageFullInfo {
+func (db *Database) GetUnsuccessedPages(ctx context.Context) []schema.PageFullInfo {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	defer system.Stopwatch(ctx, "GetUnsuccessPages")()
 
-	res := []PageFullInfo{}
+	res := []schema.PageFullInfo{}
 
 	for _, t := range db.data.Titles {
 		for i, p := range t.Pages {
 			if !p.Success {
-				res = append(res, PageFullInfo{
+				res = append(res, schema.PageFullInfo{
 					TitleID:    t.ID,
 					PageNumber: i + 1,
 					URL:        p.URL,
@@ -174,7 +176,7 @@ func (db *Database) GetUnsuccessedPages(ctx context.Context) []PageFullInfo {
 	return res
 }
 
-func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []Page) error {
+func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []schema.Page) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
@@ -182,10 +184,10 @@ func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []Page) 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return TitleIndexError
+		return schema.TitleIndexError
 	}
 
-	title.Pages = pages
+	title.Pages = model.RawPagesFromSuper(pages)
 	title.Data.Parsed.Page = len(pages) > 0
 
 	db.data.Titles[id] = title
@@ -203,7 +205,7 @@ func (db *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return TitleIndexError
+		return schema.TitleIndexError
 	}
 
 	title.Data.Rate = rate
@@ -214,7 +216,7 @@ func (db *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error
 	return nil
 }
 
-func (db *Database) GetPage(ctx context.Context, id, page int) (*PageFullInfo, error) {
+func (db *Database) GetPage(ctx context.Context, id, page int) (*schema.PageFullInfo, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
@@ -222,18 +224,18 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*PageFullInfo, e
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return nil, TitleIndexError
+		return nil, schema.TitleIndexError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return nil, PageIndexError
+		return nil, schema.PageIndexError
 	}
 
 	p := title.Pages[page]
 
-	return &PageFullInfo{
+	return &schema.PageFullInfo{
 		TitleID:    title.ID,
 		PageNumber: page + 1,
 		URL:        p.URL,

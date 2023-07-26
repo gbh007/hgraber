@@ -20,6 +20,7 @@ func NewSystemContext(parent context.Context, name string) context.Context {
 		name = "System-" + hash(time.Now().String())
 	}
 
+	// TODO: рефакторинг на WIthValue
 	return withRequestIDContext(parent, name)
 }
 

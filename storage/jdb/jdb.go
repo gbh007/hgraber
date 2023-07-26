@@ -1,6 +1,7 @@
 package jdb
 
 import (
+	"app/storage/jdb/internal/model"
 	"app/system"
 	"context"
 	"encoding/json"
@@ -11,7 +12,7 @@ import (
 )
 
 type DatabaseData struct {
-	Titles map[int]Title `json:"titles"`
+	Titles map[int]model.RawTitle `json:"titles"`
 }
 
 type Database struct {
@@ -21,25 +22,19 @@ type Database struct {
 	mutex       *sync.RWMutex
 	ctx         context.Context
 	needSave    bool
+	filename    string
 }
 
-var (
-	_db *Database
-)
-
-func Init(ctx context.Context) {
-	_db = &Database{
+func Init(ctx context.Context, filename string) *Database {
+	return &Database{
 		mutex: &sync.RWMutex{},
 		data: DatabaseData{
-			Titles: make(map[int]Title),
+			Titles: make(map[int]model.RawTitle),
 		},
 		ctx:        system.NewSystemContext(ctx, "JBD"),
 		uniqueURLs: make(map[string]struct{}),
+		filename:   filename,
 	}
-}
-
-func Get() *Database {
-	return _db
 }
 
 func (db *Database) Load(ctx context.Context, path string) error {
@@ -61,7 +56,7 @@ func (db *Database) Load(ctx context.Context, path string) error {
 
 	decoder := json.NewDecoder(file)
 
-	newData := DatabaseData{Titles: make(map[int]Title)}
+	newData := DatabaseData{Titles: make(map[int]model.RawTitle)}
 
 	err = decoder.Decode(&newData)
 	if err != nil {

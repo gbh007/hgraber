@@ -5,16 +5,6 @@ import (
 	"context"
 )
 
-/*
-
-SelectTitlesCount
-SelectUnloadTitlesCount
-SelectPagesCount
-SelectUnloadPagesCount
-
-
-*/
-
 func (db *Database) TitlesCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
