@@ -7,6 +7,7 @@ import (
 	"app/service/webServer"
 	"app/storage/jdb"
 	"app/storage/schema"
+	"app/storage/stopwatch"
 	"app/super"
 	"app/system"
 	"bufio"
@@ -75,9 +76,10 @@ func main() {
 
 	system.Info(mainContext, "Инициализация базы")
 
-	storage := jdb.Init(mainContext, *dbFileName)
+	storageJDB := jdb.Init(mainContext, *dbFileName)
+	storage := stopwatch.WithStopwatch(storageJDB)
 
-	err := storage.Load(mainContext, *dbFileName)
+	err := storageJDB.Load(mainContext, *dbFileName)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -88,7 +90,7 @@ func main() {
 	pageService := fileStorage.Init(storage)
 
 	controller := super.NewObject(storage, titleService)
-	controller.RegisterRunner(mainContext, storage)
+	controller.RegisterRunner(mainContext, storageJDB)
 
 	err = system.SetFileStoragePath(mainContext, *fileStoragePath)
 	if err != nil {
@@ -126,7 +128,7 @@ func main() {
 
 	system.Info(mainContext, "Процессы завершены")
 
-	if storage.Save(mainContext, *dbFileName, false) == nil {
+	if storageJDB.Save(mainContext, *dbFileName, false) == nil {
 		system.Info(mainContext, "База сохранена")
 	} else {
 		system.Warning(mainContext, "База не сохранена")

@@ -2,15 +2,12 @@ package jdb
 
 import (
 	"app/storage/schema"
-	"app/system"
 	"context"
 )
 
 func (db *Database) UpdateTitleName(ctx context.Context, id int, name string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-
-	defer system.Stopwatch(ctx, "UpdateTitleName")()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
@@ -31,8 +28,6 @@ func (db *Database) UpdateTitleAuthors(ctx context.Context, id int, authors []st
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdateTitleAuthors")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -51,8 +46,6 @@ func (db *Database) UpdateTitleAuthors(ctx context.Context, id int, authors []st
 func (db *Database) UpdateTitleTags(ctx context.Context, id int, tags []string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-
-	defer system.Stopwatch(ctx, "UpdateTitleTags")()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
@@ -73,8 +66,6 @@ func (db *Database) UpdateTitleCharacters(ctx context.Context, id int, character
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdateTitleCharacters")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -93,8 +84,6 @@ func (db *Database) UpdateTitleCharacters(ctx context.Context, id int, character
 func (db *Database) UpdateTitleCategories(ctx context.Context, id int, categories []string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-
-	defer system.Stopwatch(ctx, "UpdateTitleCategories")()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
@@ -115,8 +104,6 @@ func (db *Database) UpdateTitleGroups(ctx context.Context, id int, groups []stri
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdateTitleGroups")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -136,8 +123,6 @@ func (db *Database) UpdateTitleLanguages(ctx context.Context, id int, languages 
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdateTitleLanguages")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -156,8 +141,6 @@ func (db *Database) UpdateTitleLanguages(ctx context.Context, id int, languages 
 func (db *Database) UpdateTitleParodies(ctx context.Context, id int, parodies []string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-
-	defer system.Stopwatch(ctx, "UpdateTitleParodies")()
 
 	title, ok := db.data.Titles[id]
 	if !ok {

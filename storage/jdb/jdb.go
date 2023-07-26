@@ -88,14 +88,17 @@ func (db *Database) Save(ctx context.Context, path string, force bool) error {
 
 	if !db.needSave && !force {
 		system.Debug(ctx, "Сохранение данных не требуется, пропускаю")
+
 		return nil
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
 		system.Error(ctx, err)
+
 		return err
 	}
+
 	defer system.IfErrFunc(ctx, file.Close)
 
 	encoder := json.NewEncoder(file)

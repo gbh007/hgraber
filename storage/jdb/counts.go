@@ -1,7 +1,6 @@
 package jdb
 
 import (
-	"app/system"
 	"context"
 )
 
@@ -9,16 +8,12 @@ func (db *Database) TitlesCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	defer system.Stopwatch(ctx, "TitlesCount")()
-
 	return len(db.data.Titles)
 }
 
 func (db *Database) UnloadedTitlesCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
-
-	defer system.Stopwatch(ctx, "UnloadedTitlesCount")()
 
 	c := 0
 
@@ -35,8 +30,6 @@ func (db *Database) PagesCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	defer system.Stopwatch(ctx, "PagesCount")()
-
 	c := 0
 
 	for _, t := range db.data.Titles {
@@ -49,8 +42,6 @@ func (db *Database) PagesCount(ctx context.Context) int {
 func (db *Database) UnloadedPagesCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
-
-	defer system.Stopwatch(ctx, "UnloadedPagesCount")()
 
 	c := 0
 

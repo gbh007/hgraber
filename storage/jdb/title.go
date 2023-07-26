@@ -3,7 +3,6 @@ package jdb
 import (
 	"app/storage/jdb/internal/model"
 	"app/storage/schema"
-	"app/system"
 	"context"
 	"strings"
 	"time"
@@ -12,8 +11,6 @@ import (
 func (db *Database) GetUnloadedTitles(ctx context.Context) []schema.Title {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
-
-	defer system.Stopwatch(ctx, "UnloadedTitles")()
 
 	res := []schema.Title{}
 
@@ -29,8 +26,6 @@ func (db *Database) GetUnloadedTitles(ctx context.Context) []schema.Title {
 func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool) (int, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-
-	defer system.Stopwatch(ctx, "NewTitle")()
 
 	URL = strings.TrimSpace(URL)
 
@@ -69,8 +64,6 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, page int, success
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdatePageSuccess")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -97,8 +90,6 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdatePageRate")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -122,8 +113,6 @@ func (db *Database) GetTitle(ctx context.Context, id int) (schema.Title, error) 
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	defer system.Stopwatch(ctx, "GetTitle")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.Title{}, schema.TitleIndexError
@@ -135,8 +124,6 @@ func (db *Database) GetTitle(ctx context.Context, id int) (schema.Title, error) 
 func (db *Database) GetTitles(ctx context.Context, offset, limit int) []schema.Title {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
-
-	defer system.Stopwatch(ctx, "GetTitles")()
 
 	res := []schema.Title{}
 
@@ -153,8 +140,6 @@ func (db *Database) GetTitles(ctx context.Context, offset, limit int) []schema.T
 func (db *Database) GetUnsuccessedPages(ctx context.Context) []schema.PageFullInfo {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
-
-	defer system.Stopwatch(ctx, "GetUnsuccessPages")()
 
 	res := []schema.PageFullInfo{}
 
@@ -180,8 +165,6 @@ func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []schema
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdateTitlePages")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -201,8 +184,6 @@ func (db *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "UpdateTitleRate")()
-
 	title, ok := db.data.Titles[id]
 	if !ok {
 		return schema.TitleIndexError
@@ -219,8 +200,6 @@ func (db *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error
 func (db *Database) GetPage(ctx context.Context, id, page int) (*schema.PageFullInfo, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
-
-	defer system.Stopwatch(ctx, "GetPage")()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
