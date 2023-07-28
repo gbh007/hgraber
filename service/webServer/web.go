@@ -1,11 +1,13 @@
 package webServer
 
 import (
+	"app/config"
 	"app/service/webServer/base"
 	"app/service/webServer/static"
 	"app/super"
 	"app/system"
 	"context"
+	"fmt"
 	"net/http"
 )
 
@@ -16,6 +18,22 @@ type WebServer struct {
 	Addr      string
 	StaticDir string
 	Token     string
+}
+
+func Init(
+	storage super.Storage,
+	title super.TitleHandler,
+	page super.PageHandler,
+	config config.WebServerConfig,
+) *WebServer {
+	return &WebServer{
+		Storage:   storage,
+		Title:     title,
+		Page:      page,
+		Addr:      fmt.Sprintf("%s:%d", config.Host, config.Port),
+		StaticDir: config.StaticDirPath,
+		Token:     config.Token,
+	}
 }
 
 func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
