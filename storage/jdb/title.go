@@ -30,7 +30,7 @@ func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool)
 	URL = strings.TrimSpace(URL)
 
 	if _, found := db.uniqueURLs[URL]; found {
-		return 0, schema.TitleDuplicateError
+		return 0, schema.TitleAlreadyExistsError
 	}
 
 	db.lastTitleID++
@@ -66,13 +66,13 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, page int, success
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return schema.PageIndexError
+		return schema.PageNotFoundError
 	}
 
 	title.Pages[page].Success = success
@@ -92,13 +92,13 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return schema.PageIndexError
+		return schema.PageNotFoundError
 	}
 
 	title.Pages[page].Rate = rate
@@ -115,7 +115,7 @@ func (db *Database) GetTitle(ctx context.Context, id int) (schema.Title, error) 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.Title{}, schema.TitleIndexError
+		return schema.Title{}, schema.TitleNotFoundError
 	}
 
 	return title.Super(ctx), nil
@@ -167,7 +167,7 @@ func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []schema
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Pages = model.RawPagesFromSuper(pages)
@@ -186,7 +186,7 @@ func (db *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Rate = rate
@@ -203,13 +203,13 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*schema.PageFull
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return nil, schema.TitleIndexError
+		return nil, schema.TitleNotFoundError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return nil, schema.PageIndexError
+		return nil, schema.PageNotFoundError
 	}
 
 	p := title.Pages[page]

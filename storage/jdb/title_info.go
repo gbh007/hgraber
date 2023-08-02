@@ -11,7 +11,7 @@ func (db *Database) UpdateTitleName(ctx context.Context, id int, name string) er
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Name = name
@@ -30,7 +30,7 @@ func (db *Database) UpdateTitleAuthors(ctx context.Context, id int, authors []st
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Authors = authors
@@ -49,7 +49,7 @@ func (db *Database) UpdateTitleTags(ctx context.Context, id int, tags []string) 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Tags = tags
@@ -68,7 +68,7 @@ func (db *Database) UpdateTitleCharacters(ctx context.Context, id int, character
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Characters = characters
@@ -87,7 +87,7 @@ func (db *Database) UpdateTitleCategories(ctx context.Context, id int, categorie
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Categories = categories
@@ -106,7 +106,7 @@ func (db *Database) UpdateTitleGroups(ctx context.Context, id int, groups []stri
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Groups = groups
@@ -125,7 +125,7 @@ func (db *Database) UpdateTitleLanguages(ctx context.Context, id int, languages 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Languages = languages
@@ -144,7 +144,7 @@ func (db *Database) UpdateTitleParodies(ctx context.Context, id int, parodies []
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return schema.TitleIndexError
+		return schema.TitleNotFoundError
 	}
 
 	title.Data.Parodies = parodies

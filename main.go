@@ -138,7 +138,7 @@ func parseTaskFile(ctx context.Context, titleService super.TitleHandler) {
 		err = titleService.FirstHandle(ctx, u)
 
 		switch {
-		case errors.Is(err, schema.TitleDuplicateError):
+		case errors.Is(err, schema.TitleAlreadyExistsError):
 			duplicateCount++
 
 		case errors.Is(err, parser.ErrInvalidLink):
