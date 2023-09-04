@@ -6,40 +6,28 @@ import (
 )
 
 type TitleInfoParsed struct {
-	Name       bool
-	Page       bool
-	Tags       bool
-	Authors    bool
-	Characters bool
-	Languages  bool
-	Categories bool
-	Parodies   bool
-	Groups     bool
+	Name bool
+	Page bool
+
+	Attributes map[Attribute]bool
 }
 
 func (tip TitleInfoParsed) IsFullParsed(ctx context.Context) bool {
-	return tip.Name &&
-		tip.Page &&
-		tip.Tags &&
-		tip.Authors &&
-		tip.Characters &&
-		tip.Languages &&
-		tip.Categories &&
-		tip.Parodies &&
-		tip.Groups
+	for _, parsed := range tip.Attributes {
+		if !parsed {
+			return false
+		}
+	}
+
+	return tip.Name && tip.Page
 }
 
 type TitleInfo struct {
-	Parsed     TitleInfoParsed
-	Name       string
-	Rate       int
-	Tags       []string
-	Authors    []string
-	Characters []string
-	Languages  []string
-	Categories []string
-	Parodies   []string
-	Groups     []string
+	Parsed TitleInfoParsed
+	Name   string
+	Rate   int
+
+	Attributes map[Attribute][]string
 }
 
 type Title struct {

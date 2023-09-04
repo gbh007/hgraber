@@ -33,74 +33,16 @@ func (s *Service) Update(ctx context.Context, title domain.Title) {
 		system.Info(ctx, "обновлено название", title.ID, title.URL)
 	}
 
-	if !title.Data.Parsed.Authors {
-		err = s.storage.UpdateTitleAuthors(ctx, title.ID, p.ParseAuthors(ctx))
-		if err != nil {
-			system.Error(ctx, err)
+	for _, attr := range domain.AllAttributes {
+		if !title.Data.Parsed.Attributes[attr] {
+			err = s.storage.UpdateAttributes(ctx, title.ID, attr, parser.ParseAttr(ctx, p, attr))
+			if err != nil {
+				system.Error(ctx, err)
 
-			return
+				return
+			}
+			system.Info(ctx, "обновлен аттрибут "+string(attr), title.ID, title.URL)
 		}
-		system.Info(ctx, "обновлены авторы", title.ID, title.URL)
-	}
-
-	if !title.Data.Parsed.Tags {
-		err = s.storage.UpdateTitleTags(ctx, title.ID, p.ParseTags(ctx))
-		if err != nil {
-			system.Error(ctx, err)
-
-			return
-		}
-		system.Info(ctx, "обновлены теги", title.ID, title.URL)
-	}
-
-	if !title.Data.Parsed.Characters {
-		err = s.storage.UpdateTitleCharacters(ctx, title.ID, p.ParseCharacters(ctx))
-		if err != nil {
-			system.Error(ctx, err)
-
-			return
-		}
-		system.Info(ctx, "обновлены персонажи", title.ID, title.URL)
-	}
-
-	if !title.Data.Parsed.Categories {
-		err = s.storage.UpdateTitleCategories(ctx, title.ID, p.ParseCategories(ctx))
-		if err != nil {
-			system.Error(ctx, err)
-
-			return
-		}
-		system.Info(ctx, "обновлены категории", title.ID, title.URL)
-	}
-
-	if !title.Data.Parsed.Groups {
-		err = s.storage.UpdateTitleGroups(ctx, title.ID, p.ParseGroups(ctx))
-		if err != nil {
-			system.Error(ctx, err)
-
-			return
-		}
-		system.Info(ctx, "обновлены группы", title.ID, title.URL)
-	}
-
-	if !title.Data.Parsed.Languages {
-		err = s.storage.UpdateTitleLanguages(ctx, title.ID, p.ParseLanguages(ctx))
-		if err != nil {
-			system.Error(ctx, err)
-
-			return
-		}
-		system.Info(ctx, "обновлены языки", title.ID, title.URL)
-	}
-
-	if !title.Data.Parsed.Parodies {
-		err = s.storage.UpdateTitleParodies(ctx, title.ID, p.ParseParodies(ctx))
-		if err != nil {
-			system.Error(ctx, err)
-
-			return
-		}
-		system.Info(ctx, "обновлены пародии", title.ID, title.URL)
 	}
 
 	if !title.Data.Parsed.Page {

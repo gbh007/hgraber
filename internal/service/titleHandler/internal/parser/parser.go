@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"app/internal/domain"
 	"context"
 	"errors"
 	"strings"
@@ -63,6 +64,34 @@ type Parser interface {
 	ParseCategories(ctx context.Context) []string
 	ParseParodies(ctx context.Context) []string
 	ParseGroups(ctx context.Context) []string
+}
+
+func ParseAttr(ctx context.Context, p Parser, attr domain.Attribute) []string {
+	switch attr {
+	case domain.AttrAuthor:
+		return p.ParseAuthors(ctx)
+
+	case domain.AttrCategory:
+		return p.ParseCategories(ctx)
+
+	case domain.AttrCharacter:
+		return p.ParseCharacters(ctx)
+
+	case domain.AttrGroup:
+		return p.ParseGroups(ctx)
+
+	case domain.AttrLanguage:
+		return p.ParseLanguages(ctx)
+
+	case domain.AttrParody:
+		return p.ParseParodies(ctx)
+
+	case domain.AttrTag:
+		return p.ParseTags(ctx)
+
+	default:
+		return []string{}
+	}
 }
 
 // Проверка соответствия базового типа

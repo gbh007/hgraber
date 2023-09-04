@@ -24,7 +24,8 @@ func (db *Database) UpdateTitleName(ctx context.Context, id int, name string) er
 
 }
 
-func (db *Database) UpdateTitleAuthors(ctx context.Context, id int, authors []string) error {
+func (db *Database) UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error {
+
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
@@ -33,122 +34,38 @@ func (db *Database) UpdateTitleAuthors(ctx context.Context, id int, authors []st
 		return domain.TitleNotFoundError
 	}
 
-	title.Data.Authors = authors
-	title.Data.Parsed.Authors = true
+	switch attr {
+	case domain.AttrAuthor:
+		title.Data.Authors = data
+		title.Data.Parsed.Authors = true
 
-	db.data.Titles[id] = title
-	db.needSave = true
+	case domain.AttrCategory:
+		title.Data.Categories = data
+		title.Data.Parsed.Categories = true
 
-	return nil
+	case domain.AttrCharacter:
+		title.Data.Characters = data
+		title.Data.Parsed.Characters = true
 
-}
+	case domain.AttrGroup:
+		title.Data.Groups = data
+		title.Data.Parsed.Groups = true
 
-func (db *Database) UpdateTitleTags(ctx context.Context, id int, tags []string) error {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
+	case domain.AttrLanguage:
+		title.Data.Languages = data
+		title.Data.Parsed.Languages = true
 
-	title, ok := db.data.Titles[id]
-	if !ok {
-		return domain.TitleNotFoundError
+	case domain.AttrParody:
+		title.Data.Parodies = data
+		title.Data.Parsed.Parodies = true
+
+	case domain.AttrTag:
+		title.Data.Tags = data
+		title.Data.Parsed.Tags = true
+
+	default:
+		return domain.UnsupportedAttributeError
 	}
-
-	title.Data.Tags = tags
-	title.Data.Parsed.Tags = true
-
-	db.data.Titles[id] = title
-	db.needSave = true
-
-	return nil
-
-}
-
-func (db *Database) UpdateTitleCharacters(ctx context.Context, id int, characters []string) error {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	title, ok := db.data.Titles[id]
-	if !ok {
-		return domain.TitleNotFoundError
-	}
-
-	title.Data.Characters = characters
-	title.Data.Parsed.Characters = true
-
-	db.data.Titles[id] = title
-	db.needSave = true
-
-	return nil
-
-}
-
-func (db *Database) UpdateTitleCategories(ctx context.Context, id int, categories []string) error {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	title, ok := db.data.Titles[id]
-	if !ok {
-		return domain.TitleNotFoundError
-	}
-
-	title.Data.Categories = categories
-	title.Data.Parsed.Categories = true
-
-	db.data.Titles[id] = title
-	db.needSave = true
-
-	return nil
-
-}
-
-func (db *Database) UpdateTitleGroups(ctx context.Context, id int, groups []string) error {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	title, ok := db.data.Titles[id]
-	if !ok {
-		return domain.TitleNotFoundError
-	}
-
-	title.Data.Groups = groups
-	title.Data.Parsed.Groups = true
-
-	db.data.Titles[id] = title
-	db.needSave = true
-
-	return nil
-
-}
-
-func (db *Database) UpdateTitleLanguages(ctx context.Context, id int, languages []string) error {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	title, ok := db.data.Titles[id]
-	if !ok {
-		return domain.TitleNotFoundError
-	}
-
-	title.Data.Languages = languages
-	title.Data.Parsed.Languages = true
-
-	db.data.Titles[id] = title
-	db.needSave = true
-
-	return nil
-
-}
-
-func (db *Database) UpdateTitleParodies(ctx context.Context, id int, parodies []string) error {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	title, ok := db.data.Titles[id]
-	if !ok {
-		return domain.TitleNotFoundError
-	}
-
-	title.Data.Parodies = parodies
-	title.Data.Parsed.Parodies = true
 
 	db.data.Titles[id] = title
 	db.needSave = true

@@ -59,15 +59,16 @@ type TitleInfoParsed struct {
 
 func TitleInfoParsedFromStorage(raw domain.TitleInfoParsed) TitleInfoParsed {
 	return TitleInfoParsed{
-		Name:       raw.Name,
-		Page:       raw.Page,
-		Tags:       raw.Tags,
-		Authors:    raw.Authors,
-		Characters: raw.Characters,
-		Languages:  raw.Languages,
-		Categories: raw.Categories,
-		Parodies:   raw.Parodies,
-		Groups:     raw.Groups,
+		Name: raw.Name,
+		Page: raw.Page,
+
+		Tags:       raw.Attributes[domain.AttrTag],
+		Authors:    raw.Attributes[domain.AttrAuthor],
+		Characters: raw.Attributes[domain.AttrCharacter],
+		Languages:  raw.Attributes[domain.AttrLanguage],
+		Categories: raw.Attributes[domain.AttrCategory],
+		Parodies:   raw.Attributes[domain.AttrParody],
+		Groups:     raw.Attributes[domain.AttrGroup],
 	}
 }
 
@@ -89,22 +90,22 @@ func TitleInfoFromStorage(raw domain.TitleInfo) TitleInfo {
 		Parsed:     TitleInfoParsedFromStorage(raw.Parsed),
 		Name:       raw.Name,
 		Rate:       raw.Rate,
-		Tags:       make([]string, len(raw.Tags)),
-		Authors:    make([]string, len(raw.Authors)),
-		Characters: make([]string, len(raw.Characters)),
-		Languages:  make([]string, len(raw.Languages)),
-		Categories: make([]string, len(raw.Categories)),
-		Parodies:   make([]string, len(raw.Parodies)),
-		Groups:     make([]string, len(raw.Groups)),
+		Tags:       make([]string, len(raw.Attributes[domain.AttrTag])),
+		Authors:    make([]string, len(raw.Attributes[domain.AttrAuthor])),
+		Characters: make([]string, len(raw.Attributes[domain.AttrCharacter])),
+		Languages:  make([]string, len(raw.Attributes[domain.AttrLanguage])),
+		Categories: make([]string, len(raw.Attributes[domain.AttrCategory])),
+		Parodies:   make([]string, len(raw.Attributes[domain.AttrParody])),
+		Groups:     make([]string, len(raw.Attributes[domain.AttrGroup])),
 	}
 
-	copy(out.Tags, raw.Tags)
-	copy(out.Authors, raw.Authors)
-	copy(out.Characters, raw.Characters)
-	copy(out.Languages, raw.Languages)
-	copy(out.Categories, raw.Categories)
-	copy(out.Parodies, raw.Parodies)
-	copy(out.Groups, raw.Groups)
+	copy(out.Tags, raw.Attributes[domain.AttrTag])
+	copy(out.Authors, raw.Attributes[domain.AttrAuthor])
+	copy(out.Characters, raw.Attributes[domain.AttrCharacter])
+	copy(out.Languages, raw.Attributes[domain.AttrLanguage])
+	copy(out.Categories, raw.Attributes[domain.AttrCategory])
+	copy(out.Parodies, raw.Attributes[domain.AttrParody])
+	copy(out.Groups, raw.Attributes[domain.AttrGroup])
 
 	return out
 }
