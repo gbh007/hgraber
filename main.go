@@ -1,16 +1,15 @@
 package main
 
 import (
-	"app/config"
-	"app/service/controller"
-	"app/service/fileStorage"
-	"app/service/parser"
-	"app/service/titleHandler"
-	"app/service/webServer"
-	"app/storage/jdb"
-	"app/storage/schema"
-	"app/storage/stopwatch"
-	"app/super"
+	"app/internal/config"
+	"app/internal/controller"
+	"app/internal/domain"
+	"app/internal/service/fileStorage"
+	"app/internal/service/parser"
+	"app/internal/service/titleHandler"
+	"app/internal/service/webServer"
+	"app/internal/storage/jdb"
+	"app/internal/storage/stopwatch"
 	"app/system"
 	"bufio"
 	"context"
@@ -109,7 +108,12 @@ func main() {
 	system.Info(mainContext, "Выход")
 }
 
-func parseTaskFile(ctx context.Context, titleService super.TitleHandler) {
+type title interface {
+	// FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
+	FirstHandle(ctx context.Context, u string) error
+}
+
+func parseTaskFile(ctx context.Context, titleService title) {
 	f, err := os.Open("task.txt")
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -138,7 +142,7 @@ func parseTaskFile(ctx context.Context, titleService super.TitleHandler) {
 		err = titleService.FirstHandle(ctx, u)
 
 		switch {
-		case errors.Is(err, schema.TitleAlreadyExistsError):
+		case errors.Is(err, domain.TitleAlreadyExistsError):
 			duplicateCount++
 
 		case errors.Is(err, parser.ErrInvalidLink):
