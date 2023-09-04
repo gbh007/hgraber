@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"app/pkg/request"
 	"context"
 	"fmt"
 	"regexp"
@@ -17,7 +18,7 @@ type Parser_IMHENTAI_XXX struct {
 func (p *Parser_IMHENTAI_XXX) Load(ctx context.Context, URL string) bool {
 	var err error
 	p.url = URL
-	p.main_raw, err = RequestString(ctx, URL)
+	p.main_raw, err = request.RequestString(ctx, URL)
 	return err == nil
 }
 
@@ -69,7 +70,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []Page {
 	rp_img := regexp.MustCompile(regexp.QuoteMeta(`<img id="gimg" class="lazy`) + `.+?` + `src="(.+?)" alt`)
 	for i := 1; i <= count; i++ {
 		// символ / и так будет в конце
-		data, err := RequestString(ctx, fmt.Sprintf("%s%d", u, i))
+		data, err := request.RequestString(ctx, fmt.Sprintf("%s%d", u, i))
 		if err != nil {
 			return []Page{}
 		}

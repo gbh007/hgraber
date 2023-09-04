@@ -2,7 +2,7 @@ package titleHandler
 
 import (
 	"app/internal/domain"
-	"app/internal/service/parser"
+	"app/internal/service/titleHandler/internal/parser"
 	"app/system"
 	"context"
 	"strings"

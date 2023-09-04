@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"app/pkg/request"
 	"context"
 	"regexp"
 	"strconv"
@@ -18,7 +19,7 @@ func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, URL string) bool {
 	var err error
 	p.url = URL
 	tmpUrl := trimLastSlash(URL, 4) + ".html"
-	p.main_raw, err = RequestString(ctx, tmpUrl)
+	p.main_raw, err = request.RequestString(ctx, tmpUrl)
 	return err == nil
 }
 
@@ -33,7 +34,7 @@ func (p Parser_MANGAONLINE_BIZ) ParseName(ctx context.Context) string {
 
 func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []Page {
 	result := make([]Page, 0)
-	pcDataRaw, err := RequestString(ctx, p.url)
+	pcDataRaw, err := request.RequestString(ctx, p.url)
 	if err != nil {
 		return result
 	}

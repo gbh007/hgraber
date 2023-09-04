@@ -3,9 +3,7 @@ package main
 import (
 	"app/internal/config"
 	"app/internal/controller"
-	"app/internal/domain"
 	"app/internal/service/fileStorage"
-	"app/internal/service/parser"
 	"app/internal/service/titleHandler"
 	"app/internal/service/webServer"
 	"app/internal/storage/jdb"
@@ -108,12 +106,7 @@ func main() {
 	system.Info(mainContext, "Выход")
 }
 
-type title interface {
-	// FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
-	FirstHandle(ctx context.Context, u string) error
-}
-
-func parseTaskFile(ctx context.Context, titleService title) {
+func parseTaskFile(ctx context.Context, service *titleHandler.Service) {
 	f, err := os.Open("task.txt")
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
@@ -124,43 +117,22 @@ func parseTaskFile(ctx context.Context, titleService title) {
 	defer system.IfErrFunc(ctx, f.Close)
 
 	var (
-		totalCount     = 0
-		loadedCount    = 0
-		duplicateCount = 0
-		errorCount     = 0
+		data []string
 	)
 
 	sc := bufio.NewScanner(f)
 	for sc.Scan() {
 		u := sc.Text()
-		if u == "" {
-			continue
-		}
-
-		totalCount++
-
-		err = titleService.FirstHandle(ctx, u)
-
-		switch {
-		case errors.Is(err, domain.TitleAlreadyExistsError):
-			duplicateCount++
-
-		case errors.Is(err, parser.ErrInvalidLink):
-			errorCount++
-
-			system.Warning(ctx, "не поддерживаемая ссылка", u)
-		case err != nil:
-			errorCount++
-
-			system.Error(ctx, err)
-		default:
-			loadedCount++
+		if u != "" {
+			data = append(data, u)
 		}
 	}
+
+	res := service.FirstHandleMultiple(ctx, data)
 
 	system.Info(ctx,
 		fmt.Sprintf(
 			"всего: %d загружено: %d дубликаты: %d ошибки: %d",
-			totalCount, loadedCount, duplicateCount, errorCount,
+			res.TotalCount, res.LoadedCount, res.DuplicateCount, res.ErrorCount,
 		))
 }

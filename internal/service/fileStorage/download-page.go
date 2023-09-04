@@ -1,7 +1,7 @@
 package fileStorage
 
 import (
-	"app/internal/service/parser"
+	"app/pkg/request"
 	"app/system"
 	"context"
 	"fmt"
@@ -19,7 +19,7 @@ func downloadTitlePage(ctx context.Context, id, page int, URL, ext string) error
 	}
 
 	// скачиваем изображение
-	data, err := parser.RequestBytes(ctx, URL)
+	data, err := request.RequestBytes(ctx, URL)
 	if err != nil {
 		return err
 	}

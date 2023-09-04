@@ -1,9 +1,11 @@
 package titleHandler
 
 import (
-	"app/internal/service/parser"
+	"app/internal/domain"
+	"app/internal/service/titleHandler/internal/parser"
 	"app/system"
 	"context"
+	"errors"
 	"strings"
 )
 
@@ -25,4 +27,34 @@ func (s *Service) FirstHandle(ctx context.Context, u string) error {
 	}
 
 	return nil
+}
+
+func (s *Service) FirstHandleMultiple(ctx context.Context, data []string) domain.FirstHandleMultipleResult {
+	res := domain.FirstHandleMultipleResult{}
+
+	for _, link := range data {
+		res.TotalCount++
+
+		err := s.FirstHandle(ctx, link)
+
+		switch {
+		case errors.Is(err, domain.TitleAlreadyExistsError):
+			res.DuplicateCount++
+
+		case errors.Is(err, parser.ErrInvalidLink):
+			res.NotHandled = append(res.NotHandled, link)
+			res.ErrorCount++
+
+			system.Warning(ctx, "не поддерживаемая ссылка", link)
+			res.NotHandled = append(res.NotHandled, link)
+		case err != nil:
+			res.ErrorCount++
+
+			system.Error(ctx, err)
+		default:
+			res.LoadedCount++
+		}
+	}
+
+	return res
 }
