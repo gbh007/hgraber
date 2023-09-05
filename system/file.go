@@ -57,7 +57,7 @@ func createDir(ctx context.Context, dirPath string) error {
 		return err
 	}
 
-	err = os.MkdirAll(dirPath, 0666)
+	err = os.MkdirAll(dirPath, os.ModeDir|os.ModePerm)
 	if err != nil {
 		Error(ctx, err)
 		return err

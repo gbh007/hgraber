@@ -7,6 +7,7 @@ import (
 	"app/internal/service/titleHandler"
 	"app/internal/service/webServer"
 	"app/internal/storage/jdb"
+	"app/internal/storage/sqlite"
 	"app/internal/storage/stopwatch"
 	"app/system"
 	"bufio"
@@ -36,74 +37,120 @@ func main() {
 	)
 	defer stop()
 
-	mainContext := system.NewSystemContext(notifyCtx, "Main")
+	ctx := system.NewSystemContext(notifyCtx, "Main")
 
 	if config.Log.DebugMode {
-		mainContext = system.WithDebug(mainContext)
+		ctx = system.WithDebug(ctx)
 	}
 
 	if config.Log.DebugFullpathMode {
-		system.EnableFullpath(mainContext)
+		system.EnableFullpath(ctx)
 	}
 
-	system.Debug(mainContext, "Версия", system.Version)
-	system.Debug(mainContext, "Коммит", system.Commit)
-	system.Debug(mainContext, "Собрано", system.BuildAt)
+	system.Debug(ctx, "Версия", system.Version)
+	system.Debug(ctx, "Коммит", system.Commit)
+	system.Debug(ctx, "Собрано", system.BuildAt)
 
-	system.Info(mainContext, "Инициализация базы")
+	system.Info(ctx, "Инициализация базы")
 
-	storageJDB := jdb.Init(mainContext, config.Base.DBFilePath)
-	storage := stopwatch.WithStopwatch(storageJDB)
+	var (
+		DBSaver interface {
+			Save(ctx context.Context, path string, force bool) error
+		}
+		storage *stopwatch.Stopwatch
+		err     error
+	)
 
-	err := storageJDB.Load(mainContext, config.Base.DBFilePath)
-	if err != nil {
+	controller := controller.NewObject()
+
+	switch config.Base.DBType {
+	case "jdb":
+		storageJDB := jdb.Init(ctx, config.Base.DBFilePath)
+
+		DBSaver = storageJDB
+		storage = stopwatch.WithStopwatch(storageJDB)
+
+		err := storageJDB.Load(ctx, config.Base.DBFilePath)
+		if err != nil {
+			system.Error(ctx, err)
+
+			os.Exit(1)
+		}
+
+		controller.RegisterRunner(ctx, storageJDB)
+	case "sqlite":
+		sqliteDB, err := sqlite.Connect(ctx, config.Base.DBFilePath)
+		if err != nil {
+			system.Error(ctx, err)
+
+			os.Exit(1)
+		}
+
+		err = sqliteDB.MigrateAll(ctx)
+		if err != nil {
+			system.Error(ctx, err)
+
+			os.Exit(1)
+		}
+
+		storage = stopwatch.WithStopwatch(sqliteDB)
+
+	default:
+		system.Warning(ctx, "не поддерживаемый тип БД")
+
 		os.Exit(1)
+
 	}
 
-	system.Info(mainContext, "База загружена")
+	system.Info(ctx, "База загружена")
 
 	titleService := titleHandler.Init(storage)
 	pageService := fileStorage.Init(storage)
 
-	controller := controller.NewObject()
-	controller.RegisterRunner(mainContext, storageJDB)
-
-	err = system.SetFileStoragePath(mainContext, config.Base.FileStoragePath)
+	err = system.SetFileStoragePath(ctx, config.Base.FileStoragePath)
 	if err != nil {
-		os.Exit(2)
+		system.Error(ctx, err)
+
+		os.Exit(1)
 	}
 
-	err = system.SetFileExportPath(mainContext, config.Base.FileExportPath)
+	err = system.SetFileExportPath(ctx, config.Base.FileExportPath)
 	if err != nil {
-		os.Exit(3)
+		system.Error(ctx, err)
+
+		os.Exit(1)
 	}
 
 	if !config.Base.OnlyView {
-		go parseTaskFile(mainContext, titleService)
+		go parseTaskFile(ctx, titleService)
 
-		controller.RegisterRunner(mainContext, titleService)
-		controller.RegisterRunner(mainContext, pageService)
+		controller.RegisterRunner(ctx, titleService)
+		controller.RegisterRunner(ctx, pageService)
 	}
 
 	webServer := webServer.Init(storage, titleService, pageService, config.WebServer)
-	controller.RegisterRunner(mainContext, webServer)
+	controller.RegisterRunner(ctx, webServer)
 
-	system.Info(mainContext, "Завершение работы, ожидание завершения процессов")
+	system.Info(ctx, "Завершение работы, ожидание завершения процессов")
 
-	err = controller.Run(mainContext)
+	err = controller.Run(ctx)
 	if err != nil {
-		os.Exit(4)
+		system.Error(ctx, err)
+
+		os.Exit(1)
 	}
 
-	system.Info(mainContext, "Процессы завершены")
+	system.Info(ctx, "Процессы завершены")
 
-	if storageJDB.Save(mainContext, config.Base.DBFilePath, false) == nil {
-		system.Info(mainContext, "База сохранена")
-	} else {
-		system.Warning(mainContext, "База не сохранена")
+	if DBSaver != nil {
+		if DBSaver.Save(ctx, config.Base.DBFilePath, false) == nil {
+			system.Info(ctx, "База сохранена")
+		} else {
+			system.Warning(ctx, "База не сохранена")
+		}
 	}
 
-	system.Info(mainContext, "Выход")
+	system.Info(ctx, "Выход")
 }
 
 func parseTaskFile(ctx context.Context, service *titleHandler.Service) {
