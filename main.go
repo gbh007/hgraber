@@ -54,9 +54,6 @@ func main() {
 	system.Info(ctx, "Инициализация базы")
 
 	var (
-		DBSaver interface {
-			Save(ctx context.Context, path string, force bool) error
-		}
 		storage *stopwatch.Stopwatch
 		err     error
 	)
@@ -67,7 +64,6 @@ func main() {
 	case "jdb":
 		storageJDB := jdb.Init(ctx, config.Base.DBFilePath)
 
-		DBSaver = storageJDB
 		storage = stopwatch.WithStopwatch(storageJDB)
 
 		err := storageJDB.Load(ctx, config.Base.DBFilePath)
@@ -78,6 +74,14 @@ func main() {
 		}
 
 		controller.RegisterRunner(ctx, storageJDB)
+		controller.RegisterAfterStop(ctx, func() {
+			if storageJDB.Save(ctx, config.Base.DBFilePath, false) == nil {
+				system.Info(ctx, "База сохранена")
+			} else {
+				system.Warning(ctx, "База не сохранена")
+			}
+		})
+
 	case "sqlite":
 		sqliteDB, err := sqlite.Connect(ctx, config.Base.DBFilePath)
 		if err != nil {
@@ -136,21 +140,9 @@ func main() {
 	err = controller.Run(ctx)
 	if err != nil {
 		system.Error(ctx, err)
-
-		os.Exit(1)
 	}
 
-	system.Info(ctx, "Процессы завершены")
-
-	if DBSaver != nil {
-		if DBSaver.Save(ctx, config.Base.DBFilePath, false) == nil {
-			system.Info(ctx, "База сохранена")
-		} else {
-			system.Warning(ctx, "База не сохранена")
-		}
-	}
-
-	system.Info(ctx, "Выход")
+	system.Info(ctx, "Процессы завершены, выход")
 }
 
 func parseTaskFile(ctx context.Context, service *titleHandler.Service) {

@@ -11,6 +11,8 @@ type Runner interface {
 	Name() string
 }
 
+type AfterStopHandler func()
+
 func NewObject() *Object {
 	return new(Object)
 }
@@ -18,10 +20,15 @@ func NewObject() *Object {
 type Object struct {
 	runnerChannels []chan struct{}
 	runners        []Runner
+	after          []AfterStopHandler
 }
 
 func (o *Object) RegisterRunner(ctx context.Context, runner Runner) {
 	o.runners = append(o.runners, runner)
+}
+
+func (o *Object) RegisterAfterStop(ctx context.Context, handler AfterStopHandler) {
+	o.after = append(o.after, handler)
 }
 
 func (o *Object) Run(parentCtx context.Context) error {
@@ -44,6 +51,11 @@ func (o *Object) Run(parentCtx context.Context) error {
 	// Дожидаемся завершения потоков
 	for _, c := range o.runnerChannels {
 		<-c
+	}
+
+	// Проходим по всем послеостановочным функциям
+	for _, handler := range o.after {
+		handler()
 	}
 
 	return nil

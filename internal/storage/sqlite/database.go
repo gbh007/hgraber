@@ -29,8 +29,12 @@ func Connect(ctx context.Context, dataSourceName string) (*Database, error) {
 
 // MigrateAll - производит миграции данных
 func (storage *Database) MigrateAll(ctx context.Context) error {
-	// TODO: использовать другой логгер (сделать его в системном пакете)
-	return migrator.MigrateAll(ctx, migration.Migrations, storage.db, true, migrator.Sqlite3Provider)
+
+	return migrator.New().
+		WithFS(migration.Migrations).
+		WithLogger(system.NewLogger(ctx)).
+		WithProvider(migrator.Sqlite3Provider).
+		MigrateAll(ctx, storage.db, true)
 }
 
 func isApplyWithErr(r sql.Result) (bool, error) {
