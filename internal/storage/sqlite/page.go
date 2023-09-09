@@ -31,7 +31,7 @@ func (d *Database) GetPage(ctx context.Context, id int, page int) (*domain.PageF
 	return &p, nil
 }
 
-func (d *Database) GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo {
+func (d *Database) GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo {
 	raw := make([]*Page, 0)
 
 	err := d.db.SelectContext(ctx, &raw, `SELECT * FROM pages WHERE success = FALSE;`)
@@ -84,7 +84,7 @@ func (d *Database) UpdatePageRate(ctx context.Context, id int, page int, rate in
 	return nil
 }
 
-func (d *Database) UpdateTitlePages(ctx context.Context, id int, pages []domain.Page) error {
+func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error {
 	tx, err := d.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func (d *Database) UpdateTitlePages(ctx context.Context, id int, pages []domain.
 	if !isApply(ctx, res) {
 		system.IfErrFunc(ctx, tx.Rollback)
 
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM pages WHERE book_id = ?;`, id)
@@ -144,7 +144,7 @@ func (d *Database) getBookPages(ctx context.Context, bookID int) ([]*Page, error
 
 func pageToDomain(ctx context.Context, in *Page) domain.PageFullInfo {
 	return domain.PageFullInfo{
-		TitleID:    in.BookID,
+		BookID:     in.BookID,
 		PageNumber: in.PageNumber,
 		URL:        in.Url,
 		Ext:        in.Ext,

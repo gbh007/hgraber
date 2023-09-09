@@ -11,15 +11,15 @@ func (*Database) GetPage(ctx context.Context, id int, page int) (*domain.PageFul
 	return nil, domain.PageNotFoundError
 }
 
-func (*Database) GetTitle(ctx context.Context, id int) (domain.Title, error) {
-	return domain.Title{}, domain.TitleNotFoundError
+func (*Database) GetTitle(ctx context.Context, id int) (domain.Book, error) {
+	return domain.Book{}, domain.BookNotFoundError
 }
 
-func (*Database) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
+func (*Database) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Book {
 	return nil
 }
 
-func (*Database) GetUnloadedTitles(ctx context.Context) []domain.Title {
+func (*Database) GetUnloadedTitles(ctx context.Context) []domain.Book {
 	return nil
 }
 
@@ -28,7 +28,7 @@ func (*Database) GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo 
 }
 
 func (*Database) NewTitle(ctx context.Context, name string, URL string, loaded bool) (int, error) {
-	return 0, domain.TitleAlreadyExistsError
+	return 0, domain.BookAlreadyExistsError
 }
 
 func (*Database) PagesCount(ctx context.Context) int {
@@ -52,7 +52,7 @@ func (*Database) UpdateAttributes(ctx context.Context, id int, attr domain.Attri
 }
 
 func (*Database) UpdatePageRate(ctx context.Context, id int, page int, rate int) error {
-	return domain.TitleNotFoundError
+	return domain.BookNotFoundError
 }
 
 func (*Database) UpdatePageSuccess(ctx context.Context, id int, page int, success bool) error {
@@ -60,13 +60,13 @@ func (*Database) UpdatePageSuccess(ctx context.Context, id int, page int, succes
 }
 
 func (*Database) UpdateTitleName(ctx context.Context, id int, name string) error {
-	return domain.TitleNotFoundError
+	return domain.BookNotFoundError
 }
 
 func (*Database) UpdateTitlePages(ctx context.Context, id int, pages []domain.Page) error {
-	return domain.TitleNotFoundError
+	return domain.BookNotFoundError
 }
 
 func (*Database) UpdateTitleRate(ctx context.Context, id int, rate int) error {
-	return domain.TitleNotFoundError
+	return domain.BookNotFoundError
 }

@@ -4,14 +4,14 @@ import (
 	"context"
 )
 
-func (db *Database) TitlesCount(ctx context.Context) int {
+func (db *Database) BooksCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	return len(db.data.Titles)
 }
 
-func (db *Database) UnloadedTitlesCount(ctx context.Context) int {
+func (db *Database) UnloadedBooksCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 

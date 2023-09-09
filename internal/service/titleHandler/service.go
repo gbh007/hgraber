@@ -7,18 +7,18 @@ import (
 )
 
 type storage interface {
-	GetUnloadedTitles(ctx context.Context) []domain.Title
-	NewTitle(ctx context.Context, name string, URL string, loaded bool) (int, error)
-	UpdateTitlePages(ctx context.Context, id int, pages []domain.Page) error
+	GetUnloadedBooks(ctx context.Context) []domain.Book
+	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
+	UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error
 
-	UpdateTitleName(ctx context.Context, id int, name string) error
+	UpdateBookName(ctx context.Context, id int, name string) error
 	UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error
 }
 
 type Service struct {
 	storage storage
 
-	worker *worker.Worker[domain.Title]
+	worker *worker.Worker[domain.Book]
 }
 
 func Init(storage storage) *Service {
@@ -26,11 +26,11 @@ func Init(storage storage) *Service {
 		storage: storage,
 	}
 
-	s.worker = worker.New[domain.Title](
+	s.worker = worker.New[domain.Book](
 		titleQueueSize,
 		titleInterval,
 		s.updateForWorker,
-		s.storage.GetUnloadedTitles,
+		s.storage.GetUnloadedBooks,
 	)
 
 	return s

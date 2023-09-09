@@ -11,7 +11,7 @@ type Page struct {
 }
 
 type PageFullInfo struct {
-	TitleID    int
+	BookID     int
 	PageNumber int
 	URL        string
 	Ext        string

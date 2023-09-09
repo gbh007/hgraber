@@ -30,8 +30,8 @@ func (t RawTitle) Copy() RawTitle {
 	return c
 }
 
-func (t RawTitle) Super() domain.Title {
-	c := domain.Title{
+func (t RawTitle) Super() domain.Book {
+	c := domain.Book{
 		ID:      t.ID,
 		Created: t.Created,
 		URL:     t.URL,

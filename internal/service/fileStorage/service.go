@@ -7,8 +7,8 @@ import (
 )
 
 type storage interface {
-	GetTitle(ctx context.Context, id int) (domain.Title, error)
-	GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo
+	GetBook(ctx context.Context, id int) (domain.Book, error)
+	GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo
 	UpdatePageSuccess(ctx context.Context, id int, page int, success bool) error
 }
 

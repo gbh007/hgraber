@@ -10,11 +10,11 @@ import (
 	"slices"
 )
 
-func (db *Database) GetUnloadedTitles(ctx context.Context) []domain.Title {
+func (db *Database) GetUnloadedBooks(ctx context.Context) []domain.Book {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	res := []domain.Title{}
+	res := []domain.Book{}
 
 	for _, t := range db.data.Titles {
 		if !t.Data.Parsed.IsFullParsed() {
@@ -25,14 +25,14 @@ func (db *Database) GetUnloadedTitles(ctx context.Context) []domain.Title {
 	return res
 }
 
-func (db *Database) NewTitle(ctx context.Context, name, URL string, loaded bool) (int, error) {
+func (db *Database) NewBook(ctx context.Context, name, URL string, loaded bool) (int, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	URL = strings.TrimSpace(URL)
 
 	if _, found := db.uniqueURLs[URL]; found {
-		return 0, domain.TitleAlreadyExistsError
+		return 0, domain.BookAlreadyExistsError
 	}
 
 	db.lastTitleID++
@@ -68,7 +68,7 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, page int, success
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	page--
@@ -94,7 +94,7 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	page--
@@ -111,23 +111,23 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 	return nil
 }
 
-func (db *Database) GetTitle(ctx context.Context, id int) (domain.Title, error) {
+func (db *Database) GetBook(ctx context.Context, id int) (domain.Book, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.Title{}, domain.TitleNotFoundError
+		return domain.Book{}, domain.BookNotFoundError
 	}
 
 	return title.Super(), nil
 }
 
-func (db *Database) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
+func (db *Database) GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	res := []domain.Title{}
+	res := []domain.Book{}
 
 	ids := db.getTitleIDs(filter.NewFirst)
 	n := len(ids)
@@ -174,7 +174,7 @@ func (db *Database) getTitleIDs(reverse bool) []int {
 	return res
 }
 
-func (db *Database) GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo {
+func (db *Database) GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
@@ -184,7 +184,7 @@ func (db *Database) GetUnsuccessedPages(ctx context.Context) []domain.PageFullIn
 		for i, p := range t.Pages {
 			if !p.Success {
 				res = append(res, domain.PageFullInfo{
-					TitleID:    t.ID,
+					BookID:     t.ID,
 					PageNumber: i + 1,
 					URL:        p.URL,
 					Ext:        p.Ext,
@@ -198,13 +198,13 @@ func (db *Database) GetUnsuccessedPages(ctx context.Context) []domain.PageFullIn
 	return res
 }
 
-func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []domain.Page) error {
+func (db *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	title.Pages = model.RawPagesFromSuper(pages)
@@ -217,13 +217,13 @@ func (db *Database) UpdateTitlePages(ctx context.Context, id int, pages []domain
 
 }
 
-func (db *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error {
+func (db *Database) UpdateBookRate(ctx context.Context, id int, rate int) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	title.Data.Rate = rate
@@ -240,7 +240,7 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*domain.PageFull
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return nil, domain.TitleNotFoundError
+		return nil, domain.BookNotFoundError
 	}
 
 	page--
@@ -252,7 +252,7 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*domain.PageFull
 	p := title.Pages[page]
 
 	return &domain.PageFullInfo{
-		TitleID:    title.ID,
+		BookID:     title.ID,
 		PageNumber: page + 1,
 		URL:        p.URL,
 		Ext:        p.Ext,

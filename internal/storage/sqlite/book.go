@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (d *Database) NewTitle(ctx context.Context, name string, URL string, loaded bool) (int, error) {
+func (d *Database) NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error) {
 	var count int
 	err := d.db.GetContext(ctx, &count, `SELECT COUNT(*) FROM books WHERE url = ?;`, URL)
 	if err != nil {
@@ -16,7 +16,7 @@ func (d *Database) NewTitle(ctx context.Context, name string, URL string, loaded
 	}
 
 	if count > 0 {
-		return 0, domain.TitleAlreadyExistsError
+		return 0, domain.BookAlreadyExistsError
 	}
 
 	res, err := d.db.ExecContext(
@@ -38,27 +38,27 @@ func (d *Database) NewTitle(ctx context.Context, name string, URL string, loaded
 	return int(id), nil
 }
 
-func (d *Database) UpdateTitleName(ctx context.Context, id int, name string) error {
+func (d *Database) UpdateBookName(ctx context.Context, id int, name string) error {
 	res, err := d.db.ExecContext(ctx, `UPDATE books SET name = ? WHERE id = ?;`, name, id)
 	if err != nil {
 		return err
 	}
 
 	if !isApply(ctx, res) {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	return nil
 }
 
-func (d *Database) UpdateTitleRate(ctx context.Context, id int, rate int) error {
+func (d *Database) UpdateBookRate(ctx context.Context, id int, rate int) error {
 	res, err := d.db.ExecContext(ctx, `UPDATE books SET rate = ? WHERE id = ?;`, rate, id)
 	if err != nil {
 		return err
 	}
 
 	if !isApply(ctx, res) {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	return nil

@@ -32,7 +32,7 @@ func (s *Service) ExportTitlesToZip(ctx context.Context, from, to int) error {
 func (s *Service) saveToZip(ctx context.Context, id int) error {
 	defer system.Stopwatch(ctx, "saveToZip")()
 
-	titleInfo, err := s.storage.GetTitle(ctx, id)
+	titleInfo, err := s.storage.GetBook(ctx, id)
 	if err != nil {
 		return err
 	}

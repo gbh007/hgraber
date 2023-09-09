@@ -22,14 +22,14 @@ type titleHandler interface {
 
 type storage interface {
 	GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error)
-	GetTitle(ctx context.Context, id int) (domain.Title, error)
-	GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title
+	GetBook(ctx context.Context, id int) (domain.Book, error)
+	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
 	PagesCount(ctx context.Context) int
-	TitlesCount(ctx context.Context) int
+	BooksCount(ctx context.Context) int
 	UnloadedPagesCount(ctx context.Context) int
-	UnloadedTitlesCount(ctx context.Context) int
+	UnloadedBooksCount(ctx context.Context) int
 	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
-	UpdateTitleRate(ctx context.Context, id int, rate int) error
+	UpdateBookRate(ctx context.Context, id int, rate int) error
 }
 
 type WebServer struct {

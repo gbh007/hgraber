@@ -35,7 +35,7 @@ type PageFullInfo struct {
 
 func PageFullInfoFromStorage(raw *domain.PageFullInfo) PageFullInfo {
 	return PageFullInfo{
-		TitleID:    raw.TitleID,
+		TitleID:    raw.BookID,
 		PageNumber: raw.PageNumber,
 		URL:        raw.URL,
 		Ext:        raw.Ext,
@@ -57,7 +57,7 @@ type TitleInfoParsed struct {
 	Groups     bool `json:"groups,omitempty"`
 }
 
-func TitleInfoParsedFromStorage(raw domain.TitleInfoParsed) TitleInfoParsed {
+func TitleInfoParsedFromStorage(raw domain.BookInfoParsed) TitleInfoParsed {
 	return TitleInfoParsed{
 		Name: raw.Name,
 		Page: raw.Page,
@@ -85,7 +85,7 @@ type TitleInfo struct {
 	Groups     []string        `json:"groups,omitempty"`
 }
 
-func TitleInfoFromStorage(raw domain.TitleInfo) TitleInfo {
+func TitleInfoFromStorage(raw domain.BookInfo) TitleInfo {
 	out := TitleInfo{
 		Parsed:     TitleInfoParsedFromStorage(raw.Parsed),
 		Name:       raw.Name,
@@ -119,7 +119,7 @@ type Title struct {
 	Data  TitleInfo `json:"info"`
 }
 
-func TitleFromStorage(raw domain.Title) Title {
+func TitleFromStorage(raw domain.Book) Title {
 	out := Title{
 		ID:      raw.ID,
 		Created: raw.Created,
@@ -134,7 +134,7 @@ func TitleFromStorage(raw domain.Title) Title {
 
 	return out
 }
-func TitlesFromStorage(raw []domain.Title) []Title {
+func TitlesFromStorage(raw []domain.Book) []Title {
 	out := make([]Title, 0, len(raw))
 
 	for _, t := range raw {

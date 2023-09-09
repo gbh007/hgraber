@@ -10,23 +10,23 @@ const depth = 0
 
 type storage interface {
 	GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error)
-	GetTitle(ctx context.Context, id int) (domain.Title, error)
-	GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title
-	GetUnloadedTitles(ctx context.Context) []domain.Title
-	GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo
-	NewTitle(ctx context.Context, name string, URL string, loaded bool) (int, error)
+	GetBook(ctx context.Context, id int) (domain.Book, error)
+	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
+	GetUnloadedBooks(ctx context.Context) []domain.Book
+	GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo
+	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
 	PagesCount(ctx context.Context) int
-	TitlesCount(ctx context.Context) int
+	BooksCount(ctx context.Context) int
 	UnloadedPagesCount(ctx context.Context) int
-	UnloadedTitlesCount(ctx context.Context) int
+	UnloadedBooksCount(ctx context.Context) int
 
 	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
-	UpdateTitleRate(ctx context.Context, id int, rate int) error
+	UpdateBookRate(ctx context.Context, id int, rate int) error
 
-	UpdateTitleName(ctx context.Context, id int, name string) error
+	UpdateBookName(ctx context.Context, id int, name string) error
 
 	UpdatePageSuccess(ctx context.Context, id int, page int, success bool) error
-	UpdateTitlePages(ctx context.Context, id int, pages []domain.Page) error
+	UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error
 
 	UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error
 }
@@ -51,34 +51,34 @@ func (s *Stopwatch) GetPage(ctx context.Context, id int, page int) (*domain.Page
 	return s.storage.GetPage(ctx, id, page)
 }
 
-func (s *Stopwatch) GetTitle(ctx context.Context, id int) (domain.Title, error) {
-	defer system.StopwatchWithDepth(ctx, "DB - GetTitle", depth)()
+func (s *Stopwatch) GetBook(ctx context.Context, id int) (domain.Book, error) {
+	defer system.StopwatchWithDepth(ctx, "DB - GetBook", depth)()
 
-	return s.storage.GetTitle(ctx, id)
+	return s.storage.GetBook(ctx, id)
 }
 
-func (s *Stopwatch) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
-	defer system.StopwatchWithDepth(ctx, "DB - GetTitles", depth)()
+func (s *Stopwatch) GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book {
+	defer system.StopwatchWithDepth(ctx, "DB - GetBooks", depth)()
 
-	return s.storage.GetTitles(ctx, filter)
+	return s.storage.GetBooks(ctx, filter)
 }
 
-func (s *Stopwatch) GetUnloadedTitles(ctx context.Context) []domain.Title {
-	defer system.StopwatchWithDepth(ctx, "DB - GetUnloadedTitles", depth)()
+func (s *Stopwatch) GetUnloadedBooks(ctx context.Context) []domain.Book {
+	defer system.StopwatchWithDepth(ctx, "DB - GetUnloadedBooks", depth)()
 
-	return s.storage.GetUnloadedTitles(ctx)
+	return s.storage.GetUnloadedBooks(ctx)
 }
 
-func (s *Stopwatch) GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo {
-	defer system.StopwatchWithDepth(ctx, "DB - GetUnsuccessedPages", depth)()
+func (s *Stopwatch) GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo {
+	defer system.StopwatchWithDepth(ctx, "DB - GetUnsuccessPages", depth)()
 
-	return s.storage.GetUnsuccessedPages(ctx)
+	return s.storage.GetUnsuccessPages(ctx)
 }
 
-func (s *Stopwatch) NewTitle(ctx context.Context, name string, URL string, loaded bool) (int, error) {
-	defer system.StopwatchWithDepth(ctx, "DB - NewTitle", depth)()
+func (s *Stopwatch) NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error) {
+	defer system.StopwatchWithDepth(ctx, "DB - NewBook", depth)()
 
-	return s.storage.NewTitle(ctx, name, URL, loaded)
+	return s.storage.NewBook(ctx, name, URL, loaded)
 }
 
 func (s *Stopwatch) PagesCount(ctx context.Context) int {
@@ -87,10 +87,10 @@ func (s *Stopwatch) PagesCount(ctx context.Context) int {
 	return s.storage.PagesCount(ctx)
 }
 
-func (s *Stopwatch) TitlesCount(ctx context.Context) int {
-	defer system.StopwatchWithDepth(ctx, "DB - TitlesCount", depth)()
+func (s *Stopwatch) BooksCount(ctx context.Context) int {
+	defer system.StopwatchWithDepth(ctx, "DB - BooksCount", depth)()
 
-	return s.storage.TitlesCount(ctx)
+	return s.storage.BooksCount(ctx)
 }
 
 func (s *Stopwatch) UnloadedPagesCount(ctx context.Context) int {
@@ -99,10 +99,10 @@ func (s *Stopwatch) UnloadedPagesCount(ctx context.Context) int {
 	return s.storage.UnloadedPagesCount(ctx)
 }
 
-func (s *Stopwatch) UnloadedTitlesCount(ctx context.Context) int {
-	defer system.StopwatchWithDepth(ctx, "DB - UnloadedTitlesCount", depth)()
+func (s *Stopwatch) UnloadedBooksCount(ctx context.Context) int {
+	defer system.StopwatchWithDepth(ctx, "DB - UnloadedBooksCount", depth)()
 
-	return s.storage.UnloadedTitlesCount(ctx)
+	return s.storage.UnloadedBooksCount(ctx)
 }
 
 func (s *Stopwatch) UpdatePageRate(ctx context.Context, id int, page int, rate int) error {
@@ -116,20 +116,20 @@ func (s *Stopwatch) UpdatePageSuccess(ctx context.Context, id int, page int, suc
 
 	return s.storage.UpdatePageSuccess(ctx, id, page, success)
 }
-func (s *Stopwatch) UpdateTitleName(ctx context.Context, id int, name string) error {
-	defer system.StopwatchWithDepth(ctx, "DB - UpdateTitleName", depth)()
+func (s *Stopwatch) UpdateBookName(ctx context.Context, id int, name string) error {
+	defer system.StopwatchWithDepth(ctx, "DB - UpdateBookName", depth)()
 
-	return s.storage.UpdateTitleName(ctx, id, name)
+	return s.storage.UpdateBookName(ctx, id, name)
 }
 
-func (s *Stopwatch) UpdateTitlePages(ctx context.Context, id int, pages []domain.Page) error {
-	defer system.StopwatchWithDepth(ctx, "DB - UpdateTitlePages", depth)()
+func (s *Stopwatch) UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error {
+	defer system.StopwatchWithDepth(ctx, "DB - UpdateBookPages", depth)()
 
-	return s.storage.UpdateTitlePages(ctx, id, pages)
+	return s.storage.UpdateBookPages(ctx, id, pages)
 }
 
-func (s *Stopwatch) UpdateTitleRate(ctx context.Context, id int, rate int) error {
-	defer system.StopwatchWithDepth(ctx, "DB - UpdateTitleRate", depth)()
+func (s *Stopwatch) UpdateBookRate(ctx context.Context, id int, rate int) error {
+	defer system.StopwatchWithDepth(ctx, "DB - UpdateBookRate", depth)()
 
-	return s.storage.UpdateTitleRate(ctx, id, rate)
+	return s.storage.UpdateBookRate(ctx, id, rate)
 }

@@ -6,8 +6,8 @@ import (
 	"context"
 )
 
-func (d *Database) GetUnloadedTitles(ctx context.Context) []domain.Title {
-	out := make([]domain.Title, 0)
+func (d *Database) GetUnloadedBooks(ctx context.Context) []domain.Book {
+	out := make([]domain.Book, 0)
 
 	ids, err := d.bookUnprocessedMap(ctx)
 	if err != nil {
@@ -17,7 +17,7 @@ func (d *Database) GetUnloadedTitles(ctx context.Context) []domain.Title {
 	}
 
 	for id := range ids {
-		book, err := d.GetTitle(ctx, id)
+		book, err := d.GetBook(ctx, id)
 		if err != nil {
 			system.Error(ctx, err)
 		} else {

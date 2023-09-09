@@ -35,12 +35,12 @@ func (s *Service) handle(ctx context.Context, page qPage) {
 }
 
 func (s *Service) getter(ctx context.Context) []qPage {
-	raw := s.storage.GetUnsuccessedPages(ctx)
+	raw := s.storage.GetUnsuccessPages(ctx)
 	data := make([]qPage, 0, len(raw))
 
 	for _, p := range raw {
 		data = append(data, qPage{
-			TitleID:    p.TitleID,
+			TitleID:    p.BookID,
 			PageNumber: p.PageNumber,
 			URL:        p.URL,
 			Ext:        p.Ext,

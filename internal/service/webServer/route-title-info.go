@@ -19,7 +19,7 @@ func (ws *WebServer) routeTitleInfo() http.Handler {
 			return
 		}
 
-		data, err := ws.storage.GetTitle(ctx, request.ID)
+		data, err := ws.storage.GetBook(ctx, request.ID)
 		if err != nil {
 			base.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return

@@ -5,13 +5,13 @@ import (
 	"context"
 )
 
-func (db *Database) UpdateTitleName(ctx context.Context, id int, name string) error {
+func (db *Database) UpdateBookName(ctx context.Context, id int, name string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	title.Data.Name = name
@@ -31,7 +31,7 @@ func (db *Database) UpdateAttributes(ctx context.Context, id int, attr domain.At
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.TitleNotFoundError
+		return domain.BookNotFoundError
 	}
 
 	switch attr {

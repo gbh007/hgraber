@@ -30,8 +30,8 @@ func (tip RawTitleInfoParsed) Copy() RawTitleInfoParsed {
 	}
 }
 
-func (tip RawTitleInfoParsed) Super() domain.TitleInfoParsed {
-	t := domain.TitleInfoParsed{
+func (tip RawTitleInfoParsed) Super() domain.BookInfoParsed {
+	t := domain.BookInfoParsed{
 		Name:       tip.Name,
 		Page:       tip.Page,
 		Attributes: make(map[domain.Attribute]bool, len(domain.AllAttributes)),
@@ -98,8 +98,8 @@ func (ti RawTitleInfo) Copy() RawTitleInfo {
 	return c
 }
 
-func (ti RawTitleInfo) Super() domain.TitleInfo {
-	c := domain.TitleInfo{
+func (ti RawTitleInfo) Super() domain.BookInfo {
+	c := domain.BookInfo{
 		Parsed:     ti.Parsed.Super(),
 		Name:       ti.Name,
 		Rate:       ti.Rate,

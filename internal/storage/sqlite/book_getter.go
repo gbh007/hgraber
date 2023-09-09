@@ -8,8 +8,8 @@ import (
 	"errors"
 )
 
-func (d *Database) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
-	out := make([]domain.Title, 0)
+func (d *Database) GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book {
+	out := make([]domain.Book, 0)
 
 	ids, err := d.bookIDs(ctx, filter)
 	if err != nil {
@@ -19,7 +19,7 @@ func (d *Database) GetTitles(ctx context.Context, filter domain.BookFilter) []do
 	}
 
 	for _, id := range ids {
-		book, err := d.GetTitle(ctx, id)
+		book, err := d.GetBook(ctx, id)
 		if err != nil {
 			system.Error(ctx, err)
 		} else {
@@ -30,25 +30,25 @@ func (d *Database) GetTitles(ctx context.Context, filter domain.BookFilter) []do
 	return out
 }
 
-func (d *Database) GetTitle(ctx context.Context, bookID int) (domain.Title, error) {
+func (d *Database) GetBook(ctx context.Context, bookID int) (domain.Book, error) {
 	raw := new(Book)
 
 	err := d.db.GetContext(ctx, raw, `SELECT * FROM books WHERE id = ? LIMIT 1;`, bookID)
 	if errors.Is(err, sql.ErrNoRows) {
-		return domain.Title{}, domain.TitleNotFoundError
+		return domain.Book{}, domain.BookNotFoundError
 	}
 
 	if err != nil {
-		return domain.Title{}, err
+		return domain.Book{}, err
 	}
 
-	out := domain.Title{
+	out := domain.Book{
 		ID:      raw.ID,
 		Created: stringToTime(ctx, raw.CreateAt),
 		URL:     raw.Url.String,
 		Pages:   []domain.Page{},
-		Data: domain.TitleInfo{
-			Parsed: domain.TitleInfoParsed{
+		Data: domain.BookInfo{
+			Parsed: domain.BookInfoParsed{
 				Name:       raw.Name.Valid,
 				Page:       raw.PageCount.Valid,
 				Attributes: map[domain.Attribute]bool{},
@@ -61,13 +61,13 @@ func (d *Database) GetTitle(ctx context.Context, bookID int) (domain.Title, erro
 
 	attributes, err := d.getBookAttr(ctx, bookID)
 	if err != nil {
-		return domain.Title{}, err
+		return domain.Book{}, err
 	}
 
 	for _, attribute := range attributes {
 		attr, ok := reverseAttrMap[attribute.Attr]
 		if !ok {
-			return domain.Title{}, domain.UnsupportedAttributeError
+			return domain.Book{}, domain.UnsupportedAttributeError
 		}
 
 		out.Data.Attributes[attr] = append(out.Data.Attributes[attr], attribute.Value)
@@ -75,13 +75,13 @@ func (d *Database) GetTitle(ctx context.Context, bookID int) (domain.Title, erro
 
 	attributesParsed, err := d.getBookAttrParsed(ctx, bookID)
 	if err != nil {
-		return domain.Title{}, err
+		return domain.Book{}, err
 	}
 
 	for _, attribute := range attributesParsed {
 		attr, ok := reverseAttrMap[attribute.Attr]
 		if !ok {
-			return domain.Title{}, domain.UnsupportedAttributeError
+			return domain.Book{}, domain.UnsupportedAttributeError
 		}
 
 		out.Data.Parsed.Attributes[attr] = attribute.Parsed
@@ -89,7 +89,7 @@ func (d *Database) GetTitle(ctx context.Context, bookID int) (domain.Title, erro
 
 	pages, err := d.getBookPages(ctx, bookID)
 	if err != nil {
-		return domain.Title{}, err
+		return domain.Book{}, err
 	}
 
 	for _, p := range pages {

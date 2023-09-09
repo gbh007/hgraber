@@ -21,7 +21,7 @@ func (s *Service) FirstHandle(ctx context.Context, u string) error {
 		return err
 	}
 
-	_, err = s.storage.NewTitle(ctx, "", u, false)
+	_, err = s.storage.NewBook(ctx, "", u, false)
 	if err != nil {
 		return err
 	}
@@ -38,7 +38,7 @@ func (s *Service) FirstHandleMultiple(ctx context.Context, data []string) domain
 		err := s.FirstHandle(ctx, link)
 
 		switch {
-		case errors.Is(err, domain.TitleAlreadyExistsError):
+		case errors.Is(err, domain.BookAlreadyExistsError):
 			res.DuplicateCount++
 
 		case errors.Is(err, parser.ErrInvalidLink):

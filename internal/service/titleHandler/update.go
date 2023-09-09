@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-func (s *Service) updateForWorker(parentCtx context.Context, title domain.Title) {
+func (s *Service) updateForWorker(parentCtx context.Context, title domain.Book) {
 	ctx := context.WithoutCancel(parentCtx)
 
 	s.update(ctx, title)
 }
 
 // update обрабатывает данные тайтла (только недостающие)
-func (s *Service) update(ctx context.Context, title domain.Title) {
+func (s *Service) update(ctx context.Context, title domain.Book) {
 	system.Info(ctx, "начата обработка", title.ID, title.URL)
 	defer system.Info(ctx, "завершена обработка", title.ID, title.URL)
 
@@ -30,7 +30,7 @@ func (s *Service) update(ctx context.Context, title domain.Title) {
 	}
 
 	if !title.Data.Parsed.Name {
-		err = s.storage.UpdateTitleName(ctx, title.ID, p.ParseName(ctx))
+		err = s.storage.UpdateBookName(ctx, title.ID, p.ParseName(ctx))
 		if err != nil {
 			system.Error(ctx, err)
 
@@ -63,7 +63,7 @@ func (s *Service) update(ctx context.Context, title domain.Title) {
 				}
 			}
 
-			err = s.storage.UpdateTitlePages(ctx, title.ID, pagesDB)
+			err = s.storage.UpdateBookPages(ctx, title.ID, pagesDB)
 			if err != nil {
 				system.Error(ctx, err)
 

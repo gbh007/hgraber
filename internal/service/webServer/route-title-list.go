@@ -22,7 +22,7 @@ func (ws *WebServer) routeTitleList() http.Handler {
 			return
 		}
 
-		data := ws.storage.GetTitles(ctx, domain.BookFilter{
+		data := ws.storage.GetBooks(ctx, domain.BookFilter{
 			Limit:    request.Count,
 			Offset:   request.Offset,
 			NewFirst: true,

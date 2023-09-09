@@ -5,38 +5,38 @@ import (
 	"time"
 )
 
-type TitleInfoParsed struct {
+type BookInfoParsed struct {
 	Name bool
 	Page bool
 
 	Attributes map[Attribute]bool
 }
 
-func (tip TitleInfoParsed) IsFullParsed(ctx context.Context) bool {
-	for _, parsed := range tip.Attributes {
+func (info BookInfoParsed) IsFullParsed(ctx context.Context) bool {
+	for _, parsed := range info.Attributes {
 		if !parsed {
 			return false
 		}
 	}
 
-	return tip.Name && tip.Page
+	return info.Name && info.Page
 }
 
-type TitleInfo struct {
-	Parsed TitleInfoParsed
+type BookInfo struct {
+	Parsed BookInfoParsed
 	Name   string
 	Rate   int
 
 	Attributes map[Attribute][]string
 }
 
-type Title struct {
+type Book struct {
 	ID      int
 	Created time.Time
 	URL     string
 
 	Pages []Page
-	Data  TitleInfo
+	Data  BookInfo
 }
 
 type BookFilter struct {

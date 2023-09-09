@@ -20,7 +20,7 @@ func (ws *WebServer) routeSetTitleRate() http.Handler {
 			return
 		}
 
-		err = ws.storage.UpdateTitleRate(ctx, request.ID, request.Rate)
+		err = ws.storage.UpdateBookRate(ctx, request.ID, request.Rate)
 		if err != nil {
 			base.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
