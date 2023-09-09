@@ -1,6 +1,7 @@
 package webServer
 
 import (
+	"app/internal/domain"
 	"app/internal/service/webServer/base"
 	"app/internal/service/webServer/rendering"
 	"net/http"
@@ -21,7 +22,11 @@ func (ws *WebServer) routeTitleList() http.Handler {
 			return
 		}
 
-		data := ws.storage.GetTitles(ctx, request.Offset, request.Count)
+		data := ws.storage.GetTitles(ctx, domain.BookFilter{
+			Limit:    request.Count,
+			Offset:   request.Offset,
+			NewFirst: true,
+		})
 
 		base.WriteJSON(ctx, w, http.StatusOK, rendering.TitlesFromStorage(data))
 	})

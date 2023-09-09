@@ -11,7 +11,7 @@ const depth = 0
 type storage interface {
 	GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error)
 	GetTitle(ctx context.Context, id int) (domain.Title, error)
-	GetTitles(ctx context.Context, offset int, limit int) []domain.Title
+	GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title
 	GetUnloadedTitles(ctx context.Context) []domain.Title
 	GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo
 	NewTitle(ctx context.Context, name string, URL string, loaded bool) (int, error)
@@ -57,10 +57,10 @@ func (s *Stopwatch) GetTitle(ctx context.Context, id int) (domain.Title, error) 
 	return s.storage.GetTitle(ctx, id)
 }
 
-func (s *Stopwatch) GetTitles(ctx context.Context, offset int, limit int) []domain.Title {
+func (s *Stopwatch) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
 	defer system.StopwatchWithDepth(ctx, "DB - GetTitles", depth)()
 
-	return s.storage.GetTitles(ctx, offset, limit)
+	return s.storage.GetTitles(ctx, filter)
 }
 
 func (s *Stopwatch) GetUnloadedTitles(ctx context.Context) []domain.Title {

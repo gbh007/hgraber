@@ -15,7 +15,7 @@ func (*Database) GetTitle(ctx context.Context, id int) (domain.Title, error) {
 	return domain.Title{}, domain.TitleNotFoundError
 }
 
-func (*Database) GetTitles(ctx context.Context, offset int, limit int) []domain.Title {
+func (*Database) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
 	return nil
 }
 

@@ -8,10 +8,10 @@ import (
 	"errors"
 )
 
-func (d *Database) GetTitles(ctx context.Context, offset int, limit int) []domain.Title {
+func (d *Database) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
 	out := make([]domain.Title, 0)
 
-	ids, err := d.bookIDs(ctx, limit, offset)
+	ids, err := d.bookIDs(ctx, filter)
 	if err != nil {
 		system.Error(ctx, err)
 
@@ -105,10 +105,15 @@ func (d *Database) GetTitle(ctx context.Context, bookID int) (domain.Title, erro
 	return out, nil
 }
 
-func (d *Database) bookIDs(ctx context.Context, limit, offset int) ([]int, error) {
+func (d *Database) bookIDs(ctx context.Context, filter domain.BookFilter) ([]int, error) {
 	ids := make([]int, 0)
 
-	err := d.db.SelectContext(ctx, &ids, `SELECT id FROM books ORDER BY id DESC LIMIT ? OFFSET ?;`, limit, offset)
+	query := `SELECT id FROM books ORDER BY id ASC LIMIT ? OFFSET ?;`
+	if filter.NewFirst {
+		query = `SELECT id FROM books ORDER BY id DESC LIMIT ? OFFSET ?;`
+	}
+
+	err := d.db.SelectContext(ctx, &ids, query, filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package model
 
 import (
 	"app/internal/domain"
-	"context"
 )
 
 type RawTitleInfoParsed struct {
@@ -17,7 +16,7 @@ type RawTitleInfoParsed struct {
 	Groups     bool `json:"groups,omitempty"`
 }
 
-func (tip RawTitleInfoParsed) Copy(ctx context.Context) RawTitleInfoParsed {
+func (tip RawTitleInfoParsed) Copy() RawTitleInfoParsed {
 	return RawTitleInfoParsed{
 		Name:       tip.Name,
 		Page:       tip.Page,
@@ -31,7 +30,7 @@ func (tip RawTitleInfoParsed) Copy(ctx context.Context) RawTitleInfoParsed {
 	}
 }
 
-func (tip RawTitleInfoParsed) Super(ctx context.Context) domain.TitleInfoParsed {
+func (tip RawTitleInfoParsed) Super() domain.TitleInfoParsed {
 	t := domain.TitleInfoParsed{
 		Name:       tip.Name,
 		Page:       tip.Page,
@@ -49,7 +48,7 @@ func (tip RawTitleInfoParsed) Super(ctx context.Context) domain.TitleInfoParsed 
 	return t
 }
 
-func (tip RawTitleInfoParsed) IsFullParsed(ctx context.Context) bool {
+func (tip RawTitleInfoParsed) IsFullParsed() bool {
 	return tip.Name &&
 		tip.Page &&
 		tip.Tags &&
@@ -74,9 +73,9 @@ type RawTitleInfo struct {
 	Groups     []string           `json:"groups,omitempty"`
 }
 
-func (ti RawTitleInfo) Copy(ctx context.Context) RawTitleInfo {
+func (ti RawTitleInfo) Copy() RawTitleInfo {
 	c := RawTitleInfo{
-		Parsed:     ti.Parsed.Copy(ctx),
+		Parsed:     ti.Parsed.Copy(),
 		Name:       ti.Name,
 		Rate:       ti.Rate,
 		Tags:       make([]string, len(ti.Tags)),
@@ -99,9 +98,9 @@ func (ti RawTitleInfo) Copy(ctx context.Context) RawTitleInfo {
 	return c
 }
 
-func (ti RawTitleInfo) Super(ctx context.Context) domain.TitleInfo {
+func (ti RawTitleInfo) Super() domain.TitleInfo {
 	c := domain.TitleInfo{
-		Parsed:     ti.Parsed.Super(ctx),
+		Parsed:     ti.Parsed.Super(),
 		Name:       ti.Name,
 		Rate:       ti.Rate,
 		Attributes: make(map[domain.Attribute][]string, len(domain.AllAttributes)),

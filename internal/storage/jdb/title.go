@@ -6,6 +6,8 @@ import (
 	"context"
 	"strings"
 	"time"
+
+	"slices"
 )
 
 func (db *Database) GetUnloadedTitles(ctx context.Context) []domain.Title {
@@ -15,8 +17,8 @@ func (db *Database) GetUnloadedTitles(ctx context.Context) []domain.Title {
 	res := []domain.Title{}
 
 	for _, t := range db.data.Titles {
-		if !t.Data.Parsed.IsFullParsed(ctx) {
-			res = append(res, t.Super(ctx))
+		if !t.Data.Parsed.IsFullParsed() {
+			res = append(res, t.Super())
 		}
 	}
 
@@ -118,21 +120,56 @@ func (db *Database) GetTitle(ctx context.Context, id int) (domain.Title, error) 
 		return domain.Title{}, domain.TitleNotFoundError
 	}
 
-	return title.Super(ctx), nil
+	return title.Super(), nil
 }
 
-func (db *Database) GetTitles(ctx context.Context, offset, limit int) []domain.Title {
+func (db *Database) GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	res := []domain.Title{}
 
-	for i := db.lastTitleID - offset; i > db.lastTitleID-offset-limit; i-- {
+	ids := db.getTitleIDs(filter.NewFirst)
+	n := len(ids)
 
-		if title, ok := db.data.Titles[i]; ok {
-			res = append(res, title.Super(ctx))
+	limit := filter.Limit
+	offset := filter.Offset
+
+	if offset > n {
+		return res
+	}
+
+	if offset < 0 {
+		offset = 0
+	}
+
+	if offset+limit > n {
+		limit = n - offset
+	}
+
+	for _, id := range ids[offset : offset+limit] {
+		if title, ok := db.data.Titles[id]; ok {
+			res = append(res, title.Super())
 		}
 	}
+
+	return res
+}
+
+func (db *Database) getTitleIDs(reverse bool) []int {
+	res := make([]int, 0, len(db.data.Titles))
+
+	for id := range db.data.Titles {
+		res = append(res, id)
+	}
+
+	slices.SortStableFunc(res, func(a, b int) int {
+		if reverse {
+			return b - a
+		}
+
+		return a - b
+	})
 
 	return res
 }

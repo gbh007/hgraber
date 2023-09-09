@@ -23,7 +23,7 @@ type titleHandler interface {
 type storage interface {
 	GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error)
 	GetTitle(ctx context.Context, id int) (domain.Title, error)
-	GetTitles(ctx context.Context, offset int, limit int) []domain.Title
+	GetTitles(ctx context.Context, filter domain.BookFilter) []domain.Title
 	PagesCount(ctx context.Context) int
 	TitlesCount(ctx context.Context) int
 	UnloadedPagesCount(ctx context.Context) int

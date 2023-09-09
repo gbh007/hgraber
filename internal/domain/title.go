@@ -38,3 +38,9 @@ type Title struct {
 	Pages []Page
 	Data  TitleInfo
 }
+
+type BookFilter struct {
+	Limit    int
+	Offset   int
+	NewFirst bool
+}

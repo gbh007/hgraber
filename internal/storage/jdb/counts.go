@@ -18,7 +18,7 @@ func (db *Database) UnloadedTitlesCount(ctx context.Context) int {
 	c := 0
 
 	for _, t := range db.data.Titles {
-		if !t.Data.Parsed.IsFullParsed(ctx) {
+		if !t.Data.Parsed.IsFullParsed() {
 			c++
 		}
 	}

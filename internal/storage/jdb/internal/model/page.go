@@ -2,7 +2,6 @@ package model
 
 import (
 	"app/internal/domain"
-	"context"
 	"time"
 )
 
@@ -14,7 +13,7 @@ type RawPage struct {
 	Rate     int       `json:"rate,omitempty"`
 }
 
-func (p RawPage) Copy(ctx context.Context) RawPage {
+func (p RawPage) Copy() RawPage {
 	return RawPage{
 		URL:      p.URL,
 		Ext:      p.Ext,
@@ -24,7 +23,7 @@ func (p RawPage) Copy(ctx context.Context) RawPage {
 	}
 }
 
-func (p RawPage) Super(ctx context.Context) domain.Page {
+func (p RawPage) Super() domain.Page {
 	return domain.Page{
 		URL:      p.URL,
 		Ext:      p.Ext,
