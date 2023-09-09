@@ -68,7 +68,12 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	db.uniqueURLs = make(map[string]struct{})
 
 	for id, title := range newData.Titles {
-		db.uniqueURLs[strings.TrimSpace(title.URL)] = struct{}{}
+		u := strings.TrimSpace(title.URL)
+		if _, found := db.uniqueURLs[u]; found {
+			system.Warning(ctx, "Дублирование ссылки при загрузке БД", u)
+		} else {
+			db.uniqueURLs[u] = struct{}{}
+		}
 
 		if id > db.lastTitleID {
 			db.lastTitleID = id
