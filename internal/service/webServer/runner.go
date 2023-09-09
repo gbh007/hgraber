@@ -35,7 +35,7 @@ func (ws *WebServer) Start(parentCtx context.Context) (chan struct{}, error) {
 		<-parentCtx.Done()
 		system.Info(webCtx, "Остановка веб сервера")
 
-		shutdownCtx, cancel := context.WithTimeout(system.WithDetach(webCtx), time.Second*10)
+		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(webCtx), time.Second*10)
 		defer cancel()
 
 		system.IfErr(webCtx, server.Shutdown(shutdownCtx))

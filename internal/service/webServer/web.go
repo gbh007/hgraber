@@ -93,7 +93,7 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 			base.Stopwatch(mux),
 		),
 		ErrorLog:    system.StdErrorLogger(parentCtx),
-		BaseContext: base.NewBaseContext(parentCtx),
+		BaseContext: base.NewBaseContext(context.WithoutCancel(parentCtx)),
 	}
 
 	return server

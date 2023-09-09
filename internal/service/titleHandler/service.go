@@ -2,8 +2,8 @@ package titleHandler
 
 import (
 	"app/internal/domain"
+	"app/pkg/worker"
 	"context"
-	"sync"
 )
 
 type storage interface {
@@ -18,18 +18,20 @@ type storage interface {
 type Service struct {
 	storage storage
 
-	titleQueue              chan domain.Title
-	inWorkRunnersCount      int
-	inWorkRunnersCountMutex *sync.RWMutex
-
-	asyncPathWG *sync.WaitGroup
+	worker *worker.Worker[domain.Title]
 }
 
 func Init(storage storage) *Service {
-	return &Service{
-		storage:                 storage,
-		titleQueue:              make(chan domain.Title, titleQueueSize),
-		inWorkRunnersCountMutex: &sync.RWMutex{},
-		asyncPathWG:             &sync.WaitGroup{},
+	s := &Service{
+		storage: storage,
 	}
+
+	s.worker = worker.New[domain.Title](
+		titleQueueSize,
+		titleInterval,
+		s.updateForWorker,
+		s.storage.GetUnloadedTitles,
+	)
+
+	return s
 }

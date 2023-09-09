@@ -14,12 +14,13 @@ import (
 
 func (s *Service) ExportTitlesToZip(ctx context.Context, from, to int) error {
 	for i := from; i <= to; i++ {
-		err := system.IsAliveContext(ctx)
-		if err != nil {
-			return err
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
 
-		err = s.saveToZip(ctx, i)
+		err := s.saveToZip(ctx, i)
 		if err != nil {
 			return err
 		}
@@ -30,9 +31,6 @@ func (s *Service) ExportTitlesToZip(ctx context.Context, from, to int) error {
 // saveToZip сохраняет тайтлы на диск zip архивом
 func (s *Service) saveToZip(ctx context.Context, id int) error {
 	defer system.Stopwatch(ctx, "saveToZip")()
-
-	s.asyncPathWG.Add(1)
-	defer s.asyncPathWG.Done()
 
 	titleInfo, err := s.storage.GetTitle(ctx, id)
 	if err != nil {

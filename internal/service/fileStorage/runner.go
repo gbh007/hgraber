@@ -17,8 +17,36 @@ func (s *Service) Start(parentCtx context.Context) (chan struct{}, error) {
 
 		ctx := system.NewSystemContext(parentCtx, "Page-loader")
 
-		s.runFull(ctx)
+		s.worker.Serve(ctx, handlersCount)
 	}()
 
 	return done, nil
+}
+
+func (s *Service) handle(ctx context.Context, page qPage) {
+
+	err := downloadTitlePage(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
+	if err == nil {
+		updateErr := s.storage.UpdatePageSuccess(ctx, page.TitleID, page.PageNumber, true)
+		if updateErr != nil {
+			system.Error(ctx, updateErr)
+		}
+	}
+}
+
+func (s *Service) getter(ctx context.Context) []qPage {
+	raw := s.storage.GetUnsuccessedPages(ctx)
+	data := make([]qPage, 0, len(raw))
+
+	for _, p := range raw {
+		data = append(data, qPage{
+			TitleID:    p.TitleID,
+			PageNumber: p.PageNumber,
+			URL:        p.URL,
+			Ext:        p.Ext,
+		},
+		)
+	}
+
+	return data
 }

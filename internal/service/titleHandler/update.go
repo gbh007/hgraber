@@ -8,8 +8,14 @@ import (
 	"strings"
 )
 
-// Update обрабатывает данные тайтла (только недостающие)
-func (s *Service) Update(ctx context.Context, title domain.Title) {
+func (s *Service) updateForWorker(parentCtx context.Context, title domain.Title) {
+	ctx := context.WithoutCancel(parentCtx)
+
+	s.update(ctx, title)
+}
+
+// update обрабатывает данные тайтла (только недостающие)
+func (s *Service) update(ctx context.Context, title domain.Title) {
 	system.Info(ctx, "начата обработка", title.ID, title.URL)
 	defer system.Info(ctx, "завершена обработка", title.ID, title.URL)
 

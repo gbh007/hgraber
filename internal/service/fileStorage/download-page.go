@@ -9,7 +9,7 @@ import (
 )
 
 func downloadTitlePage(ctx context.Context, id, page int, URL, ext string) error {
-	defer system.Stopwatch(ctx, "DownloadTitlePage")()
+	defer system.Stopwatch(ctx, "DownloadPage")()
 
 	// создаем папку с тайтлом
 	err := os.MkdirAll(fmt.Sprintf("%s/%d", system.GetFileStoragePath(ctx), id), os.ModeDir|os.ModePerm)

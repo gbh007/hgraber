@@ -2,8 +2,8 @@ package fileStorage
 
 import (
 	"app/internal/domain"
+	"app/pkg/worker"
 	"context"
-	"sync"
 )
 
 type storage interface {
@@ -13,19 +13,22 @@ type storage interface {
 }
 
 type Service struct {
-	storage     storage
-	queue       chan qPage
-	inWork      int
-	inWorkMutex *sync.RWMutex
+	storage storage
 
-	asyncPathWG *sync.WaitGroup
+	worker *worker.Worker[qPage]
 }
 
 func Init(storage storage) *Service {
-	return &Service{
-		storage:     storage,
-		queue:       make(chan qPage, pageQueueSize),
-		inWorkMutex: &sync.RWMutex{},
-		asyncPathWG: &sync.WaitGroup{},
+	s := &Service{
+		storage: storage,
 	}
+
+	s.worker = worker.New[qPage](
+		queueSize,
+		interval,
+		s.handle,
+		s.getter,
+	)
+
+	return s
 }
