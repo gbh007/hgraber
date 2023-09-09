@@ -135,7 +135,7 @@ func main() {
 	webServer := webServer.Init(storage, titleService, pageService, config.WebServer)
 	controller.RegisterRunner(ctx, webServer)
 
-	system.Info(ctx, "Завершение работы, ожидание завершения процессов")
+	system.Info(ctx, "Система запущена")
 
 	err = controller.Run(ctx)
 	if err != nil {
