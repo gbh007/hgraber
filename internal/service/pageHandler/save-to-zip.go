@@ -1,4 +1,4 @@
-package fileStorage
+package pageHandler
 
 import (
 	"app/internal/service/webServer/rendering"
@@ -8,11 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strings"
 )
 
-func (s *Service) ExportTitlesToZip(ctx context.Context, from, to int) error {
+func (s *Service) ExportBooksToZip(ctx context.Context, from, to int) error {
 	for i := from; i <= to; i++ {
 		select {
 		case <-ctx.Done():
@@ -37,10 +36,8 @@ func (s *Service) saveToZip(ctx context.Context, id int) error {
 		return err
 	}
 
-	zipFile, err := os.Create(fmt.Sprintf(
-		"%s/%d)_%s.zip",
-		system.GetFileExportPath(ctx),
-		id,
+	zipFile, err := s.files.CreateExportFile(ctx, fmt.Sprintf(
+		"%d)_%s.zip", id,
 		escapeFileName(titleInfo.Data.Name),
 	))
 	if err != nil {
@@ -53,7 +50,7 @@ func (s *Service) saveToZip(ctx context.Context, id int) error {
 	zipWriter := zip.NewWriter(zipFile)
 
 	for pageNumber, p := range titleInfo.Pages {
-		pageReader, err := os.Open(fmt.Sprintf("%s/%d/%d.%s", system.GetFileStoragePath(ctx), id, pageNumber+1, p.Ext))
+		pageReader, err := s.files.OpenPageFile(ctx, id, pageNumber+1, p.Ext)
 		if err != nil {
 			system.Error(ctx, err)
 			return err

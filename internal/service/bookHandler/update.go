@@ -1,8 +1,8 @@
-package titleHandler
+package bookHandler
 
 import (
 	"app/internal/domain"
-	"app/internal/service/titleHandler/internal/parser"
+	"app/internal/service/bookHandler/internal/parser"
 	"app/system"
 	"context"
 	"strings"

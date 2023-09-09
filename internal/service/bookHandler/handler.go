@@ -1,8 +1,8 @@
-package titleHandler
+package bookHandler
 
 import (
 	"app/internal/domain"
-	"app/internal/service/titleHandler/internal/parser"
+	"app/internal/service/bookHandler/internal/parser"
 	"app/system"
 	"context"
 	"errors"
@@ -39,6 +39,7 @@ func (s *Service) FirstHandleMultiple(ctx context.Context, data []string) domain
 
 		switch {
 		case errors.Is(err, domain.BookAlreadyExistsError):
+			res.NotHandled = append(res.NotHandled, link)
 			res.DuplicateCount++
 
 		case errors.Is(err, parser.ErrInvalidLink):
@@ -46,8 +47,9 @@ func (s *Service) FirstHandleMultiple(ctx context.Context, data []string) domain
 			res.ErrorCount++
 
 			system.Warning(ctx, "не поддерживаемая ссылка", link)
-			res.NotHandled = append(res.NotHandled, link)
+
 		case err != nil:
+			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
 
 			system.Error(ctx, err)

@@ -20,7 +20,7 @@ func (ws *WebServer) routeSaveToZIP() http.Handler {
 			return
 		}
 
-		err = ws.page.ExportTitlesToZip(ctx, request.From, request.To)
+		err = ws.page.ExportBooksToZip(ctx, request.From, request.To)
 		if err != nil {
 			base.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return

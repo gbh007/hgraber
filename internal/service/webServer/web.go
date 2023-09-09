@@ -8,11 +8,12 @@ import (
 	"app/system"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 )
 
 type pageHandler interface {
-	ExportTitlesToZip(ctx context.Context, from, to int) error
+	ExportBooksToZip(ctx context.Context, from, to int) error
 }
 
 type titleHandler interface {
@@ -32,10 +33,16 @@ type storage interface {
 	UpdateBookRate(ctx context.Context, id int, rate int) error
 }
 
+type files interface {
+	OpenPageFile(ctx context.Context, id, page int, ext string) (io.ReadCloser, error)
+}
+
 type WebServer struct {
-	storage   storage
-	title     titleHandler
-	page      pageHandler
+	storage storage
+	title   titleHandler
+	page    pageHandler
+	files   files
+
 	addr      string
 	staticDir string
 	token     string
@@ -45,12 +52,15 @@ func Init(
 	storage storage,
 	title titleHandler,
 	page pageHandler,
+	files files,
 	config config.WebServerConfig,
 ) *WebServer {
 	return &WebServer{
-		storage:   storage,
-		title:     title,
-		page:      page,
+		storage: storage,
+		title:   title,
+		page:    page,
+		files:   files,
+
 		addr:      fmt.Sprintf("%s:%d", config.Host, config.Port),
 		staticDir: config.StaticDirPath,
 		token:     config.Token,
@@ -68,12 +78,7 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	}
 
 	// обработчик файлов
-	mux.Handle("/file/", base.TokenHandler(ws.token,
-		http.StripPrefix(
-			"/file/",
-			http.FileServer(http.Dir(system.GetFileStoragePath(parentCtx))),
-		),
-	))
+	mux.Handle("/file/", base.TokenHandler(ws.token, http.StripPrefix("/file/", ws.getFile())))
 
 	// API
 	mux.Handle("/auth/login", ws.routeLogin(ws.token))

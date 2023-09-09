@@ -1,4 +1,4 @@
-package fileStorage
+package pageHandler
 
 import (
 	"time"

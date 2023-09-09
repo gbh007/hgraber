@@ -1,4 +1,4 @@
-package titleHandler
+package bookHandler
 
 import (
 	"app/system"

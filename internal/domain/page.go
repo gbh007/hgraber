@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Page struct {
 	URL      string
@@ -18,4 +21,8 @@ type PageFullInfo struct {
 	Success    bool
 	LoadedAt   time.Time
 	Rate       int
+}
+
+func (info PageFullInfo) Fullname() string {
+	return fmt.Sprintf("%d.%s", info.PageNumber, info.Ext)
 }

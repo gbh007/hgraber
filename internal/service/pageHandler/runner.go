@@ -1,4 +1,4 @@
-package fileStorage
+package pageHandler
 
 import (
 	"app/system"
@@ -25,7 +25,7 @@ func (s *Service) Start(parentCtx context.Context) (chan struct{}, error) {
 
 func (s *Service) handle(ctx context.Context, page qPage) {
 
-	err := downloadTitlePage(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
+	err := s.downloadTitlePage(ctx, page.TitleID, page.PageNumber, page.URL, page.Ext)
 	if err == nil {
 		updateErr := s.storage.UpdatePageSuccess(ctx, page.TitleID, page.PageNumber, true)
 		if updateErr != nil {

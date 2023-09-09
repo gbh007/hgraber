@@ -3,8 +3,9 @@ package main
 import (
 	"app/internal/config"
 	"app/internal/controller"
-	"app/internal/service/fileStorage"
-	"app/internal/service/titleHandler"
+	"app/internal/fileStorage/filesystem"
+	"app/internal/service/bookHandler"
+	"app/internal/service/pageHandler"
 	"app/internal/service/webServer"
 	"app/internal/storage/jdb"
 	"app/internal/storage/sqlite"
@@ -108,22 +109,16 @@ func main() {
 
 	system.Info(ctx, "База загружена")
 
-	titleService := titleHandler.Init(storage)
-	pageService := fileStorage.Init(storage)
-
-	err = system.SetFileStoragePath(ctx, config.Base.FileStoragePath)
+	fStor := filesystem.New(config.Base.FileStoragePath, config.Base.FileExportPath)
+	err = fStor.Prepare(ctx)
 	if err != nil {
 		system.Error(ctx, err)
 
 		os.Exit(1)
 	}
 
-	err = system.SetFileExportPath(ctx, config.Base.FileExportPath)
-	if err != nil {
-		system.Error(ctx, err)
-
-		os.Exit(1)
-	}
+	titleService := bookHandler.Init(storage)
+	pageService := pageHandler.Init(storage, fStor)
 
 	if !config.Base.OnlyView {
 		go parseTaskFile(ctx, titleService)
@@ -132,7 +127,7 @@ func main() {
 		controller.RegisterRunner(ctx, pageService)
 	}
 
-	webServer := webServer.Init(storage, titleService, pageService, config.WebServer)
+	webServer := webServer.Init(storage, titleService, pageService, fStor, config.WebServer)
 	controller.RegisterRunner(ctx, webServer)
 
 	system.Info(ctx, "Система запущена")
@@ -145,7 +140,7 @@ func main() {
 	system.Info(ctx, "Процессы завершены, выход")
 }
 
-func parseTaskFile(ctx context.Context, service *titleHandler.Service) {
+func parseTaskFile(ctx context.Context, service *bookHandler.Service) {
 	f, err := os.Open("task.txt")
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
