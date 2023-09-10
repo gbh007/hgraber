@@ -42,6 +42,7 @@
     <input value="" placeholder="По" id="load-to" />
     <button onclick="saveToZIP();">Загрузить</button>
   </div>
+  <div id="info-workers"></div>
   <script>
     function remakeInfo() {
       API.getMainInfo().then((data) => {
@@ -52,6 +53,15 @@
           data.page_count;
         document.getElementById("info-not_load_page_count").innerText =
           data.not_load_page_count;
+        document.getElementById("info-workers").innerHTML = (data.monitor.workers.map(w => {
+          return `<div style="display: flex; gap: 5px 5px;">
+            <span>Название</span><b>${w.name}</b>
+            <span>В очереди</span><b>${w.in_queue}</b>
+            <span>В работе</span><b>${w.in_work}</b>
+            <span>Раннеров</span><b>${w.runners}</b>
+            </div>`
+        })).join("")
+
       });
     }
     function loadTitle() {

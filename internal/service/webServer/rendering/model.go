@@ -128,18 +128,14 @@ func TitleFromStorage(raw domain.Book) Title {
 		Data:    TitleInfoFromStorage(raw.Data),
 	}
 
-	for index, page := range raw.Pages {
-		out.Pages[index] = PageFromStorage(page)
-	}
+	convertSlice(out.Pages, raw.Pages, PageFromStorage)
 
 	return out
 }
 func TitlesFromStorage(raw []domain.Book) []Title {
-	out := make([]Title, 0, len(raw))
+	out := make([]Title, len(raw))
 
-	for _, t := range raw {
-		out = append(out, TitleFromStorage(t))
-	}
+	convertSlice(out, raw, TitleFromStorage)
 
 	return out
 }

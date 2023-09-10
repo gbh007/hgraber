@@ -12,6 +12,7 @@ import (
 type Worker[T any] struct {
 	titleQueue         chan T
 	inWorkRunnersCount *atomic.Int32
+	runnersCount       *atomic.Int32
 
 	interval time.Duration
 
@@ -28,6 +29,7 @@ func New[T any](
 	return &Worker[T]{
 		titleQueue:         make(chan T, queueSize),
 		inWorkRunnersCount: new(atomic.Int32),
+		runnersCount:       new(atomic.Int32),
 		interval:           interval,
 		handler:            handler,
 		getter:             getter,
@@ -40,6 +42,10 @@ func (w *Worker[T]) InQueueCount() int {
 
 func (w *Worker[T]) InWorkCount() int {
 	return int(w.inWorkRunnersCount.Load())
+}
+
+func (w *Worker[T]) RunnersCount() int {
+	return int(w.runnersCount.Load())
 }
 
 func (w *Worker[T]) handleOne(ctx context.Context, value T) {
@@ -70,6 +76,8 @@ func (w *Worker[T]) runQueueHandler(ctx context.Context) {
 
 func (w *Worker[T]) Serve(ctx context.Context, handlersCount int) {
 	wg := new(sync.WaitGroup)
+
+	w.runnersCount.Store(int32(handlersCount))
 
 	for i := 0; i < handlersCount; i++ {
 		wg.Add(1)

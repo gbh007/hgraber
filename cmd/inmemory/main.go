@@ -9,6 +9,7 @@ import (
 	"app/internal/service/webServer"
 	"app/internal/storage/jdb"
 	"app/internal/storage/stopwatch"
+	"app/pkg/worker"
 	"app/system"
 	"context"
 	"os/signal"
@@ -64,13 +65,15 @@ func main() {
 
 	fStor := filememory.New()
 
-	titleService := bookHandler.Init(storage)
-	pageService := pageHandler.Init(storage, fStor)
+	monitor := worker.NewMonitor()
+
+	titleService := bookHandler.Init(storage, monitor)
+	pageService := pageHandler.Init(storage, fStor, monitor)
 
 	controller.RegisterRunner(ctx, titleService)
 	controller.RegisterRunner(ctx, pageService)
 
-	webServer := webServer.Init(storage, titleService, pageService, fStor, config.WebServer)
+	webServer := webServer.Init(storage, titleService, pageService, fStor, monitor, config.WebServer)
 	controller.RegisterRunner(ctx, webServer)
 
 	system.Info(ctx, "Система запущена")

@@ -37,11 +37,16 @@ type files interface {
 	OpenPageFile(ctx context.Context, id, page int, ext string) (io.ReadCloser, error)
 }
 
+type monitor interface {
+	Info() []domain.MonitorStat
+}
+
 type WebServer struct {
 	storage storage
 	title   titleHandler
 	page    pageHandler
 	files   files
+	monitor monitor
 
 	addr      string
 	staticDir string
@@ -53,6 +58,7 @@ func Init(
 	title titleHandler,
 	page pageHandler,
 	files files,
+	monitor monitor,
 	config config.WebServerConfig,
 ) *WebServer {
 	return &WebServer{
@@ -60,6 +66,7 @@ func Init(
 		title:   title,
 		page:    page,
 		files:   files,
+		monitor: monitor,
 
 		addr:      fmt.Sprintf("%s:%d", config.Host, config.Port),
 		staticDir: config.StaticDirPath,

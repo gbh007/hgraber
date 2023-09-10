@@ -6,7 +6,7 @@ import (
 )
 
 func (s *Service) Name() string {
-	return "page storage"
+	return "page handler"
 }
 
 func (s *Service) Start(parentCtx context.Context) (chan struct{}, error) {

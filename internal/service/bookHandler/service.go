@@ -15,13 +15,17 @@ type storage interface {
 	UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error
 }
 
+type monitor interface {
+	Register(name string, worker domain.WorkerStat)
+}
+
 type Service struct {
 	storage storage
 
 	worker *worker.Worker[domain.Book]
 }
 
-func Init(storage storage) *Service {
+func Init(storage storage, monitor monitor) *Service {
 	s := &Service{
 		storage: storage,
 	}
@@ -32,6 +36,8 @@ func Init(storage storage) *Service {
 		s.updateForWorker,
 		s.storage.GetUnloadedBooks,
 	)
+
+	monitor.Register(s.Name(), s.worker)
 
 	return s
 }

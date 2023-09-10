@@ -10,6 +10,7 @@ import (
 	"app/internal/storage/jdb"
 	"app/internal/storage/sqlite"
 	"app/internal/storage/stopwatch"
+	"app/pkg/worker"
 	"app/system"
 	"bufio"
 	"context"
@@ -117,8 +118,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	titleService := bookHandler.Init(storage)
-	pageService := pageHandler.Init(storage, fStor)
+	monitor := worker.NewMonitor()
+
+	titleService := bookHandler.Init(storage, monitor)
+	pageService := pageHandler.Init(storage, fStor, monitor)
 
 	if !config.Base.OnlyView {
 		go parseTaskFile(ctx, titleService)
@@ -127,7 +130,7 @@ func main() {
 		controller.RegisterRunner(ctx, pageService)
 	}
 
-	webServer := webServer.Init(storage, titleService, pageService, fStor, config.WebServer)
+	webServer := webServer.Init(storage, titleService, pageService, fStor, monitor, config.WebServer)
 	controller.RegisterRunner(ctx, webServer)
 
 	system.Info(ctx, "Система запущена")

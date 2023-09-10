@@ -19,6 +19,10 @@ type files interface {
 	CreateExportFile(ctx context.Context, name string) (io.WriteCloser, error)
 }
 
+type monitor interface {
+	Register(name string, worker domain.WorkerStat)
+}
+
 type Service struct {
 	storage storage
 	files   files
@@ -26,7 +30,7 @@ type Service struct {
 	worker *worker.Worker[qPage]
 }
 
-func Init(storage storage, files files) *Service {
+func Init(storage storage, files files, monitor monitor) *Service {
 	s := &Service{
 		storage: storage,
 		files:   files,
@@ -38,6 +42,8 @@ func Init(storage storage, files files) *Service {
 		s.handle,
 		s.getter,
 	)
+
+	monitor.Register(s.Name(), s.worker)
 
 	return s
 }

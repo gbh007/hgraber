@@ -13,7 +13,7 @@ const (
 )
 
 func (s *Service) Name() string {
-	return "title handler"
+	return "book handler"
 }
 
 func (s *Service) Start(parentCtx context.Context) (chan struct{}, error) {
