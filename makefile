@@ -43,4 +43,8 @@ view: create_build_dir
 debug: create_build_dir
 	go build $(LDFLAGS) -trimpath -o ./_build/hgraber-bin  ./cmd/server
 	./_build/hgraber-bin -stdfile-append -debug -debug-fullpath -h 127.0.0.1 -p 8081 -static="internal/service/webServer/static" --access-token=local-debug
+
+demo: create_build_dir
+	go build $(LDFLAGS) -trimpath -o ./_build/hgraber-bin  ./cmd/inmemory
+	./_build/hgraber-bin -debug -h 127.0.0.1 -p 8081 --access-token=local-debug
 	
