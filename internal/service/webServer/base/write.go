@@ -4,6 +4,7 @@ import (
 	"app/system"
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 )
 
@@ -28,4 +29,15 @@ func WriteJSON(ctx context.Context, w http.ResponseWriter, statusCode int, data 
 		system.Error(ctx, err)
 	}
 
+}
+
+func WritePlain(ctx context.Context, w http.ResponseWriter, statusCode int, data string) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "*")
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(statusCode)
+
+	_, err := io.WriteString(w, data)
+	system.IfErr(ctx, err)
 }

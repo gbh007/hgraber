@@ -20,9 +20,11 @@
       list-style: none;
     }
   </style>
-  <div>
-    <input value="" placeholder="Загрузить новый тайтл" id="new-title-url"
-      title="Пример&#xA;https://imhentai.xxx/gallery/653578/&#xA;https://manga-online.biz/rebirth_of_the_urban_immortal_cultivator/1/401/1/&#xA;https://www.3hentai1.buzz/?d/1" />
+  <div style="display: flex;">
+    <div style="display: flex; flex-direction: column;">
+      <input value="" placeholder="Загрузить новый тайтл" id="new-title-url" />
+      <span style="color: red;" id="new-title-url-err"></span>
+    </div>
     <button onclick="loadTitle();">Загрузить</button>
   </div>
   <div id="index-info">
@@ -53,19 +55,31 @@
           data.page_count;
         document.getElementById("info-not_load_page_count").innerText =
           data.not_load_page_count;
-        document.getElementById("info-workers").innerHTML = (data.monitor.workers.map(w => {
-          return `<div style="display: flex; gap: 5px 5px;">
-            <span>Название</span><b>${w.name}</b>
-            <span>В очереди</span><b>${w.in_queue}</b>
-            <span>В работе</span><b>${w.in_work}</b>
-            <span>Раннеров</span><b>${w.runners}</b>
-            </div>`
-        })).join("")
+        document.getElementById("info-workers").innerHTML = `<table>
+              <thead>
+                <tr>
+                  <td>Название</td>
+                  <td>В очереди</td>
+                  <td>В работе</td>
+                  <td>Раннеров</td>
+                </tr>
+              </thead>
+              <tbody>`+ (data.monitor.workers.map(w => {
+          return `<tr>
+                  <td>${w.name}</td>
+                  <td>${w.in_queue}</td>
+                  <td>${w.in_work}</td>
+                  <td>${w.runners}</td>
+                </tr>`
+        })).join("") + `<tbody>
+          </table>`
 
       });
     }
     function loadTitle() {
       let urlInput = document.getElementById("new-title-url");
+      let errText = document.getElementById("new-title-url-err")
+      errText.innerText = ""
       API.newTitle(urlInput.value).then(() => {
         document.getElementById("new-title-url").value = "";
       });
@@ -77,6 +91,10 @@
     }
     window.addEventListener("load", function () {
       remakeInfo();
+      setInterval(remakeInfo, 1000)
+    });
+    window.addEventListener("new-message", function (messageInfo) {
+      document.getElementById("new-title-url-err").innerText = messageInfo.detail.text;
     });
   </script>
 </body>

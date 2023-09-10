@@ -6,6 +6,14 @@ class Api {
       })
     );
   }
+  alertField(text) {
+    window.dispatchEvent(
+      new CustomEvent("new-message-field", {
+        detail: { text: text, level: "error", autoclose: 20 },
+      })
+    );
+    this.alert(text);
+  }
 
   async getAppInfo() {
     try {
@@ -36,13 +44,13 @@ class Api {
       if (!response.ok) {
         response
           .json()
-          .then((text) => this.alert(text))
-          .catch((err) => this.alert(err));
+          .then((text) => this.alertField(text))
+          .catch((err) => this.alertField(err));
       } else {
         return await response.json();
       }
     } catch (err) {
-      this.alert(err);
+      this.alertField(err);
     }
     return {};
   }
