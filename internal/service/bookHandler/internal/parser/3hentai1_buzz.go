@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"app/pkg/request"
 	"context"
 	"fmt"
 	"regexp"
@@ -12,12 +11,18 @@ import (
 type Parser_3HENTAI1_BUZZ struct {
 	main_raw string
 	url      string
+
+	r Requester
 }
 
-func (p *Parser_3HENTAI1_BUZZ) Load(ctx context.Context, URL string) bool {
+func (p *Parser_3HENTAI1_BUZZ) Load(ctx context.Context, r Requester, URL string) bool {
+	p.r = r
+
 	var err error
+
 	p.url = URL
-	p.main_raw, err = request.RequestString(ctx, URL)
+	p.main_raw, err = r.RequestString(ctx, URL)
+
 	return err == nil
 }
 
@@ -76,7 +81,7 @@ func (p Parser_3HENTAI1_BUZZ) ParsePages(ctx context.Context) []Page {
 	rp_img := regexp.MustCompile(regexp.QuoteMeta(`<img src="`) + `(.+?)` + regexp.QuoteMeta(`"`))
 	for i, rURL := range res {
 		// символ / и так будет в конце
-		data, err := request.RequestString(ctx, fmt.Sprintf("https://www.3hentai1.buzz/%s", rURL))
+		data, err := p.r.RequestString(ctx, fmt.Sprintf("https://www.3hentai1.buzz/%s", rURL))
 		if err != nil {
 			return []Page{}
 		}

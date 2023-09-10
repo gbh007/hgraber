@@ -4,6 +4,7 @@ import (
 	"app/internal/config"
 	"app/internal/controller"
 	"app/internal/fileStorage/filesystem"
+	"app/internal/request"
 	"app/internal/service/bookHandler"
 	"app/internal/service/pageHandler"
 	"app/internal/service/webServer"
@@ -119,9 +120,10 @@ func main() {
 	}
 
 	monitor := worker.NewMonitor()
+	requester := request.New()
 
-	titleService := bookHandler.Init(storage, monitor)
-	pageService := pageHandler.Init(storage, fStor, monitor)
+	titleService := bookHandler.Init(storage, requester, monitor)
+	pageService := pageHandler.Init(storage, fStor, requester, monitor)
 
 	if !config.Base.OnlyView {
 		go parseTaskFile(ctx, titleService)

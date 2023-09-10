@@ -9,8 +9,22 @@ import (
 	"time"
 )
 
+const defaultUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36"
+
+type Requester struct {
+	client *http.Client
+}
+
+func New() *Requester {
+	return &Requester{
+		client: &http.Client{
+			Timeout: time.Minute,
+		},
+	}
+}
+
 // requestBuffer запрашивает данные по урле и возвращает их в виде буффера
-func requestBuffer(ctx context.Context, URL string) (bytes.Buffer, error) {
+func (r *Requester) requestBuffer(ctx context.Context, URL string) (bytes.Buffer, error) {
 	buff := bytes.Buffer{}
 	req, err := http.NewRequest(http.MethodGet, URL, &bytes.Buffer{})
 	if err != nil {
@@ -18,24 +32,17 @@ func requestBuffer(ctx context.Context, URL string) (bytes.Buffer, error) {
 		return buff, err
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36")
-	req.Close = true
+	req.Header.Set("User-Agent", defaultUserAgent)
+
 	// выполняем запрос
-	response, err := (&http.Client{
-		Timeout: time.Minute,
-		// Transport: &http.Transport{
-		// 	TLSClientConfig: &tls.Config{
-		// 		InsecureSkipVerify: true,
-		// 	},
-		// },
-	}).Do(req)
+	response, err := r.client.Do(req)
 
 	if err != nil {
 		system.Error(ctx, err)
 		return buff, err
 	}
 
-	defer response.Body.Close()
+	defer system.IfErrFunc(ctx, response.Body.Close)
 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		err = fmt.Errorf("%s ошибка %s", URL, response.Status)
@@ -55,13 +62,21 @@ func requestBuffer(ctx context.Context, URL string) (bytes.Buffer, error) {
 }
 
 // RequestString запрашивает данные по урле и возвращает их строкой
-func RequestString(ctx context.Context, URL string) (string, error) {
-	buff, err := requestBuffer(ctx, URL)
-	return buff.String(), err
+func (r *Requester) RequestString(ctx context.Context, URL string) (string, error) {
+	buff, err := r.requestBuffer(ctx, URL)
+	if err != nil {
+		return "", err
+	}
+
+	return buff.String(), nil
 }
 
 // RequestBytes запрашивает данные по урле и возвращает их массивом байт
-func RequestBytes(ctx context.Context, URL string) ([]byte, error) {
-	buff, err := requestBuffer(ctx, URL)
-	return buff.Bytes(), err
+func (r *Requester) RequestBytes(ctx context.Context, URL string) ([]byte, error) {
+	buff, err := r.requestBuffer(ctx, URL)
+	if err != nil {
+		return nil, err
+	}
+
+	return buff.Bytes(), nil
 }

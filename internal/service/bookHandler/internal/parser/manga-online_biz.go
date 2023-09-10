@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"app/pkg/request"
 	"context"
 	"regexp"
 	"strconv"
@@ -13,13 +12,19 @@ type Parser_MANGAONLINE_BIZ struct {
 	baseParser
 	main_raw string
 	url      string
+
+	r Requester
 }
 
-func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, URL string) bool {
+func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, r Requester, URL string) bool {
+	p.r = r
+
 	var err error
+
 	p.url = URL
 	tmpUrl := trimLastSlash(URL, 4) + ".html"
-	p.main_raw, err = request.RequestString(ctx, tmpUrl)
+	p.main_raw, err = r.RequestString(ctx, tmpUrl)
+
 	return err == nil
 }
 
@@ -34,7 +39,7 @@ func (p Parser_MANGAONLINE_BIZ) ParseName(ctx context.Context) string {
 
 func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []Page {
 	result := make([]Page, 0)
-	pcDataRaw, err := request.RequestString(ctx, p.url)
+	pcDataRaw, err := p.r.RequestString(ctx, p.url)
 	if err != nil {
 		return result
 	}

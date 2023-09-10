@@ -19,15 +19,21 @@ type monitor interface {
 	Register(name string, worker domain.WorkerStat)
 }
 
+type requester interface {
+	RequestString(ctx context.Context, URL string) (string, error)
+}
+
 type Service struct {
-	storage storage
+	storage   storage
+	requester requester
 
 	worker *worker.Worker[domain.Book]
 }
 
-func Init(storage storage, monitor monitor) *Service {
+func Init(storage storage, requester requester, monitor monitor) *Service {
 	s := &Service{
-		storage: storage,
+		storage:   storage,
+		requester: requester,
 	}
 
 	s.worker = worker.New[domain.Book](

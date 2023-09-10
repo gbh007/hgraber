@@ -1,7 +1,6 @@
 package pageHandler
 
 import (
-	"app/pkg/request"
 	"app/system"
 	"context"
 )
@@ -10,7 +9,7 @@ func (s *Service) downloadTitlePage(ctx context.Context, id, page int, URL, ext 
 	defer system.Stopwatch(ctx, "DownloadPage")()
 
 	// скачиваем изображение
-	data, err := request.RequestBytes(ctx, URL)
+	data, err := s.requester.RequestBytes(ctx, URL)
 	if err != nil {
 		return err
 	}

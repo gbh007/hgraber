@@ -23,17 +23,23 @@ type monitor interface {
 	Register(name string, worker domain.WorkerStat)
 }
 
+type requester interface {
+	RequestBytes(ctx context.Context, URL string) ([]byte, error)
+}
+
 type Service struct {
-	storage storage
-	files   files
+	storage   storage
+	files     files
+	requester requester
 
 	worker *worker.Worker[qPage]
 }
 
-func Init(storage storage, files files, monitor monitor) *Service {
+func Init(storage storage, files files, requester requester, monitor monitor) *Service {
 	s := &Service{
-		storage: storage,
-		files:   files,
+		storage:   storage,
+		files:     files,
+		requester: requester,
 	}
 
 	s.worker = worker.New[qPage](

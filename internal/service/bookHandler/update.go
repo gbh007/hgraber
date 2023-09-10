@@ -19,7 +19,7 @@ func (s *Service) update(ctx context.Context, title domain.Book) {
 	system.Info(ctx, "начата обработка", title.ID, title.URL)
 	defer system.Info(ctx, "завершена обработка", title.ID, title.URL)
 
-	p, ok, err := parser.Load(ctx, strings.TrimSpace(title.URL))
+	p, ok, err := parser.Load(ctx, s.requester, strings.TrimSpace(title.URL))
 	if err != nil {
 		system.Error(ctx, err)
 

@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"app/pkg/request"
 	"app/system"
 	"context"
 	"html"
@@ -18,11 +17,11 @@ type Parser_DOUJINS_COM struct {
 	url      string
 }
 
-func (p *Parser_DOUJINS_COM) Load(ctx context.Context, URL string) bool {
+func (p *Parser_DOUJINS_COM) Load(ctx context.Context, r Requester, URL string) bool {
 	var err error
 
 	p.url = URL
-	p.main_raw, err = request.RequestString(ctx, URL)
+	p.main_raw, err = r.RequestString(ctx, URL)
 
 	return err == nil
 }

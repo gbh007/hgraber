@@ -4,6 +4,7 @@ import (
 	"app/internal/config"
 	"app/internal/controller"
 	"app/internal/fileStorage/filememory"
+	"app/internal/request"
 	"app/internal/service/bookHandler"
 	"app/internal/service/pageHandler"
 	"app/internal/service/webServer"
@@ -66,9 +67,10 @@ func main() {
 	fStor := filememory.New()
 
 	monitor := worker.NewMonitor()
+	requester := request.New()
 
-	titleService := bookHandler.Init(storage, monitor)
-	pageService := pageHandler.Init(storage, fStor, monitor)
+	titleService := bookHandler.Init(storage, requester, monitor)
+	pageService := pageHandler.Init(storage, fStor, requester, monitor)
 
 	controller.RegisterRunner(ctx, titleService)
 	controller.RegisterRunner(ctx, pageService)
