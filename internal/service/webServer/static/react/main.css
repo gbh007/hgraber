@@ -1,0 +1,134 @@
+:root {
+  --app-background: #fff;
+  --app-color: #000;
+  --app-screen-background: #ffffffef;
+  --app-popup-background: #2c2c2cc2;
+  --app-popup-message-background: #005afd47;
+  --app-popup-message-error-background: #fd000047;
+}
+
+body {
+  background: var(--app-background);
+  color: var(--app-color);
+}
+
+#top-bar {
+  display: flex;
+  margin: 10px;
+  gap: 0px 10px;
+}
+
+#top-bar a {
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  background: var(--app-background);
+  color: var(--app-color);
+  border: 1px solid var(--app-color);
+}
+
+#title-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+}
+
+a.title {
+  text-decoration: none;
+  color: var(--app-color);
+}
+
+.title {
+  display: inline-grid;
+  grid-template-areas:
+    "img name name name name"
+    "img id page-count page-progress date"
+    "img tag tag tag tag";
+  grid-template-rows: none;
+  grid-template-columns: 130px 1fr 1fr 1fr 1fr;
+  border-spacing: 0px;
+  /* max-width: 500px; */
+  width: 500px;
+  height: 200px;
+}
+
+.title *[t="red"] {
+  color: red;
+}
+
+.title *[t="bred"] {
+  background: pink;
+}
+
+.title-img {
+  max-width: 100%;
+  max-height: 100%;
+  grid-area: img;
+}
+
+.title-name {
+  grid-area: name;
+}
+
+.title-id {
+  grid-area: id;
+}
+
+.title-page-count {
+  grid-area: page-count;
+}
+
+.title-page-progress {
+  grid-area: page-progress;
+}
+
+.title-date {
+  grid-area: date;
+}
+
+.title-tag {
+  grid-area: tag;
+}
+
+span.tag {
+  border-radius: 3px;
+  padding: 3px;
+  margin: 2px;
+  background: lightgrey;
+  display: inline-block;
+}
+
+.rate {
+  white-space: nowrap;
+}
+
+.rate-select {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid black;
+  border-radius: 4px;
+  margin: 2px;
+  cursor: pointer;
+  /* background: #b0c4de; */
+}
+
+*[rate="1"] {
+  background: #ff0000;
+}
+
+*[rate="2"] {
+  background: #ffa500;
+}
+
+*[rate="3"] {
+  background: #ffff00;
+}
+
+*[rate="4"] {
+  background: #90ee90;
+}
+
+*[rate="5"] {
+  background: #008000;
+}
