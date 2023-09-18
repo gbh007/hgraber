@@ -91,7 +91,7 @@
     }
     window.addEventListener("load", function () {
       remakeInfo();
-      setInterval(remakeInfo, 1000)
+      setInterval(remakeInfo, 10000)
     });
     window.addEventListener("new-message-field", function (messageInfo) {
       document.getElementById("new-title-url-err").innerText = messageInfo.detail.text;

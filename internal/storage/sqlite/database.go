@@ -1,11 +1,12 @@
 package sqlite
 
 import (
-	"app/internal/storage/internal/migrator"
 	"app/internal/storage/sqlite/internal/migration"
 	"app/system"
 	"context"
 	"database/sql"
+
+	migrator "gitlab.com/gbh007/go-sql-migrator"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -29,7 +30,6 @@ func Connect(ctx context.Context, dataSourceName string) (*Database, error) {
 
 // MigrateAll - производит миграции данных
 func (storage *Database) MigrateAll(ctx context.Context) error {
-
 	return migrator.New().
 		WithFS(migration.Migrations).
 		WithLogger(system.NewLogger(ctx)).
