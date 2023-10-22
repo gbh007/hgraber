@@ -9,6 +9,7 @@ import (
 	"app/internal/service/pageHandler"
 	"app/internal/service/webServer"
 	"app/internal/storage/jdb"
+	"app/internal/storage/postgresql"
 	"app/internal/storage/sqlite"
 	"app/internal/storage/stopwatch"
 	"app/pkg/worker"
@@ -101,6 +102,23 @@ func main() {
 		}
 
 		storage = stopwatch.WithStopwatch(sqliteDB)
+
+	case "pg":
+		pg, err := postgresql.Connect(ctx, config.Base.DBFilePath)
+		if err != nil {
+			system.Error(ctx, err)
+
+			os.Exit(1)
+		}
+
+		err = pg.MigrateAll(ctx)
+		if err != nil {
+			system.Error(ctx, err)
+
+			os.Exit(1)
+		}
+
+		storage = stopwatch.WithStopwatch(pg)
 
 	default:
 		system.Warning(ctx, "не поддерживаемый тип БД")

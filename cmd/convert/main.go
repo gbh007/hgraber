@@ -3,6 +3,7 @@ package main
 import (
 	"app/internal/converter"
 	"app/internal/storage/jdb"
+	"app/internal/storage/postgresql"
 	"app/internal/storage/sqlite"
 	"app/system"
 	"context"
@@ -12,12 +13,14 @@ import (
 	"syscall"
 )
 
+type connector func(ctx context.Context, builder *converter.Builder, path string, from bool) error
+
 func main() {
 	dbFromFilePath := flag.String("from", "db.json", "файл базы")
-	dbFromType := flag.String("from-type", "jdb", "Тип БД: jdb, sqlite")
+	dbFromType := flag.String("from-type", "jdb", "Тип БД: jdb, sqlite, pg")
 
 	dbToFilePath := flag.String("to", "main.db", "файл базы")
-	dbToType := flag.String("to-type", "sqlite", "Тип БД: jdb, sqlite")
+	dbToType := flag.String("to-type", "sqlite", "Тип БД: jdb, sqlite, pg")
 
 	offset := flag.Int("offset", 0, "Пропустить количество")
 
@@ -36,65 +39,100 @@ func main() {
 
 	builder := new(converter.Builder)
 
+	var fromConnector, toConnector connector
+
 	switch *dbFromType {
 	case "jdb":
-		storageJDB := jdb.Init(ctx, *dbFromFilePath)
-		err := storageJDB.Load(ctx, *dbFromFilePath)
-		if err != nil {
-			system.Error(ctx, err)
-
-			os.Exit(1)
-		}
-
-		builder.WithFrom(storageJDB)
-
+		fromConnector = jdbConnect
 	case "sqlite":
-		sqliteDB, err := sqlite.Connect(ctx, *dbFromFilePath)
-		if err != nil {
-			system.Error(ctx, err)
-
-			os.Exit(1)
-		}
-
-		err = sqliteDB.MigrateAll(ctx)
-		if err != nil {
-			system.Error(ctx, err)
-
-			os.Exit(1)
-		}
-
-		builder.WithFrom(sqliteDB)
+		fromConnector = sqliteConnect
+	case "pg":
+		fromConnector = pgConnect
 	}
 
 	switch *dbToType {
 	case "jdb":
-		storageJDB := jdb.Init(ctx, *dbToFilePath)
-		err := storageJDB.Load(ctx, *dbToFilePath)
-		if err != nil {
-			system.Error(ctx, err)
-
-			os.Exit(1)
-		}
-
-		builder.WithTo(storageJDB)
-
+		toConnector = jdbConnect
 	case "sqlite":
-		sqliteDB, err := sqlite.Connect(ctx, *dbToFilePath)
-		if err != nil {
-			system.Error(ctx, err)
+		toConnector = sqliteConnect
+	case "pg":
+		toConnector = pgConnect
+	}
 
-			os.Exit(1)
-		}
+	if fromConnector == nil || toConnector == nil {
+		system.ErrorText(ctx, "nil connector")
+		os.Exit(1)
+	}
 
-		err = sqliteDB.MigrateAll(ctx)
-		if err != nil {
-			system.Error(ctx, err)
+	err := fromConnector(ctx, builder, *dbFromFilePath, true)
+	if err != nil {
+		system.Error(ctx, err)
 
-			os.Exit(1)
-		}
+		os.Exit(1)
+	}
 
-		builder.WithTo(sqliteDB)
+	err = toConnector(ctx, builder, *dbToFilePath, false)
+	if err != nil {
+		system.Error(ctx, err)
+
+		os.Exit(1)
 	}
 
 	builder.Convert(ctx, *offset, true)
+}
+
+func jdbConnect(ctx context.Context, builder *converter.Builder, path string, from bool) error {
+	storageJDB := jdb.Init(ctx, path)
+	err := storageJDB.Load(ctx, path)
+	if err != nil {
+		return err
+	}
+
+	if from {
+		builder.WithFrom(storageJDB)
+	} else {
+		builder.WithTo(storageJDB)
+	}
+
+	return nil
+}
+
+func sqliteConnect(ctx context.Context, builder *converter.Builder, path string, from bool) error {
+	sqliteDB, err := sqlite.Connect(ctx, path)
+	if err != nil {
+		return err
+	}
+
+	err = sqliteDB.MigrateAll(ctx)
+	if err != nil {
+		return err
+	}
+
+	if from {
+		builder.WithFrom(sqliteDB)
+	} else {
+		builder.WithTo(sqliteDB)
+	}
+
+	return nil
+}
+
+func pgConnect(ctx context.Context, builder *converter.Builder, path string, from bool) error {
+	postgresql, err := postgresql.Connect(ctx, path)
+	if err != nil {
+		return err
+	}
+
+	err = postgresql.MigrateAll(ctx)
+	if err != nil {
+		return err
+	}
+
+	if from {
+		builder.WithFrom(postgresql)
+	} else {
+		builder.WithTo(postgresql)
+	}
+
+	return nil
 }
