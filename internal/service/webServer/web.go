@@ -102,7 +102,9 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	server := &http.Server{
 		Addr: ws.addr,
 		Handler: base.PanicDefender(
-			base.Stopwatch(mux),
+			base.Stopwatch(
+				base.CORS(mux),
+			),
 		),
 		ErrorLog:    system.StdErrorLogger(parentCtx),
 		BaseContext: base.NewBaseContext(context.WithoutCancel(parentCtx)),
