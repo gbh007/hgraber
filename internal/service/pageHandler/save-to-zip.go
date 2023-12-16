@@ -95,8 +95,8 @@ func (s *Service) saveToZip(ctx context.Context, id int) error {
 		return err
 	}
 
-	// TODO: на данный момент используется формат веб сервера, это очень плохо, необходимо продублировать и разделить
-	err = json.NewEncoder(w).Encode(rendering.TitleFromStorage(titleInfo))
+	// FIXME: на данный момент используется формат веб сервера, это очень плохо, необходимо продублировать и разделить
+	err = json.NewEncoder(w).Encode(rendering.TitleFromStorageWrap("")(titleInfo))
 	if err != nil {
 		system.Error(ctx, err)
 		return err

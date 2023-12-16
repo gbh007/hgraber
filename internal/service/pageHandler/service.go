@@ -9,7 +9,7 @@ import (
 
 type storage interface {
 	GetBook(ctx context.Context, id int) (domain.Book, error)
-	GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo
+	GetUnsuccessPages(ctx context.Context) []domain.Page
 	UpdatePageSuccess(ctx context.Context, id int, page int, success bool) error
 }
 

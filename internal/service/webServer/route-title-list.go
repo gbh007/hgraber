@@ -28,6 +28,6 @@ func (ws *WebServer) routeTitleList() http.Handler {
 			NewFirst: true,
 		})
 
-		base.WriteJSON(ctx, w, http.StatusOK, rendering.TitlesFromStorage(data))
+		base.WriteJSON(ctx, w, http.StatusOK, rendering.TitlesFromStorage(ws.outerAddr, data))
 	})
 }

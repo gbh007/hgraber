@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (d *Database) GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error) {
+func (d *Database) GetPage(ctx context.Context, id int, page int) (*domain.Page, error) {
 	raw := new(Page)
 
 	err := d.db.GetContext(
@@ -31,17 +31,17 @@ func (d *Database) GetPage(ctx context.Context, id int, page int) (*domain.PageF
 	return &p, nil
 }
 
-func (d *Database) GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo {
+func (d *Database) GetUnsuccessPages(ctx context.Context) []domain.Page {
 	raw := make([]*Page, 0)
 
 	err := d.db.SelectContext(ctx, &raw, `SELECT * FROM pages WHERE success = FALSE;`)
 	if err != nil {
 		system.Error(ctx, err)
 
-		return []domain.PageFullInfo{}
+		return []domain.Page{}
 	}
 
-	out := make([]domain.PageFullInfo, len(raw))
+	out := make([]domain.Page, len(raw))
 	for i, v := range raw {
 		out[i] = pageToDomain(ctx, v)
 	}
@@ -110,11 +110,11 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.P
 		return err
 	}
 
-	for i, v := range pages {
+	for _, v := range pages {
 		_, err = tx.ExecContext(
 			ctx,
 			`INSERT INTO pages (book_id, page_number, ext, url, success, create_at, load_at, rate) VALUES($1, $2, $3, $4, $5, $6, $7, $8);`,
-			id, i+1, v.Ext, strings.TrimSpace(v.URL), v.Success, time.Now().UTC(), sql.NullTime{Time: v.LoadedAt.UTC(), Valid: !v.LoadedAt.IsZero()}, v.Rate,
+			id, v.PageNumber, v.Ext, strings.TrimSpace(v.URL), v.Success, time.Now().UTC(), sql.NullTime{Time: v.LoadedAt.UTC(), Valid: !v.LoadedAt.IsZero()}, v.Rate,
 		)
 		if err != nil {
 			system.IfErrFunc(ctx, tx.Rollback)
@@ -142,8 +142,8 @@ func (d *Database) getBookPages(ctx context.Context, bookID int) ([]*Page, error
 	return raw, nil
 }
 
-func pageToDomain(ctx context.Context, in *Page) domain.PageFullInfo {
-	return domain.PageFullInfo{
+func pageToDomain(ctx context.Context, in *Page) domain.Page {
+	return domain.Page{
 		BookID:     in.BookID,
 		PageNumber: in.PageNumber,
 		URL:        in.Url,

@@ -40,7 +40,7 @@ func (t RawTitle) Super() domain.Book {
 	}
 
 	for i, p := range t.Pages {
-		c.Pages[i] = p.Super()
+		c.Pages[i] = p.Super(t.ID, i+1)
 	}
 
 	return c

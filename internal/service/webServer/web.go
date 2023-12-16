@@ -22,7 +22,7 @@ type titleHandler interface {
 }
 
 type storage interface {
-	GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error)
+	GetPage(ctx context.Context, id int, page int) (*domain.Page, error)
 	GetBook(ctx context.Context, id int) (domain.Book, error)
 	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
 	PagesCount(ctx context.Context) int
@@ -49,6 +49,7 @@ type WebServer struct {
 	monitor monitor
 
 	addr      string
+	outerAddr string
 	staticDir string
 	token     string
 }
@@ -69,6 +70,7 @@ func Init(
 		monitor: monitor,
 
 		addr:      fmt.Sprintf("%s:%d", config.Host, config.Port),
+		outerAddr: fmt.Sprintf("http://%s:%d", config.Host, config.Port),
 		staticDir: config.StaticDirPath,
 		token:     config.Token,
 	}

@@ -93,13 +93,7 @@ func (d *Database) GetBook(ctx context.Context, bookID int) (domain.Book, error)
 	}
 
 	for _, p := range pages {
-		out.Pages = append(out.Pages, domain.Page{
-			URL:      p.Url,
-			Ext:      p.Ext,
-			Success:  p.Success,
-			LoadedAt: stringToTime(ctx, p.LoadAt.String),
-			Rate:     p.Rate,
-		})
+		out.Pages = append(out.Pages, pageToDomain(ctx, p))
 	}
 
 	return out, nil

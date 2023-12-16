@@ -7,7 +7,7 @@ import (
 
 type Database struct{}
 
-func (*Database) GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error) {
+func (*Database) GetPage(ctx context.Context, id int, page int) (*domain.Page, error) {
 	return nil, domain.PageNotFoundError
 }
 
@@ -23,7 +23,7 @@ func (*Database) GetUnloadedTitles(ctx context.Context) []domain.Book {
 	return nil
 }
 
-func (*Database) GetUnsuccessedPages(ctx context.Context) []domain.PageFullInfo {
+func (*Database) GetUnsuccessedPages(ctx context.Context) []domain.Page {
 	return nil
 }
 

@@ -9,11 +9,11 @@ import (
 const depth = 0
 
 type storage interface {
-	GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error)
+	GetPage(ctx context.Context, id int, page int) (*domain.Page, error)
 	GetBook(ctx context.Context, id int) (domain.Book, error)
 	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
 	GetUnloadedBooks(ctx context.Context) []domain.Book
-	GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo
+	GetUnsuccessPages(ctx context.Context) []domain.Page
 	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
 	PagesCount(ctx context.Context) int
 	BooksCount(ctx context.Context) int
@@ -45,7 +45,7 @@ func (s *Stopwatch) UpdateAttributes(ctx context.Context, id int, attr domain.At
 	return s.storage.UpdateAttributes(ctx, id, attr, data)
 }
 
-func (s *Stopwatch) GetPage(ctx context.Context, id int, page int) (*domain.PageFullInfo, error) {
+func (s *Stopwatch) GetPage(ctx context.Context, id int, page int) (*domain.Page, error) {
 	defer system.StopwatchWithDepth(ctx, "DB - GetPage", depth)()
 
 	return s.storage.GetPage(ctx, id, page)
@@ -69,7 +69,7 @@ func (s *Stopwatch) GetUnloadedBooks(ctx context.Context) []domain.Book {
 	return s.storage.GetUnloadedBooks(ctx)
 }
 
-func (s *Stopwatch) GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo {
+func (s *Stopwatch) GetUnsuccessPages(ctx context.Context) []domain.Page {
 	defer system.StopwatchWithDepth(ctx, "DB - GetUnsuccessPages", depth)()
 
 	return s.storage.GetUnsuccessPages(ctx)

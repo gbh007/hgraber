@@ -174,16 +174,16 @@ func (db *Database) getTitleIDs(reverse bool) []int {
 	return res
 }
 
-func (db *Database) GetUnsuccessPages(ctx context.Context) []domain.PageFullInfo {
+func (db *Database) GetUnsuccessPages(ctx context.Context) []domain.Page {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	res := []domain.PageFullInfo{}
+	res := []domain.Page{}
 
 	for _, t := range db.data.Titles {
 		for i, p := range t.Pages {
 			if !p.Success {
-				res = append(res, domain.PageFullInfo{
+				res = append(res, domain.Page{
 					BookID:     t.ID,
 					PageNumber: i + 1,
 					URL:        p.URL,
@@ -234,7 +234,7 @@ func (db *Database) UpdateBookRate(ctx context.Context, id int, rate int) error 
 	return nil
 }
 
-func (db *Database) GetPage(ctx context.Context, id, page int) (*domain.PageFullInfo, error) {
+func (db *Database) GetPage(ctx context.Context, id, page int) (*domain.Page, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
@@ -251,7 +251,7 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*domain.PageFull
 
 	p := title.Pages[page]
 
-	return &domain.PageFullInfo{
+	return &domain.Page{
 		BookID:     title.ID,
 		PageNumber: page + 1,
 		URL:        p.URL,

@@ -2,47 +2,34 @@ package rendering
 
 import (
 	"app/internal/domain"
+	"fmt"
 	"time"
 )
 
-type Page struct {
-	URL      string    `json:"url"`
-	Ext      string    `json:"ext"`
-	Success  bool      `json:"success"`
-	LoadedAt time.Time `json:"loaded_at"`
-	Rate     int       `json:"rate,omitempty"`
-}
-
-func PageFromStorage(raw domain.Page) Page {
-	return Page{
-		URL:      raw.URL,
-		Ext:      raw.Ext,
-		Success:  raw.Success,
-		LoadedAt: raw.LoadedAt,
-		Rate:     raw.Rate,
+func PageFromStorageWrap(addr string) func(raw domain.Page) Page {
+	return func(raw domain.Page) Page {
+		return Page{
+			TitleID:    raw.BookID,
+			PageNumber: raw.PageNumber,
+			URL:        raw.URL,
+			URLtoView:  fmt.Sprintf("%s/file/%d/%d.%s", addr, raw.BookID, raw.PageNumber, raw.Ext),
+			Ext:        raw.Ext,
+			Success:    raw.Success,
+			LoadedAt:   raw.LoadedAt,
+			Rate:       raw.Rate,
+		}
 	}
 }
 
-type PageFullInfo struct {
+type Page struct {
 	TitleID    int       `json:"title_id"`
 	PageNumber int       `json:"page_number"`
 	URL        string    `json:"url"`
+	URLtoView  string    `json:"url_to_view"`
 	Ext        string    `json:"ext"`
 	Success    bool      `json:"success"`
 	LoadedAt   time.Time `json:"loaded_at"`
 	Rate       int       `json:"rate,omitempty"`
-}
-
-func PageFullInfoFromStorage(raw *domain.PageFullInfo) PageFullInfo {
-	return PageFullInfo{
-		TitleID:    raw.BookID,
-		PageNumber: raw.PageNumber,
-		URL:        raw.URL,
-		Ext:        raw.Ext,
-		Success:    raw.Success,
-		LoadedAt:   raw.LoadedAt,
-		Rate:       raw.Rate,
-	}
 }
 
 type TitleInfoParsed struct {
@@ -119,23 +106,26 @@ type Title struct {
 	Data  TitleInfo `json:"info"`
 }
 
-func TitleFromStorage(raw domain.Book) Title {
-	out := Title{
-		ID:      raw.ID,
-		Created: raw.Created,
-		URL:     raw.URL,
-		Pages:   make([]Page, len(raw.Pages)),
-		Data:    TitleInfoFromStorage(raw.Data),
+func TitleFromStorageWrap(addr string) func(raw domain.Book) Title {
+	return func(raw domain.Book) Title {
+		out := Title{
+			ID:      raw.ID,
+			Created: raw.Created,
+			URL:     raw.URL,
+			Pages:   make([]Page, len(raw.Pages)),
+			Data:    TitleInfoFromStorage(raw.Data),
+		}
+
+		convertSlice(out.Pages, raw.Pages, PageFromStorageWrap(addr))
+
+		return out
 	}
-
-	convertSlice(out.Pages, raw.Pages, PageFromStorage)
-
-	return out
 }
-func TitlesFromStorage(raw []domain.Book) []Title {
+
+func TitlesFromStorage(addr string, raw []domain.Book) []Title {
 	out := make([]Title, len(raw))
 
-	convertSlice(out, raw, TitleFromStorage)
+	convertSlice(out, raw, TitleFromStorageWrap(addr))
 
 	return out
 }

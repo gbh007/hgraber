@@ -58,8 +58,10 @@ func (s *Service) update(ctx context.Context, title domain.Book) {
 
 			for i, page := range pages {
 				pagesDB[i] = domain.Page{
-					URL: page.URL,
-					Ext: page.Ext,
+					BookID:     title.ID,
+					PageNumber: page.Number,
+					URL:        page.URL,
+					Ext:        page.Ext,
 				}
 			}
 

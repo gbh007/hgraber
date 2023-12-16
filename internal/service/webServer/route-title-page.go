@@ -27,6 +27,6 @@ func (ws *WebServer) routeTitlePage() http.Handler {
 			return
 		}
 
-		base.WriteJSON(ctx, w, http.StatusOK, rendering.PageFullInfoFromStorage(data))
+		base.WriteJSON(ctx, w, http.StatusOK, rendering.PageFromStorageWrap(ws.outerAddr)(*data))
 	})
 }

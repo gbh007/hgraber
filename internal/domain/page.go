@@ -6,14 +6,6 @@ import (
 )
 
 type Page struct {
-	URL      string
-	Ext      string
-	Success  bool
-	LoadedAt time.Time
-	Rate     int
-}
-
-type PageFullInfo struct {
 	BookID     int
 	PageNumber int
 	URL        string
@@ -23,6 +15,6 @@ type PageFullInfo struct {
 	Rate       int
 }
 
-func (info PageFullInfo) Fullname() string {
+func (info Page) Fullname() string {
 	return fmt.Sprintf("%d.%s", info.PageNumber, info.Ext)
 }

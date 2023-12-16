@@ -23,13 +23,15 @@ func (p RawPage) Copy() RawPage {
 	}
 }
 
-func (p RawPage) Super() domain.Page {
+func (p RawPage) Super(bookID, pageNumber int) domain.Page {
 	return domain.Page{
-		URL:      p.URL,
-		Ext:      p.Ext,
-		Success:  p.Success,
-		LoadedAt: p.LoadedAt,
-		Rate:     p.Rate,
+		BookID:     bookID,
+		PageNumber: pageNumber,
+		URL:        p.URL,
+		Ext:        p.Ext,
+		Success:    p.Success,
+		LoadedAt:   p.LoadedAt,
+		Rate:       p.Rate,
 	}
 }
 
