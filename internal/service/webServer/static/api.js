@@ -55,6 +55,26 @@ class Api {
     return {};
   }
 
+  async newTitles(urls) {
+    try {
+      let response = await fetch("/new", {
+        method: "POST",
+        body: JSON.stringify({ urls: urls }),
+      });
+      if (!response.ok) {
+        response
+          .json()
+          .then((text) => this.alertField(text))
+          .catch((err) => this.alertField(err));
+      } else {
+        return await response.json();
+      }
+    } catch (err) {
+      this.alertField(err);
+    }
+    return {};
+  }
+
   async getTitleList(count, offset) {
     try {
       let response = await fetch("/title/list", {

@@ -19,6 +19,7 @@ type pageHandler interface {
 type titleHandler interface {
 	// FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
 	FirstHandle(ctx context.Context, u string) error
+	FirstHandleMultiple(ctx context.Context, data []string) domain.FirstHandleMultipleResult
 }
 
 type storage interface {

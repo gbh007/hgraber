@@ -27,6 +27,7 @@
     </div>
     <button onclick="loadTitle();">Загрузить</button>
   </div>
+  <hr />
   <div id="index-info">
     <ul>
       <li>Всего <b id="info-count"></b> тайтлов</li>
@@ -37,6 +38,7 @@
       </li>
     </ul>
   </div>
+  <hr />
   <div>
     Скачать архивы С
     <input value="" placeholder="С" id="load-from" />
@@ -44,7 +46,16 @@
     <input value="" placeholder="По" id="load-to" />
     <button onclick="saveToZIP();">Загрузить</button>
   </div>
+  <hr />
   <div id="info-workers"></div>
+  <hr />
+  <div style="display: flex;">
+    <div style="display: flex; flex-direction: column;">
+      <textarea rows="10" cols="50" value="" placeholder="Загрузить новые тайтлы" id="new-title-urls"></textarea>
+      <button onclick="loadTitles();">Загрузить</button>
+    </div>
+    <div id="new-title-urls-info" style="display: flex; flex-direction: column; margin-left: 10px;"></div>
+  </div>
   <script>
     function remakeInfo() {
       API.getMainInfo().then((data) => {
@@ -84,15 +95,34 @@
         document.getElementById("new-title-url").value = "";
       });
     }
+
+    function loadTitles() {
+      let urlsInput = document.getElementById("new-title-urls");
+      let loadedInfo = document.getElementById("new-title-urls-info");
+      API.newTitles(urlsInput.value.split("\n")).then((data) => {
+        loadedInfo.innerHTML = [
+          `<div><b>Всего: </b>${data.total_count || 0}</div>`,
+          `<div><b>Загружено: </b>${data.loaded_count || 0}</div>`,
+          `<div><b>Дубликаты: </b>${data.duplicate_count || 0}</div>`,
+          `<div><b>Ошибки: </b>${data.error_count || 0}</div>`,
+        ].join("\n");
+        document.getElementById("new-title-urls").value = (data.not_handled || []).join("\n");
+      });
+
+
+    }
+
     function saveToZIP() {
       let loadFrom = document.getElementById("load-from");
       let loadTo = document.getElementById("load-to");
       API.saveToZIP(parseInt(loadFrom.value), parseInt(loadTo.value));
     }
+
     window.addEventListener("load", function () {
       remakeInfo();
       setInterval(remakeInfo, 10000)
     });
+
     window.addEventListener("new-message-field", function (messageInfo) {
       document.getElementById("new-title-url-err").innerText = messageInfo.detail.text;
     });

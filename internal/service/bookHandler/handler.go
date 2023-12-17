@@ -39,7 +39,6 @@ func (s *Service) FirstHandleMultiple(ctx context.Context, data []string) domain
 
 		switch {
 		case errors.Is(err, domain.BookAlreadyExistsError):
-			res.NotHandled = append(res.NotHandled, link)
 			res.DuplicateCount++
 
 		case errors.Is(err, parser.ErrInvalidLink):
