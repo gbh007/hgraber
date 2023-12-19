@@ -2,8 +2,8 @@ package webServer
 
 import (
 	"app/internal/domain"
-	"app/internal/service/webServer/base"
 	"app/internal/service/webServer/rendering"
+	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -16,9 +16,9 @@ func (ws *WebServer) routeTitleList() http.Handler {
 
 		ctx := r.Context()
 
-		err := base.ParseJSON(r, &request)
+		err := webtool.ParseJSON(r, &request)
 		if err != nil {
-			base.WriteJSON(ctx, w, http.StatusBadRequest, err)
+			webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
 			return
 		}
 
@@ -28,6 +28,6 @@ func (ws *WebServer) routeTitleList() http.Handler {
 			NewFirst: true,
 		})
 
-		base.WriteJSON(ctx, w, http.StatusOK, rendering.TitlesFromStorage(ws.outerAddr, data))
+		webtool.WriteJSON(ctx, w, http.StatusOK, rendering.TitlesFromStorage(ws.outerAddr, data))
 	})
 }

@@ -1,7 +1,7 @@
 package webServer
 
 import (
-	"app/internal/service/webServer/base"
+	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -12,26 +12,26 @@ func (ws *WebServer) routeLogin(token string) http.Handler {
 		}{}
 		ctx := r.Context()
 
-		err := base.ParseJSON(r, &request)
+		err := webtool.ParseJSON(r, &request)
 		if err != nil {
-			base.WriteJSON(ctx, w, http.StatusBadRequest, err)
+			webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
 
 			return
 		}
 
 		if request.Token != token {
-			base.WriteJSON(ctx, w, http.StatusBadRequest, false)
+			webtool.WriteJSON(ctx, w, http.StatusBadRequest, false)
 
 			return
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     base.TokenCookieName,
+			Name:     tokenCookieName,
 			Value:    token,
 			Path:     "/",
 			HttpOnly: true,
 		})
 
-		base.WriteJSON(ctx, w, http.StatusOK, struct{}{})
+		webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 	})
 }

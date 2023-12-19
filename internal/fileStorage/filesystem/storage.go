@@ -8,19 +8,27 @@ import (
 	"os"
 )
 
+var readOnlyModeError = errors.New("read only mode")
+
 type Storage struct {
 	loadPath   string
 	exportPath string
+	readOnly   bool
 }
 
-func New(load, export string) *Storage {
+func New(load, export string, readOnly bool) *Storage {
 	return &Storage{
 		loadPath:   load,
 		exportPath: export,
+		readOnly:   readOnly,
 	}
 }
 
 func (s *Storage) Prepare(ctx context.Context) error {
+	if s.readOnly {
+		return nil
+	}
+
 	err := createDir(ctx, s.loadPath)
 	if err != nil {
 		return err

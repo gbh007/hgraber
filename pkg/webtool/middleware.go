@@ -1,10 +1,13 @@
-package base
+package webtool
 
 import (
 	"app/system"
+	"errors"
 	"fmt"
 	"net/http"
 )
+
+var errPanicDetected = errors.New("нарушение потока выполнения запроса")
 
 func PanicDefender(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -13,7 +16,7 @@ func PanicDefender(next http.Handler) http.Handler {
 			if p != nil {
 				system.Warning(r.Context(), "обнаружена паника", p)
 
-				WriteJSON(r.Context(), w, http.StatusInternalServerError, ErrPanicDetected)
+				WriteJSON(r.Context(), w, http.StatusInternalServerError, errPanicDetected)
 			}
 		}()
 		if next != nil {
@@ -47,3 +50,4 @@ func CORS(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+

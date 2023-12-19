@@ -1,8 +1,8 @@
 package webServer
 
 import (
-	"app/internal/service/webServer/base"
 	"app/internal/service/webServer/rendering"
+	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -11,7 +11,7 @@ func (ws *WebServer) routeMainInfo() http.Handler {
 		ctx := r.Context()
 		stor := ws.storage
 
-		base.WriteJSON(ctx, w, http.StatusOK, map[string]interface{}{
+		webtool.WriteJSON(ctx, w, http.StatusOK, map[string]interface{}{
 			"count":               stor.BooksCount(ctx),
 			"not_load_count":      stor.UnloadedBooksCount(ctx),
 			"page_count":          stor.PagesCount(ctx),

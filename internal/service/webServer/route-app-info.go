@@ -1,7 +1,7 @@
 package webServer
 
 import (
-	"app/internal/service/webServer/base"
+	"app/pkg/webtool"
 	"app/system"
 	"net/http"
 )
@@ -18,6 +18,6 @@ func (ws *WebServer) routeAppInfo() http.Handler {
 			BuildAt: system.BuildAt,
 		}
 
-		base.WriteJSON(r.Context(), w, http.StatusOK, response)
+		webtool.WriteJSON(r.Context(), w, http.StatusOK, response)
 	})
 }

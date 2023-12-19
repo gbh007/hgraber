@@ -1,7 +1,7 @@
 package webServer
 
 import (
-	"app/internal/service/webServer/base"
+	"app/pkg/webtool"
 	"app/system"
 	"bytes"
 	"io"
@@ -17,42 +17,42 @@ func (ws *WebServer) getFile() http.Handler {
 
 		first := strings.Split(r.URL.Path, "/")
 		if len(first) != 2 {
-			base.WritePlain(ctx, w, http.StatusBadRequest, "not 2 pair in first split")
+			webtool.WritePlain(ctx, w, http.StatusBadRequest, "not 2 pair in first split")
 
 			return
 		}
 
 		bookID, err := strconv.Atoi(first[0])
 		if err != nil {
-			base.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
 		second := strings.Split(first[1], ".")
 		if len(second) != 2 {
-			base.WritePlain(ctx, w, http.StatusBadRequest, "not 2 pair in second split")
+			webtool.WritePlain(ctx, w, http.StatusBadRequest, "not 2 pair in second split")
 
 			return
 		}
 
 		page, err := strconv.Atoi(second[0])
 		if err != nil {
-			base.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
 		info, err := ws.storage.GetPage(ctx, bookID, page)
 		if err != nil {
-			base.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
 		rawFile, err := ws.files.OpenPageFile(ctx, bookID, page, second[1])
 		if err != nil {
-			base.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
@@ -61,7 +61,7 @@ func (ws *WebServer) getFile() http.Handler {
 
 		rawData, err := io.ReadAll(rawFile)
 		if err != nil {
-			base.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}

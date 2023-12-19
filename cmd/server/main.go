@@ -129,7 +129,7 @@ func main() {
 
 	system.Info(ctx, "База загружена")
 
-	fStor := filesystem.New(config.Base.FileStoragePath, config.Base.FileExportPath)
+	fStor := filesystem.New(config.Base.FileStoragePath, config.Base.FileExportPath, config.Base.OnlyView)
 	err = fStor.Prepare(ctx)
 	if err != nil {
 		system.Error(ctx, err)

@@ -30,6 +30,13 @@ type Service struct {
 	worker *worker.Worker[domain.Book]
 }
 
+type Config struct {
+	Storage   storage
+	Requester requester
+	Monitor   monitor
+}
+
+// Deprecated: устаревший подход
 func Init(storage storage, requester requester, monitor monitor) *Service {
 	s := &Service{
 		storage:   storage,
@@ -44,6 +51,24 @@ func Init(storage storage, requester requester, monitor monitor) *Service {
 	)
 
 	monitor.Register(s.Name(), s.worker)
+
+	return s
+}
+
+func New(cfg Config) *Service {
+	s := &Service{
+		storage:   cfg.Storage,
+		requester: cfg.Requester,
+	}
+
+	s.worker = worker.New[domain.Book](
+		titleQueueSize,
+		titleInterval,
+		s.updateForWorker,
+		s.storage.GetUnloadedBooks,
+	)
+
+	cfg.Monitor.Register(s.Name(), s.worker)
 
 	return s
 }

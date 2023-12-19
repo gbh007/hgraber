@@ -1,8 +1,8 @@
 package webServer
 
 import (
-	"app/internal/service/webServer/base"
 	"app/internal/service/webServer/rendering"
+	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -13,18 +13,18 @@ func (ws *WebServer) routeTitleInfo() http.Handler {
 		}{}
 		ctx := r.Context()
 
-		err := base.ParseJSON(r, &request)
+		err := webtool.ParseJSON(r, &request)
 		if err != nil {
-			base.WriteJSON(ctx, w, http.StatusBadRequest, err)
+			webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
 			return
 		}
 
 		data, err := ws.storage.GetBook(ctx, request.ID)
 		if err != nil {
-			base.WriteJSON(ctx, w, http.StatusInternalServerError, err)
+			webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
 		}
 
-		base.WriteJSON(ctx, w, http.StatusOK, rendering.TitleFromStorageWrap(ws.outerAddr)(data))
+		webtool.WriteJSON(ctx, w, http.StatusOK, rendering.TitleFromStorageWrap(ws.outerAddr)(data))
 	})
 }

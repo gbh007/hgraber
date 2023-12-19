@@ -11,6 +11,10 @@ import (
 func (s *Storage) CreatePageFile(ctx context.Context, id, page int, ext string) (io.WriteCloser, error) {
 	defer system.Stopwatch(ctx, "CreatePageFile")()
 
+	if s.readOnly {
+		return nil, readOnlyModeError
+	}
+
 	// создаем папку с тайтлом
 	err := os.MkdirAll(fmt.Sprintf("%s/%d", s.loadPath, id), os.ModeDir|os.ModePerm)
 	if err != nil && !os.IsExist(err) {

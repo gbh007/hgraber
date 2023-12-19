@@ -1,27 +1,27 @@
-package base
+package externalfile
 
 import (
+	"app/internal/dto"
 	"net/http"
 )
 
-const TokenCookieName = "hgraber-access-token"
-
-func TokenHandler(token string, next http.Handler) http.Handler {
+func (c *Controller) tokenMiddleware(next http.Handler) http.Handler {
 	// Нет токена, не обрабатываем
-	if token == "" {
+	if c.token == "" {
 		return next
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie(TokenCookieName)
-		if err != nil {
+		userToken := r.Header.Get(dto.ExternalFileToken)
+
+		if userToken == "" {
 			w.WriteHeader(http.StatusUnauthorized)
 
 			return
 		}
 
-		if c.Value != token {
-			w.WriteHeader(http.StatusUnauthorized)
+		if c.token != userToken {
+			w.WriteHeader(http.StatusForbidden)
 
 			return
 		}
