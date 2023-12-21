@@ -1,4 +1,4 @@
-package pgwithexternal
+package server
 
 import "flag"
 

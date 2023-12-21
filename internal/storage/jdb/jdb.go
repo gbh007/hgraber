@@ -22,10 +22,10 @@ type Database struct {
 	mutex       *sync.RWMutex
 	ctx         context.Context
 	needSave    bool
-	filename    string
+	filename    *string
 }
 
-func Init(ctx context.Context, filename string) *Database {
+func Init(ctx context.Context, filename *string) *Database {
 	return &Database{
 		mutex: &sync.RWMutex{},
 		data: DatabaseData{

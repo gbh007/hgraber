@@ -1,13 +1,11 @@
 package webServer
 
 import (
-	"app/internal/config"
 	"app/internal/domain"
 	"app/internal/service/webServer/static"
 	"app/pkg/webtool"
 	"app/system"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -53,29 +51,6 @@ type WebServer struct {
 	outerAddr string
 	staticDir string
 	token     string
-}
-
-// Deprecated: не удобный формат данных
-func Init(
-	storage storage,
-	title titleHandler,
-	page pageHandler,
-	files files,
-	monitor monitor,
-	config config.WebServerConfig,
-) *WebServer {
-	return &WebServer{
-		storage: storage,
-		title:   title,
-		page:    page,
-		files:   files,
-		monitor: monitor,
-
-		addr:      fmt.Sprintf("%s:%d", config.Host, config.Port),
-		outerAddr: fmt.Sprintf("http://%s:%d", config.Host, config.Port),
-		staticDir: config.StaticDirPath,
-		token:     config.Token,
-	}
 }
 
 type Config struct {

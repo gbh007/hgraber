@@ -3,6 +3,7 @@ package jdb
 import (
 	"app/system"
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -16,6 +17,10 @@ func (db *Database) Name() string {
 
 func (db *Database) Start(parentCtx context.Context) (chan struct{}, error) {
 	done := make(chan struct{})
+
+	if db.filename == nil {
+		return nil, fmt.Errorf("jdb: nil filename to autosave")
+	}
 
 	go func(parentCtx context.Context, filename string) {
 		defer close(done)
@@ -37,7 +42,7 @@ func (db *Database) Start(parentCtx context.Context) (chan struct{}, error) {
 				}
 			}
 		}
-	}(parentCtx, db.filename)
+	}(parentCtx, *db.filename)
 
 	return done, nil
 }

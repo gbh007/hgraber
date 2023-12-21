@@ -1,45 +1,73 @@
-package pgwithexternal
+package simple
 
 import (
 	"app/internal/controller"
-	"app/internal/fileStorage/externalfile"
+	"app/internal/fileStorage/filesystem"
 	"app/internal/request"
 	"app/internal/service/bookHandler"
 	"app/internal/service/pageHandler"
 	"app/internal/service/webServer"
-	"app/internal/storage/postgresql"
+	"app/internal/storage/jdb"
 	"app/pkg/worker"
+	"app/system"
 	"context"
 	"fmt"
 )
 
 type App struct {
-	fs *externalfile.Storage
+	fs *filesystem.Storage
 
 	ws *webServer.WebServer
 
 	async *controller.Object
 }
 
-// Deprecated: сейчас только для теста.
 func New() *App {
 	return new(App)
 }
 
 func (app *App) Init(ctx context.Context) error {
 	cfg := parseFlag()
+	system.Init(system.LogConfig{
+		EnableFile:   !cfg.Log.DisableFileErr,
+		AppendMode:   cfg.Log.EnableAppendFileErr,
+		EnableStdErr: !cfg.Log.DisableStdErr,
+	})
 
-	app.fs = externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr)
-	db, err := postgresql.Connect(ctx, cfg.PGSource)
+	// FIXME: не будет работать
+	if cfg.Log.DebugMode {
+		ctx = system.WithDebug(ctx)
+	}
+
+	// FIXME: не будет работать
+	if cfg.Log.DebugFullpathMode {
+		system.EnableFullpath(ctx)
+	}
+
+	app.async = controller.NewObject()
+	app.fs = filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView)
+
+	err := app.fs.Prepare(ctx)
 	if err != nil {
 		return fmt.Errorf("app: %w", err)
 	}
 
-	if !cfg.ReadOnly {
-		err = db.MigrateAll(ctx)
+	db := jdb.Init(ctx, &cfg.Base.DBFilePath)
+
+	if !cfg.Base.OnlyView {
+		err = db.Load(ctx, cfg.Base.DBFilePath)
 		if err != nil {
 			return fmt.Errorf("app: %w", err)
 		}
+
+		app.async.RegisterRunner(ctx, db)
+		app.async.RegisterAfterStop(ctx, func() {
+			if db.Save(ctx, cfg.Base.DBFilePath, false) == nil {
+				system.Info(ctx, "База сохранена")
+			} else {
+				system.Warning(ctx, "База не сохранена")
+			}
+		})
 	}
 
 	monitor := worker.NewMonitor()
@@ -63,15 +91,14 @@ func (app *App) Init(ctx context.Context) error {
 		Page:          ph,
 		Files:         app.fs,
 		Monitor:       monitor,
-		Addr:          cfg.ws.Addr,
-		Token:         cfg.ws.Token,
-		StaticDirPath: cfg.ws.Static,
+		Addr:          fmt.Sprintf("%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),
+		Token:         cfg.WebServer.Token,
+		StaticDirPath: cfg.WebServer.StaticDirPath,
 	})
 
-	app.async = controller.NewObject()
 	app.async.RegisterRunner(ctx, app.ws)
 
-	if !cfg.ReadOnly {
+	if !cfg.Base.OnlyView {
 		app.async.RegisterRunner(ctx, bh)
 		app.async.RegisterRunner(ctx, ph)
 	}

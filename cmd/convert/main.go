@@ -77,7 +77,7 @@ func main() {
 }
 
 func jdbConnect(ctx context.Context, builder *converter.Builder, path string, from bool) error {
-	storageJDB := jdb.Init(ctx, path)
+	storageJDB := jdb.Init(ctx, nil)
 	err := storageJDB.Load(ctx, path)
 	if err != nil {
 		return err
@@ -91,7 +91,6 @@ func jdbConnect(ctx context.Context, builder *converter.Builder, path string, fr
 
 	return nil
 }
-
 
 func pgConnect(ctx context.Context, builder *converter.Builder, path string, from bool) error {
 	postgresql, err := postgresql.Connect(ctx, path)

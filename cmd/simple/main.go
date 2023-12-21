@@ -1,7 +1,7 @@
 package main
 
 import (
-	"app/internal/application/inmemory"
+	"app/internal/application/simple"
 	"app/system"
 	"context"
 	"os/signal"
@@ -23,12 +23,14 @@ func main() {
 	ctx := system.NewSystemContext(notifyCtx, "Main")
 
 
+
 	system.Debug(ctx, "Версия", system.Version)
 	system.Debug(ctx, "Коммит", system.Commit)
 	system.Debug(ctx, "Собрано", system.BuildAt)
+
 	system.Info(ctx, "Инициализация сервера")
 
-	app := inmemory.New()
+	app := simple.New()
 
 	err := app.Init(ctx)
 	if err != nil {
