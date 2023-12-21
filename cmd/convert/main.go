@@ -4,7 +4,6 @@ import (
 	"app/internal/converter"
 	"app/internal/storage/jdb"
 	"app/internal/storage/postgresql"
-	"app/internal/storage/sqlite"
 	"app/system"
 	"context"
 	"flag"
@@ -17,10 +16,10 @@ type connector func(ctx context.Context, builder *converter.Builder, path string
 
 func main() {
 	dbFromFilePath := flag.String("from", "db.json", "файл базы")
-	dbFromType := flag.String("from-type", "jdb", "Тип БД: jdb, sqlite, pg")
+	dbFromType := flag.String("from-type", "jdb", "Тип БД: jdb, pg")
 
 	dbToFilePath := flag.String("to", "main.db", "файл базы")
-	dbToType := flag.String("to-type", "sqlite", "Тип БД: jdb, sqlite, pg")
+	dbToType := flag.String("to-type", "sqlite", "Тип БД: jdb, pg")
 
 	offset := flag.Int("offset", 0, "Пропустить количество")
 
@@ -44,8 +43,6 @@ func main() {
 	switch *dbFromType {
 	case "jdb":
 		fromConnector = jdbConnect
-	case "sqlite":
-		fromConnector = sqliteConnect
 	case "pg":
 		fromConnector = pgConnect
 	}
@@ -53,8 +50,6 @@ func main() {
 	switch *dbToType {
 	case "jdb":
 		toConnector = jdbConnect
-	case "sqlite":
-		toConnector = sqliteConnect
 	case "pg":
 		toConnector = pgConnect
 	}
@@ -97,25 +92,6 @@ func jdbConnect(ctx context.Context, builder *converter.Builder, path string, fr
 	return nil
 }
 
-func sqliteConnect(ctx context.Context, builder *converter.Builder, path string, from bool) error {
-	sqliteDB, err := sqlite.Connect(ctx, path)
-	if err != nil {
-		return err
-	}
-
-	err = sqliteDB.MigrateAll(ctx)
-	if err != nil {
-		return err
-	}
-
-	if from {
-		builder.WithFrom(sqliteDB)
-	} else {
-		builder.WithTo(sqliteDB)
-	}
-
-	return nil
-}
 
 func pgConnect(ctx context.Context, builder *converter.Builder, path string, from bool) error {
 	postgresql, err := postgresql.Connect(ctx, path)

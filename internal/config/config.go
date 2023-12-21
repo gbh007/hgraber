@@ -68,7 +68,7 @@ func ParseFlag() Config {
 	fileStoragePath := flag.String("fs", "loads", "директория для данных")
 	fileExportPath := flag.String("fe", "exported", "директория для экспорта файлов")
 	dbFilePath := flag.String("db", "db.json", "файл базы")
-	dbType := flag.String("db-type", "jdb", "Тип БД: jdb, sqlite, pg")
+	dbType := flag.String("db-type", "jdb", "Тип БД: jdb, pg")
 	staticDirPath := flag.String("static", "", "папка со статическими файлами")
 
 	// отладка

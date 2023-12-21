@@ -1,13 +1,13 @@
-task.txt
+# Стандартные файлы приложения
 loads
-main.exe
-main
-main.db
-log*.txt
-.hidden
-.build
-_build
 exported
+log*.txt
+task.txt
 exported-*.json
 db.json
-*.zip
+*.db
+
+# Сборка и отладка
+.hidden
+_build
+.env

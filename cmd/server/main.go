@@ -10,7 +10,6 @@ import (
 	"app/internal/service/webServer"
 	"app/internal/storage/jdb"
 	"app/internal/storage/postgresql"
-	"app/internal/storage/sqlite"
 	"app/internal/storage/stopwatch"
 	"app/pkg/worker"
 	"app/system"
@@ -85,23 +84,6 @@ func main() {
 				system.Warning(ctx, "База не сохранена")
 			}
 		})
-
-	case "sqlite":
-		sqliteDB, err := sqlite.Connect(ctx, config.Base.DBFilePath)
-		if err != nil {
-			system.Error(ctx, err)
-
-			os.Exit(1)
-		}
-
-		err = sqliteDB.MigrateAll(ctx)
-		if err != nil {
-			system.Error(ctx, err)
-
-			os.Exit(1)
-		}
-
-		storage = stopwatch.WithStopwatch(sqliteDB)
 
 	case "pg":
 		pg, err := postgresql.Connect(ctx, config.Base.DBFilePath)
