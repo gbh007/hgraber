@@ -1,20 +1,13 @@
-package bookHandler
+package usecase
 
 import (
 	"app/internal/domain"
-	"app/internal/service/bookHandler/internal/parser"
+	"app/internal/usecase/internal/parser"
 	"context"
 	"strings"
 )
 
-func (s *Service) updateForWorker(parentCtx context.Context, title domain.Book) {
-	ctx := context.WithoutCancel(parentCtx)
-
-	s.update(ctx, title)
-}
-
-// update обрабатывает данные тайтла (только недостающие)
-func (s *Service) update(ctx context.Context, title domain.Book) {
+func (s *UseCases) ParseWithUpdate(ctx context.Context, title domain.Book) {
 	s.logger.Info(ctx, "начата обработка", title.ID, title.URL)
 	defer s.logger.Info(ctx, "завершена обработка", title.ID, title.URL)
 

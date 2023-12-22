@@ -1,16 +1,16 @@
 package webServer
 
 import (
-	"app/internal/service/webServer/rendering"
 	"app/pkg/webtool"
 	"net/http"
 )
 
-func (ws *WebServer) routeTitlePage() http.Handler {
+func (ws *WebServer) routeSetPageRate() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
 			ID   int `json:"id"`
 			Page int `json:"page"`
+			Rate int `json:"rate"`
 		}{}
 
 		ctx := r.Context()
@@ -21,12 +21,12 @@ func (ws *WebServer) routeTitlePage() http.Handler {
 			return
 		}
 
-		data, err := ws.storage.GetPage(ctx, request.ID, request.Page)
+		err = ws.useCases.UpdatePageRate(ctx, request.ID, request.Page, request.Rate)
 		if err != nil {
 			webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
 		}
 
-		webtool.WriteJSON(ctx, w, http.StatusOK, rendering.PageFromStorageWrap(ws.outerAddr)(*data))
+		webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 	})
 }

@@ -1,8 +1,8 @@
 package webServer
 
 import (
+	"app/internal/controller/webServer/internal/rendering"
 	"app/internal/domain"
-	"app/internal/service/webServer/rendering"
 	"app/pkg/webtool"
 	"net/http"
 )
@@ -22,7 +22,7 @@ func (ws *WebServer) routeTitleList() http.Handler {
 			return
 		}
 
-		data := ws.storage.GetBooks(ctx, domain.BookFilter{
+		data := ws.useCases.GetBooks(ctx, domain.BookFilter{
 			Limit:    request.Count,
 			Offset:   request.Offset,
 			NewFirst: true,

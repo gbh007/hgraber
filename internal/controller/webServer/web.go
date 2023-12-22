@@ -1,8 +1,8 @@
 package webServer
 
 import (
+	"app/internal/controller/webServer/internal/static"
 	"app/internal/domain"
-	"app/internal/service/webServer/static"
 	"app/pkg/logger"
 	"app/pkg/webtool"
 	"context"
@@ -10,30 +10,22 @@ import (
 	"net/http"
 )
 
-type pageHandler interface {
-	ExportBooksToZip(ctx context.Context, from, to int) error
-}
+type useCases interface {
+	Info(ctx context.Context) (*domain.MainInfo, error)
 
-type titleHandler interface {
-	// FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
-	FirstHandle(ctx context.Context, u string) error
-	FirstHandleMultiple(ctx context.Context, data []string) domain.FirstHandleMultipleResult
-}
-
-type storage interface {
-	GetPage(ctx context.Context, id int, page int) (*domain.Page, error)
 	GetBook(ctx context.Context, id int) (domain.Book, error)
+	GetPage(ctx context.Context, id int, page int) (*domain.Page, error)
 	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
-	PagesCount(ctx context.Context) int
-	BooksCount(ctx context.Context) int
-	UnloadedPagesCount(ctx context.Context) int
-	UnloadedBooksCount(ctx context.Context) int
+
 	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
 	UpdateBookRate(ctx context.Context, id int, rate int) error
-}
 
-type files interface {
-	OpenPageFile(ctx context.Context, id, page int, ext string) (io.ReadCloser, error)
+	ExportBooksToZip(ctx context.Context, from, to int) error
+
+	FirstHandle(ctx context.Context, u string) error
+	FirstHandleMultiple(ctx context.Context, data []string) (*domain.FirstHandleMultipleResult, error)
+
+	PageWithBody(ctx context.Context, bookID int, pageNumber int) (*domain.Page, io.ReadCloser, error)
 }
 
 type monitor interface {
@@ -41,11 +33,8 @@ type monitor interface {
 }
 
 type WebServer struct {
-	storage storage
-	title   titleHandler
-	page    pageHandler
-	files   files
-	monitor monitor
+	useCases useCases
+	monitor  monitor
 
 	logger *logger.Logger
 
@@ -56,11 +45,8 @@ type WebServer struct {
 }
 
 type Config struct {
-	Storage storage
-	Book    titleHandler
-	Page    pageHandler
-	Files   files
-	Monitor monitor
+	UseCases useCases
+	Monitor  monitor
 
 	Logger *logger.Logger
 
@@ -71,11 +57,8 @@ type Config struct {
 
 func New(cfg Config) *WebServer {
 	return &WebServer{
-		storage: cfg.Storage,
-		title:   cfg.Book,
-		page:    cfg.Page,
-		files:   cfg.Files,
-		monitor: cfg.Monitor,
+		useCases: cfg.UseCases,
+		monitor:  cfg.Monitor,
 
 		logger: cfg.Logger,
 

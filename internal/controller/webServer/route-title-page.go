@@ -1,15 +1,16 @@
 package webServer
 
 import (
+	"app/internal/controller/webServer/internal/rendering"
 	"app/pkg/webtool"
 	"net/http"
 )
 
-func (ws *WebServer) routeSetTitleRate() http.Handler {
+func (ws *WebServer) routeTitlePage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
 			ID   int `json:"id"`
-			Rate int `json:"rate"`
+			Page int `json:"page"`
 		}{}
 
 		ctx := r.Context()
@@ -20,12 +21,12 @@ func (ws *WebServer) routeSetTitleRate() http.Handler {
 			return
 		}
 
-		err = ws.storage.UpdateBookRate(ctx, request.ID, request.Rate)
+		data, err := ws.useCases.GetPage(ctx, request.ID, request.Page)
 		if err != nil {
 			webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
 		}
 
-		webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
+		webtool.WriteJSON(ctx, w, http.StatusOK, rendering.PageFromStorageWrap(ws.outerAddr)(*data))
 	})
 }

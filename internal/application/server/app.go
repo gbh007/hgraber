@@ -2,12 +2,13 @@ package server
 
 import (
 	"app/internal/controller"
+	"app/internal/controller/bookHandler"
+	"app/internal/controller/pageHandler"
+	"app/internal/controller/webServer"
 	"app/internal/fileStorage/externalfile"
 	"app/internal/request"
-	"app/internal/service/bookHandler"
-	"app/internal/service/pageHandler"
-	"app/internal/service/webServer"
 	"app/internal/storage/postgresql"
+	"app/internal/usecase"
 	"app/pkg/logger"
 	"app/pkg/worker"
 	"context"
@@ -46,26 +47,21 @@ func (app *App) Init(ctx context.Context) error {
 
 	monitor := worker.NewMonitor()
 	requester := request.New(logger)
+	useCases := usecase.New(db, logger, requester, app.fs)
 
 	bh := bookHandler.New(bookHandler.Config{
-		Storage:   db,
-		Requester: requester,
-		Monitor:   monitor,
-		Logger:    logger,
+		UseCases: useCases,
+		Monitor:  monitor,
+		Logger:   logger,
 	})
 	ph := pageHandler.New(pageHandler.Config{
-		Storage:   db,
-		Files:     app.fs,
-		Requester: requester,
-		Monitor:   monitor,
-		Logger:    logger,
+		UseCases: useCases,
+		Monitor:  monitor,
+		Logger:   logger,
 	})
 
 	app.ws = webServer.New(webServer.Config{
-		Storage:       db,
-		Book:          bh,
-		Page:          ph,
-		Files:         app.fs,
+		UseCases:      useCases,
 		Monitor:       monitor,
 		Addr:          cfg.ws.Addr,
 		Token:         cfg.ws.Token,

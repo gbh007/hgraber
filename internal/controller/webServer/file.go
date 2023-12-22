@@ -42,14 +42,7 @@ func (ws *WebServer) getFile() http.Handler {
 			return
 		}
 
-		info, err := ws.storage.GetPage(ctx, bookID, page)
-		if err != nil {
-			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
-
-			return
-		}
-
-		rawFile, err := ws.files.OpenPageFile(ctx, bookID, page, second[1])
+		info, rawFile, err := ws.useCases.PageWithBody(ctx, bookID, page)
 		if err != nil {
 			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
@@ -67,6 +60,7 @@ func (ws *WebServer) getFile() http.Handler {
 
 		buff := bytes.NewReader(rawData)
 
+		// FIXME: заменить на более экономную реализацию, без буффера
 		http.ServeContent(w, r, info.Fullname(), info.LoadedAt, buff)
 	})
 }

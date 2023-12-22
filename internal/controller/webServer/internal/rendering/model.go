@@ -138,7 +138,7 @@ type FirstHandleMultipleResult struct {
 	NotHandled     []string `json:"not_handled,omitempty"`
 }
 
-func HandleMultipleResultFromDomain(raw domain.FirstHandleMultipleResult) FirstHandleMultipleResult {
+func HandleMultipleResultFromDomain(raw *domain.FirstHandleMultipleResult) FirstHandleMultipleResult {
 	out := FirstHandleMultipleResult{
 		TotalCount:     raw.TotalCount,
 		LoadedCount:    raw.LoadedCount,

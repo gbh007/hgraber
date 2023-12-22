@@ -5,11 +5,10 @@ import (
 	"net/http"
 )
 
-func (ws *WebServer) routeSetPageRate() http.Handler {
+func (ws *WebServer) routeSetTitleRate() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
 			ID   int `json:"id"`
-			Page int `json:"page"`
 			Rate int `json:"rate"`
 		}{}
 
@@ -21,7 +20,7 @@ func (ws *WebServer) routeSetPageRate() http.Handler {
 			return
 		}
 
-		err = ws.storage.UpdatePageRate(ctx, request.ID, request.Page, request.Rate)
+		err = ws.useCases.UpdateBookRate(ctx, request.ID, request.Rate)
 		if err != nil {
 			webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
