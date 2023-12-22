@@ -3,7 +3,6 @@ package bookHandler
 import (
 	"app/internal/domain"
 	"app/internal/service/bookHandler/internal/parser"
-	"app/system"
 	"context"
 	"errors"
 	"strings"
@@ -11,8 +10,8 @@ import (
 
 // FirstHandle обрабатывает данные тайтла (новое добавление, упрощенное без парса страниц)
 func (s *Service) FirstHandle(ctx context.Context, u string) error {
-	system.Info(ctx, "начата обработка", u)
-	defer system.Info(ctx, "завершена обработка", u)
+	s.logger.Info(ctx, "начата обработка", u)
+	defer s.logger.Info(ctx, "завершена обработка", u)
 
 	u = strings.TrimSpace(u)
 
@@ -45,13 +44,13 @@ func (s *Service) FirstHandleMultiple(ctx context.Context, data []string) domain
 			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
 
-			system.Warning(ctx, "не поддерживаемая ссылка", link)
+			s.logger.Warning(ctx, "не поддерживаемая ссылка", link)
 
 		case err != nil:
 			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
 
-			system.Error(ctx, err)
+			s.logger.Error(ctx, err)
 		default:
 			res.LoadedCount++
 		}

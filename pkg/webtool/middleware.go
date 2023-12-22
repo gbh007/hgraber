@@ -1,9 +1,7 @@
 package webtool
 
 import (
-	"app/system"
 	"errors"
-	"fmt"
 	"net/http"
 )
 
@@ -14,21 +12,12 @@ func PanicDefender(next http.Handler) http.Handler {
 		defer func() {
 			p := recover()
 			if p != nil {
-				system.Warning(r.Context(), "обнаружена паника", p)
+				// FIXME: поддержать
+				// system.Warning(r.Context(), "обнаружена паника", p)
 
 				WriteJSON(r.Context(), w, http.StatusInternalServerError, errPanicDetected)
 			}
 		}()
-		if next != nil {
-			next.ServeHTTP(w, r)
-		}
-	})
-}
-
-func Stopwatch(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer system.Stopwatch(r.Context(), fmt.Sprintf("ws path %s", r.URL.Path))()
-
 		if next != nil {
 			next.ServeHTTP(w, r)
 		}
@@ -50,4 +39,3 @@ func CORS(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-

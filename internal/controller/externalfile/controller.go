@@ -2,8 +2,8 @@ package externalfile
 
 import (
 	"app/internal/dto"
+	"app/pkg/logger"
 	"app/pkg/webtool"
-	"app/system"
 	"context"
 	"io"
 	"net/http"
@@ -16,14 +16,17 @@ type fileStorage interface {
 }
 
 type Controller struct {
+	logger *logger.Logger
+
 	fileStorage fileStorage
 
 	addr  string
 	token string
 }
 
-func New(fileStorage fileStorage, addr string, token string) *Controller {
+func New(fileStorage fileStorage, addr string, token string, logger *logger.Logger) *Controller {
 	return &Controller{
+		logger:      logger,
 		fileStorage: fileStorage,
 
 		addr:  addr,
@@ -40,13 +43,10 @@ func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 	server := &http.Server{
 		Addr: c.addr,
 		Handler: webtool.PanicDefender(
-			webtool.Stopwatch(
-				webtool.CORS(
-					c.tokenMiddleware(mux),
-				),
+			webtool.CORS(
+				c.tokenMiddleware(mux),
 			),
 		),
-		ErrorLog:    system.StdErrorLogger(parentCtx),
 		BaseContext: webtool.NewBaseContext(context.WithoutCancel(parentCtx)),
 	}
 

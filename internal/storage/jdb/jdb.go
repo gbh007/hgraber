@@ -2,7 +2,8 @@ package jdb
 
 import (
 	"app/internal/storage/jdb/internal/model"
-	"app/system"
+	"app/pkg/ctxtool"
+	"app/pkg/logger"
 	"context"
 	"encoding/json"
 	"errors"
@@ -23,17 +24,20 @@ type Database struct {
 	ctx         context.Context
 	needSave    bool
 	filename    *string
+
+	logger *logger.Logger
 }
 
-func Init(ctx context.Context, filename *string) *Database {
+func Init(ctx context.Context, logger *logger.Logger, filename *string) *Database {
 	return &Database{
 		mutex: &sync.RWMutex{},
 		data: DatabaseData{
 			Titles: make(map[int]model.RawTitle),
 		},
-		ctx:        system.NewSystemContext(ctx, "JBD"),
+		ctx:        ctxtool.NewSystemContext(ctx, "JBD"),
 		uniqueURLs: make(map[string]struct{}),
 		filename:   filename,
+		logger:     logger,
 	}
 }
 
@@ -41,18 +45,16 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
-	defer system.Stopwatch(ctx, "jdb.Load")()
-
 	file, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			system.Debug(ctx, "Файл базы данных отсутствует")
+			db.logger.Debug(ctx, "Файл базы данных отсутствует")
 			return nil
 		}
-		system.Error(ctx, err)
+		db.logger.Error(ctx, err)
 		return err
 	}
-	defer system.IfErrFunc(ctx, file.Close)
+	defer db.logger.IfErrFunc(ctx, file.Close)
 
 	decoder := json.NewDecoder(file)
 
@@ -60,7 +62,7 @@ func (db *Database) Load(ctx context.Context, path string) error {
 
 	err = decoder.Decode(&newData)
 	if err != nil {
-		system.Error(ctx, err)
+		db.logger.Error(ctx, err)
 		return err
 	}
 
@@ -70,7 +72,7 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	for id, title := range newData.Titles {
 		u := strings.TrimSpace(title.URL)
 		if _, found := db.uniqueURLs[u]; found {
-			system.Warning(ctx, "Дублирование ссылки при загрузке БД", u)
+			db.logger.Warning(ctx, "Дублирование ссылки при загрузке БД", u)
 		} else {
 			db.uniqueURLs[u] = struct{}{}
 		}
@@ -89,29 +91,27 @@ func (db *Database) Save(ctx context.Context, path string, force bool) error {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	defer system.Stopwatch(ctx, "jdb.Save")()
-
 	if !db.needSave && !force {
-		system.Debug(ctx, "Сохранение данных не требуется, пропускаю")
+		db.logger.Debug(ctx, "Сохранение данных не требуется, пропускаю")
 
 		return nil
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		system.Error(ctx, err)
+		db.logger.Error(ctx, err)
 
 		return err
 	}
 
-	defer system.IfErrFunc(ctx, file.Close)
+	defer db.logger.IfErrFunc(ctx, file.Close)
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
 
 	err = encoder.Encode(db.data)
 	if err != nil {
-		system.Error(ctx, err)
+		db.logger.Error(ctx, err)
 		return err
 	}
 

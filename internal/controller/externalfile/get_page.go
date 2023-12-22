@@ -3,7 +3,6 @@ package externalfile
 import (
 	"app/internal/dto"
 	"app/pkg/webtool"
-	"app/system"
 	"bytes"
 	"fmt"
 	"io"
@@ -39,7 +38,7 @@ func (c *Controller) getPage() http.Handler {
 			return
 		}
 
-		defer system.IfErrFunc(ctx, rawFile.Close)
+		defer c.logger.IfErrFunc(ctx, rawFile.Close)
 
 		rawData, err := io.ReadAll(rawFile)
 		if err != nil {

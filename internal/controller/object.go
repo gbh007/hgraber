@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"app/system"
+	"app/pkg/logger"
 	"context"
 	"fmt"
 )
@@ -13,11 +13,15 @@ type Runner interface {
 
 type AfterStopHandler func()
 
-func NewObject() *Object {
-	return new(Object)
+func NewObject(logger *logger.Logger) *Object {
+	return &Object{
+		logger: logger,
+	}
 }
 
 type Object struct {
+	logger *logger.Logger
+
 	runnerChannels []chan struct{}
 	runners        []Runner
 	after          []AfterStopHandler
@@ -40,7 +44,7 @@ func (o *Object) Run(parentCtx context.Context) error {
 		if err != nil {
 			err = fmt.Errorf("start %s: %w", r.Name(), err)
 
-			system.Error(ctx, err)
+			o.logger.Error(ctx, err)
 
 			return err
 		}

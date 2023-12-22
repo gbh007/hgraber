@@ -4,6 +4,7 @@ import (
 	"app/internal/controller"
 	"app/internal/controller/externalfile"
 	"app/internal/fileStorage/filesystem"
+	"app/pkg/logger"
 	"context"
 	"fmt"
 )
@@ -21,11 +22,13 @@ func New() *App {
 func (app *App) Init(ctx context.Context) {
 	cfg := parseFlag()
 
+	logger := logger.New(false) // FIXME
+
 	app.storage = filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly)
 
-	app.controller = externalfile.New(app.storage, cfg.Addr, cfg.Token)
+	app.controller = externalfile.New(app.storage, cfg.Addr, cfg.Token, logger)
 
-	app.async = controller.NewObject()
+	app.async = controller.NewObject(logger)
 	app.async.RegisterRunner(ctx, app.controller)
 }
 

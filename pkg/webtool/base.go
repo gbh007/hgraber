@@ -1,7 +1,7 @@
 package webtool
 
 import (
-	"app/system"
+	"app/pkg/ctxtool"
 	"context"
 	"encoding/json"
 	"io"
@@ -11,15 +11,16 @@ import (
 
 func ParseJSON(r *http.Request, data interface{}) error {
 	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		system.Debug(r.Context(), err)
-	}
+	// FIXME: поддержать
+	// if err != nil {
+	// 	system.Debug(r.Context(), err)
+	// }
 
 	return err
 }
 
 func NewBaseContext(ctx context.Context) func(l net.Listener) context.Context {
-	return func(l net.Listener) context.Context { return system.NewUserContext(ctx) }
+	return func(l net.Listener) context.Context { return ctxtool.NewUserContext(ctx) }
 }
 
 func WriteJSON(ctx context.Context, w http.ResponseWriter, statusCode int, data interface{}) {
@@ -35,18 +36,20 @@ func WriteJSON(ctx context.Context, w http.ResponseWriter, statusCode int, data 
 		data = errData.Error()
 	}
 
-	if system.IsDebug(ctx) {
+	if ctxtool.IsDebug(ctx) {
 		enc.SetIndent("", "  ")
 	}
 
-	if err := enc.Encode(data); err != nil {
-		system.Error(ctx, err)
-	}
+	_ = enc.Encode(data)
+
+	// FIXME: поддержать
+	// if err := enc.Encode(data); err != nil {
+	// 	system.Error(ctx, err)
+	// }
 
 }
 
-
-func WriteNoContent(ctx context.Context, w http.ResponseWriter, ) {
+func WriteNoContent(ctx context.Context, w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "*")
@@ -60,6 +63,9 @@ func WritePlain(ctx context.Context, w http.ResponseWriter, statusCode int, data
 	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(statusCode)
 
-	_, err := io.WriteString(w, data)
-	system.IfErr(ctx, err)
+	_, _ = io.WriteString(w, data)
+
+	// FIXME: поддержать
+	// _, err := io.WriteString(w, data)
+	// system.IfErr(ctx, err)
 }

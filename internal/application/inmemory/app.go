@@ -8,8 +8,8 @@ import (
 	"app/internal/service/pageHandler"
 	"app/internal/service/webServer"
 	"app/internal/storage/jdb"
+	"app/pkg/logger"
 	"app/pkg/worker"
-	"app/system"
 	"context"
 	"fmt"
 )
@@ -28,40 +28,29 @@ func New() *App {
 
 func (app *App) Init(ctx context.Context) error {
 	cfg := parseFlag()
-	system.Init(system.LogConfig{
-		EnableFile:   !cfg.Log.DisableFileErr,
-		AppendMode:   cfg.Log.EnableAppendFileErr,
-		EnableStdErr: !cfg.Log.DisableStdErr,
-	})
 
-	// FIXME: не будет работать
-	if cfg.Log.DebugMode {
-		ctx = system.WithDebug(ctx)
-	}
+	logger := logger.New(cfg.Log.DebugMode)
 
-	// FIXME: не будет работать
-	if cfg.Log.DebugFullpathMode {
-		system.EnableFullpath(ctx)
-	}
-
-	app.async = controller.NewObject()
+	app.async = controller.NewObject(logger)
 	app.fs = filememory.New()
 
-	db := jdb.Init(ctx, nil)
+	db := jdb.Init(ctx, logger, nil)
 
 	monitor := worker.NewMonitor()
-	requester := request.New()
+	requester := request.New(logger)
 
 	bh := bookHandler.New(bookHandler.Config{
 		Storage:   db,
 		Requester: requester,
 		Monitor:   monitor,
+		Logger:    logger,
 	})
 	ph := pageHandler.New(pageHandler.Config{
 		Storage:   db,
 		Files:     app.fs,
 		Requester: requester,
 		Monitor:   monitor,
+		Logger:    logger,
 	})
 
 	app.ws = webServer.New(webServer.Config{
@@ -73,6 +62,7 @@ func (app *App) Init(ctx context.Context) error {
 		Addr:          fmt.Sprintf("%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),
 		Token:         cfg.WebServer.Token,
 		StaticDirPath: cfg.WebServer.StaticDirPath,
+		Logger:        logger,
 	})
 
 	app.async.RegisterRunner(ctx, app.ws)

@@ -2,6 +2,7 @@ package pageHandler
 
 import (
 	"app/internal/domain"
+	"app/pkg/logger"
 	"app/pkg/worker"
 	"context"
 	"io"
@@ -33,6 +34,8 @@ type Service struct {
 	requester requester
 
 	worker *worker.Worker[qPage]
+
+	logger *logger.Logger
 }
 
 type Config struct {
@@ -40,26 +43,7 @@ type Config struct {
 	Files     files
 	Requester requester
 	Monitor   monitor
-}
-
-// Deprecated: устаревший подход
-func Init(storage storage, files files, requester requester, monitor monitor) *Service {
-	s := &Service{
-		storage:   storage,
-		files:     files,
-		requester: requester,
-	}
-
-	s.worker = worker.New[qPage](
-		queueSize,
-		interval,
-		s.handle,
-		s.getter,
-	)
-
-	monitor.Register(s.Name(), s.worker)
-
-	return s
+	Logger    *logger.Logger
 }
 
 func New(cfg Config) *Service {
@@ -67,11 +51,13 @@ func New(cfg Config) *Service {
 		storage:   cfg.Storage,
 		files:     cfg.Files,
 		requester: cfg.Requester,
+		logger:    cfg.Logger,
 	}
 
 	s.worker = worker.New[qPage](
 		queueSize,
 		interval,
+		cfg.Logger,
 		s.handle,
 		s.getter,
 	)

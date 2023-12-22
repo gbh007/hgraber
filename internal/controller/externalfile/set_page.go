@@ -3,7 +3,6 @@ package externalfile
 import (
 	"app/internal/dto"
 	"app/pkg/webtool"
-	"app/system"
 	"io"
 	"net/http"
 	"strconv"
@@ -38,7 +37,7 @@ func (c *Controller) setPage() http.Handler {
 
 		_, err = io.Copy(pageFileToWrite, r.Body)
 		if err != nil {
-			system.IfErrFunc(ctx, pageFileToWrite.Close)
+			c.logger.IfErrFunc(ctx, pageFileToWrite.Close)
 			webtool.WritePlain(ctx, w, http.StatusInternalServerError, err.Error())
 
 			return

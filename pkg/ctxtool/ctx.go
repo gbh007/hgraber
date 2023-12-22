@@ -1,7 +1,9 @@
-package system
+package ctxtool
 
 import (
 	"context"
+	"crypto/md5"
+	"fmt"
 	"time"
 )
 
@@ -36,3 +38,24 @@ func GetRequestID(ctx context.Context) string {
 
 	return id
 }
+
+// FIXME: удалить
+func WithDebug(ctx context.Context) context.Context {
+	return context.WithValue(ctx, debugKey, true)
+}
+
+// FIXME: удалить
+func IsDebug(ctx context.Context) bool {
+	v := ctx.Value(debugKey)
+	if v == nil {
+		return false
+	}
+
+	// Значение интересует только если истина;
+	// его отсутствие, неправильный формат, лож эквивалентны
+	debug, _ := v.(bool)
+
+	return debug
+}
+
+func hash(s string) string { return fmt.Sprintf("%x", md5.Sum([]byte(s)))[:6] }

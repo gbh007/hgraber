@@ -2,7 +2,7 @@ package externalfile
 
 import (
 	"app/internal/dto"
-	"app/system"
+	"app/pkg/logger"
 	"context"
 	"fmt"
 	"io"
@@ -21,9 +21,11 @@ type Storage struct {
 	hostWithPort string
 
 	client *http.Client
+
+	logger *logger.Logger
 }
 
-func New(token string, scheme string, hostWithPort string) *Storage {
+func New(token string, scheme string, hostWithPort string, logger *logger.Logger) *Storage {
 	return &Storage{
 		token:        token,
 		scheme:       scheme,
@@ -31,6 +33,7 @@ func New(token string, scheme string, hostWithPort string) *Storage {
 		client: &http.Client{
 			Timeout: time.Minute,
 		},
+		logger: logger,
 	}
 }
 
@@ -67,7 +70,7 @@ func (s *Storage) OpenPageFile(ctx context.Context, id int, page int, ext string
 		return response.Body, nil
 	}
 
-	defer system.IfErrFunc(ctx, response.Body.Close)
+	defer s.logger.IfErrFunc(ctx, response.Body.Close)
 
 	switch response.StatusCode {
 	case http.StatusUnauthorized:

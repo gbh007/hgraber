@@ -8,6 +8,7 @@ import (
 	"app/internal/service/pageHandler"
 	"app/internal/service/webServer"
 	"app/internal/storage/postgresql"
+	"app/pkg/logger"
 	"app/pkg/worker"
 	"context"
 	"fmt"
@@ -28,8 +29,10 @@ func New() *App {
 func (app *App) Init(ctx context.Context) error {
 	cfg := parseFlag()
 
-	app.fs = externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr)
-	db, err := postgresql.Connect(ctx, cfg.PGSource)
+	logger := logger.New(false) //FIXME
+
+	app.fs = externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr, logger)
+	db, err := postgresql.Connect(ctx, cfg.PGSource, logger)
 	if err != nil {
 		return fmt.Errorf("app: %w", err)
 	}
@@ -42,18 +45,20 @@ func (app *App) Init(ctx context.Context) error {
 	}
 
 	monitor := worker.NewMonitor()
-	requester := request.New()
+	requester := request.New(logger)
 
 	bh := bookHandler.New(bookHandler.Config{
 		Storage:   db,
 		Requester: requester,
 		Monitor:   monitor,
+		Logger:    logger,
 	})
 	ph := pageHandler.New(pageHandler.Config{
 		Storage:   db,
 		Files:     app.fs,
 		Requester: requester,
 		Monitor:   monitor,
+		Logger:    logger,
 	})
 
 	app.ws = webServer.New(webServer.Config{
@@ -65,9 +70,10 @@ func (app *App) Init(ctx context.Context) error {
 		Addr:          cfg.ws.Addr,
 		Token:         cfg.ws.Token,
 		StaticDirPath: cfg.ws.Static,
+		Logger:        logger,
 	})
 
-	app.async = controller.NewObject()
+	app.async = controller.NewObject(logger)
 	app.async.RegisterRunner(ctx, app.ws)
 
 	if !cfg.ReadOnly {

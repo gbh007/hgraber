@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"app/internal/domain"
-	"app/system"
 	"context"
 )
 
@@ -11,7 +10,7 @@ func (d *Database) GetUnloadedBooks(ctx context.Context) []domain.Book {
 
 	ids, err := d.bookUnprocessedMap(ctx)
 	if err != nil {
-		system.Error(ctx, err)
+		d.logger.Error(ctx, err)
 
 		return out
 	}
@@ -19,7 +18,7 @@ func (d *Database) GetUnloadedBooks(ctx context.Context) []domain.Book {
 	for id := range ids {
 		book, err := d.GetBook(ctx, id)
 		if err != nil {
-			system.Error(ctx, err)
+			d.logger.Error(ctx, err)
 		} else {
 			out = append(out, book)
 		}

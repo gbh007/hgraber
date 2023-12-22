@@ -1,7 +1,7 @@
 package jdb
 
 import (
-	"app/system"
+	"app/pkg/ctxtool"
 	"context"
 	"fmt"
 	"time"
@@ -25,10 +25,10 @@ func (db *Database) Start(parentCtx context.Context) (chan struct{}, error) {
 	go func(parentCtx context.Context, filename string) {
 		defer close(done)
 
-		ctx := system.NewSystemContext(parentCtx, "DB-autosave")
+		ctx := ctxtool.NewSystemContext(parentCtx, "DB-autosave")
 
-		system.Info(ctx, "autosaveDB запущен")
-		defer system.Info(ctx, "autosaveDB остановлен")
+		db.logger.Info(ctx, "autosaveDB запущен")
+		defer db.logger.Info(ctx, "autosaveDB остановлен")
 
 		timer := time.NewTicker(dbSaveInterval)
 
@@ -38,7 +38,7 @@ func (db *Database) Start(parentCtx context.Context) (chan struct{}, error) {
 				return
 			case <-timer.C:
 				if db.Save(ctx, filename, false) == nil {
-					system.Debug(ctx, "Автосохранение прошло успешно")
+					db.logger.Debug(ctx, "Автосохранение прошло успешно")
 				}
 			}
 		}

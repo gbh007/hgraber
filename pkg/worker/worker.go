@@ -1,7 +1,7 @@
 package worker
 
 import (
-	"app/system"
+	"app/pkg/logger"
 	"context"
 	"fmt"
 	"sync"
@@ -18,11 +18,14 @@ type Worker[T any] struct {
 
 	handler func(context.Context, T)
 	getter  func(context.Context) []T
+
+	logger *logger.Logger
 }
 
 func New[T any](
 	queueSize int,
 	interval time.Duration,
+	logger *logger.Logger,
 	handler func(context.Context, T),
 	getter func(context.Context) []T,
 ) *Worker[T] {
@@ -33,6 +36,8 @@ func New[T any](
 		interval:           interval,
 		handler:            handler,
 		getter:             getter,
+
+		logger: logger,
 	}
 }
 
@@ -51,7 +56,7 @@ func (w *Worker[T]) RunnersCount() int {
 func (w *Worker[T]) handleOne(ctx context.Context, value T) {
 	defer func() {
 		if p := recover(); p != nil {
-			system.Info(ctx, fmt.Sprintf("panic detected %v", p))
+			w.logger.Info(ctx, fmt.Sprintf("panic detected %v", p))
 		}
 	}()
 
@@ -62,7 +67,7 @@ func (w *Worker[T]) handleOne(ctx context.Context, value T) {
 }
 
 func (w *Worker[T]) runQueueHandler(ctx context.Context) {
-	defer system.Debug(ctx, "handler остановлен")
+	defer w.logger.Debug(ctx, "handler остановлен")
 
 	for {
 		select {
@@ -88,8 +93,8 @@ func (w *Worker[T]) Serve(ctx context.Context, handlersCount int) {
 		}()
 	}
 
-	system.Info(ctx, "запущен")
-	defer system.Info(ctx, "остановлен")
+	w.logger.Info(ctx, "запущен")
+	defer w.logger.Info(ctx, "остановлен")
 
 	timer := time.NewTicker(w.interval)
 

@@ -1,7 +1,7 @@
 package pageHandler
 
 import (
-	"app/system"
+	"app/pkg/ctxtool"
 	"context"
 )
 
@@ -15,7 +15,7 @@ func (s *Service) Start(parentCtx context.Context) (chan struct{}, error) {
 	go func() {
 		defer close(done)
 
-		ctx := system.NewSystemContext(parentCtx, "Page-loader")
+		ctx := ctxtool.NewSystemContext(parentCtx, "Page-loader")
 
 		s.worker.Serve(ctx, handlersCount)
 	}()
@@ -29,7 +29,7 @@ func (s *Service) handle(ctx context.Context, page qPage) {
 	if err == nil {
 		updateErr := s.storage.UpdatePageSuccess(ctx, page.TitleID, page.PageNumber, true)
 		if updateErr != nil {
-			system.Error(ctx, updateErr)
+			s.logger.Error(ctx, updateErr)
 		}
 	}
 }

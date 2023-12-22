@@ -2,7 +2,7 @@ package postgresql
 
 import (
 	"app/internal/storage/postgresql/internal/migration"
-	"app/system"
+	"app/pkg/logger"
 	"context"
 	"database/sql"
 
@@ -14,10 +14,12 @@ import (
 
 type Database struct {
 	db *sqlx.DB
+
+	logger *logger.Logger
 }
 
 // Connect - возвращает соединение с хранилищем данных
-func Connect(ctx context.Context, dataSourceName string) (*Database, error) {
+func Connect(ctx context.Context, dataSourceName string,logger *logger.Logger) (*Database, error) {
 	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, err
@@ -25,14 +27,14 @@ func Connect(ctx context.Context, dataSourceName string) (*Database, error) {
 
 	db.SetMaxOpenConns(10)
 
-	return &Database{db: db}, nil
+	return &Database{db: db,logger: logger}, nil
 }
 
 // MigrateAll - производит миграции данных
 func (storage *Database) MigrateAll(ctx context.Context) error {
 	return migrator.New().
 		WithFS(migration.Migrations).
-		WithLogger(system.NewLogger(ctx)).
+		WithLogger(storage.logger.WithCtx(ctx)).
 		WithProvider(migrator.PostgreSQLProvider).
 		MigrateAll(ctx, storage.db, true)
 }
@@ -46,10 +48,10 @@ func isApplyWithErr(r sql.Result) (bool, error) {
 	return c != 0, nil
 }
 
-func isApply(ctx context.Context, r sql.Result) bool {
+func (storage *Database) isApply(ctx context.Context, r sql.Result) bool {
 	apply, err := isApplyWithErr(r)
 
-	system.IfErr(ctx, err)
+	storage.logger.IfErr(ctx, err)
 
 	return apply
 }

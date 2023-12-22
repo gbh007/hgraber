@@ -3,7 +3,6 @@ package bookHandler
 import (
 	"app/internal/domain"
 	"app/internal/service/bookHandler/internal/parser"
-	"app/system"
 	"context"
 	"strings"
 )
@@ -16,12 +15,12 @@ func (s *Service) updateForWorker(parentCtx context.Context, title domain.Book) 
 
 // update обрабатывает данные тайтла (только недостающие)
 func (s *Service) update(ctx context.Context, title domain.Book) {
-	system.Info(ctx, "начата обработка", title.ID, title.URL)
-	defer system.Info(ctx, "завершена обработка", title.ID, title.URL)
+	s.logger.Info(ctx, "начата обработка", title.ID, title.URL)
+	defer s.logger.Info(ctx, "завершена обработка", title.ID, title.URL)
 
 	p, ok, err := parser.Load(ctx, s.requester, strings.TrimSpace(title.URL))
 	if err != nil {
-		system.Error(ctx, err)
+		s.logger.Error(ctx, err)
 
 		return
 	}
@@ -32,22 +31,22 @@ func (s *Service) update(ctx context.Context, title domain.Book) {
 	if !title.Data.Parsed.Name {
 		err = s.storage.UpdateBookName(ctx, title.ID, p.ParseName(ctx))
 		if err != nil {
-			system.Error(ctx, err)
+			s.logger.Error(ctx, err)
 
 			return
 		}
-		system.Info(ctx, "обновлено название", title.ID, title.URL)
+		s.logger.Info(ctx, "обновлено название", title.ID, title.URL)
 	}
 
 	for _, attr := range domain.AllAttributes {
 		if !title.Data.Parsed.Attributes[attr] {
 			err = s.storage.UpdateAttributes(ctx, title.ID, attr, parser.ParseAttr(ctx, p, attr))
 			if err != nil {
-				system.Error(ctx, err)
+				s.logger.Error(ctx, err)
 
 				return
 			}
-			system.Info(ctx, "обновлен аттрибут "+string(attr), title.ID, title.URL)
+			s.logger.Info(ctx, "обновлен аттрибут "+string(attr), title.ID, title.URL)
 		}
 	}
 
@@ -67,12 +66,12 @@ func (s *Service) update(ctx context.Context, title domain.Book) {
 
 			err = s.storage.UpdateBookPages(ctx, title.ID, pagesDB)
 			if err != nil {
-				system.Error(ctx, err)
+				s.logger.Error(ctx, err)
 
 				return
 			}
 
-			system.Info(ctx, "обновлены страницы", title.ID, title.URL)
+			s.logger.Info(ctx, "обновлены страницы", title.ID, title.URL)
 		}
 	}
 }

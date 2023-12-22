@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"app/system"
 	"context"
 	"html"
 	"net/url"
@@ -90,7 +89,8 @@ func (p Parser_DOUJINS_COM) ParsePages(ctx context.Context) []Page {
 	for i, rURL := range res {
 		u, err := url.Parse(rURL)
 		if err != nil {
-			system.Error(ctx, err)
+			// FIXME: поддержать
+			// system.Error(ctx, err)
 
 			continue
 		}

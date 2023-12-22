@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"app/internal/domain"
-	"app/system"
 	"context"
 	"database/sql"
 	"errors"
@@ -36,7 +35,7 @@ func (d *Database) GetUnsuccessPages(ctx context.Context) []domain.Page {
 
 	err := d.db.SelectContext(ctx, &raw, `SELECT * FROM pages WHERE success = FALSE;`)
 	if err != nil {
-		system.Error(ctx, err)
+		d.logger.Error(ctx, err)
 
 		return []domain.Page{}
 	}
@@ -59,7 +58,7 @@ func (d *Database) UpdatePageSuccess(ctx context.Context, id int, page int, succ
 		return err
 	}
 
-	if !isApply(ctx, res) {
+	if !d.isApply(ctx, res) {
 		return domain.PageNotFoundError
 	}
 
@@ -77,7 +76,7 @@ func (d *Database) UpdatePageRate(ctx context.Context, id int, page int, rate in
 		return err
 	}
 
-	if !isApply(ctx, res) {
+	if !d.isApply(ctx, res) {
 		return domain.PageNotFoundError
 	}
 
@@ -92,20 +91,20 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.P
 
 	res, err := tx.ExecContext(ctx, `UPDATE books SET page_count = $1 WHERE id = $2;`, len(pages), id)
 	if err != nil {
-		system.IfErrFunc(ctx, tx.Rollback)
+		d.logger.IfErrFunc(ctx, tx.Rollback)
 
 		return err
 	}
 
-	if !isApply(ctx, res) {
-		system.IfErrFunc(ctx, tx.Rollback)
+	if !d.isApply(ctx, res) {
+		d.logger.IfErrFunc(ctx, tx.Rollback)
 
 		return domain.BookNotFoundError
 	}
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM pages WHERE book_id = $1;`, id)
 	if err != nil {
-		system.IfErrFunc(ctx, tx.Rollback)
+		d.logger.IfErrFunc(ctx, tx.Rollback)
 
 		return err
 	}
@@ -117,7 +116,7 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.P
 			id, v.PageNumber, v.Ext, strings.TrimSpace(v.URL), v.Success, time.Now().UTC(), sql.NullTime{Time: v.LoadedAt.UTC(), Valid: !v.LoadedAt.IsZero()}, v.Rate,
 		)
 		if err != nil {
-			system.IfErrFunc(ctx, tx.Rollback)
+			d.logger.IfErrFunc(ctx, tx.Rollback)
 
 			return err
 		}

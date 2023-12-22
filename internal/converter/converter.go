@@ -2,7 +2,7 @@ package converter
 
 import (
 	"app/internal/domain"
-	"app/system"
+	"app/pkg/logger"
 	"context"
 	"errors"
 	"fmt"
@@ -20,9 +20,18 @@ type storageTo interface {
 	UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error
 }
 
+// FIXME: переместить в controller
 type Builder struct {
 	src storageFrom
 	dst storageTo
+
+	logger *logger.Logger
+}
+
+func New(logger *logger.Logger) *Builder {
+	return &Builder{
+		logger: logger,
+	}
 }
 
 func (b *Builder) WithFrom(src storageFrom) *Builder {
@@ -44,13 +53,13 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 	})
 
 	for _, book := range books {
-		system.Info(ctx, "Начат", book.ID)
+		b.logger.Info(ctx, "Начат", book.ID)
 
 		id, err := b.dst.NewBook(ctx, book.Data.Name, book.URL, book.Data.Parsed.Name)
 		if err != nil {
-			system.Error(ctx, err)
+			b.logger.Error(ctx, err)
 
-			system.Debug(ctx, book)
+			b.logger.Debug(ctx, book)
 
 			if !notUniqWorkaround || !errors.Is(err, domain.BookAlreadyExistsError) {
 				return
@@ -58,26 +67,26 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 
 			id, err = b.dst.NewBook(ctx, book.Data.Name, fmt.Sprintf("err (%d): %s", book.ID, book.URL), book.Data.Parsed.Name)
 			if err != nil {
-				system.Error(ctx, err)
+				b.logger.Error(ctx, err)
 
 				return
 			}
 		}
 
 		if id != book.ID {
-			system.Warning(ctx, fmt.Sprintf("ID %d изменился на %d", book.ID, id))
+			b.logger.Warning(ctx, fmt.Sprintf("ID %d изменился на %d", book.ID, id))
 		}
 
 		err = b.dst.UpdateBookPages(ctx, id, book.Pages)
 		if err != nil {
-			system.Error(ctx, err)
+			b.logger.Error(ctx, err)
 
 			return
 		}
 
 		err = b.dst.UpdateBookRate(ctx, id, book.Data.Rate)
 		if err != nil {
-			system.Error(ctx, err)
+			b.logger.Error(ctx, err)
 
 			return
 		}
@@ -85,7 +94,7 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 		for attr := range book.Data.Parsed.Attributes {
 			err = b.dst.UpdateAttributes(ctx, id, attr, book.Data.Attributes[attr])
 			if err != nil {
-				system.Error(ctx, err)
+				b.logger.Error(ctx, err)
 
 				return
 			}

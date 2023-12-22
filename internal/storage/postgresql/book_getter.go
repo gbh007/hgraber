@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"app/internal/domain"
-	"app/system"
 	"context"
 	"database/sql"
 	"errors"
@@ -13,7 +12,7 @@ func (d *Database) GetBooks(ctx context.Context, filter domain.BookFilter) []dom
 
 	ids, err := d.bookIDs(ctx, filter)
 	if err != nil {
-		system.Error(ctx, err)
+		d.logger.Error(ctx, err)
 
 		return out
 	}
@@ -21,7 +20,7 @@ func (d *Database) GetBooks(ctx context.Context, filter domain.BookFilter) []dom
 	for _, id := range ids {
 		book, err := d.GetBook(ctx, id)
 		if err != nil {
-			system.Error(ctx, err)
+			d.logger.Error(ctx, err)
 		} else {
 			out = append(out, book)
 		}

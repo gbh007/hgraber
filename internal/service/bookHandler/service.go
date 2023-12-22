@@ -2,6 +2,7 @@ package bookHandler
 
 import (
 	"app/internal/domain"
+	"app/pkg/logger"
 	"app/pkg/worker"
 	"context"
 )
@@ -28,42 +29,29 @@ type Service struct {
 	requester requester
 
 	worker *worker.Worker[domain.Book]
+
+	logger *logger.Logger
 }
 
 type Config struct {
 	Storage   storage
 	Requester requester
 	Monitor   monitor
-}
 
-// Deprecated: устаревший подход
-func Init(storage storage, requester requester, monitor monitor) *Service {
-	s := &Service{
-		storage:   storage,
-		requester: requester,
-	}
-
-	s.worker = worker.New[domain.Book](
-		titleQueueSize,
-		titleInterval,
-		s.updateForWorker,
-		s.storage.GetUnloadedBooks,
-	)
-
-	monitor.Register(s.Name(), s.worker)
-
-	return s
+	Logger *logger.Logger
 }
 
 func New(cfg Config) *Service {
 	s := &Service{
 		storage:   cfg.Storage,
 		requester: cfg.Requester,
+		logger:    cfg.Logger,
 	}
 
 	s.worker = worker.New[domain.Book](
 		titleQueueSize,
 		titleInterval,
+		cfg.Logger,
 		s.updateForWorker,
 		s.storage.GetUnloadedBooks,
 	)

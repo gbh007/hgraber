@@ -41,7 +41,7 @@ func (d *Database) UpdateBookName(ctx context.Context, id int, name string) erro
 		return err
 	}
 
-	if !isApply(ctx, res) {
+	if !d.isApply(ctx, res) {
 		return domain.BookNotFoundError
 	}
 
@@ -54,7 +54,7 @@ func (d *Database) UpdateBookRate(ctx context.Context, id int, rate int) error {
 		return err
 	}
 
-	if !isApply(ctx, res) {
+	if !d.isApply(ctx, res) {
 		return domain.BookNotFoundError
 	}
 

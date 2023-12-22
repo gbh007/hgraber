@@ -1,7 +1,7 @@
 package bookHandler
 
 import (
-	"app/system"
+	"app/pkg/ctxtool"
 	"context"
 	"time"
 )
@@ -22,7 +22,7 @@ func (s *Service) Start(parentCtx context.Context) (chan struct{}, error) {
 	go func() {
 		defer close(done)
 
-		ctx := system.NewSystemContext(parentCtx, "Title-loader")
+		ctx := ctxtool.NewSystemContext(parentCtx, "Title-loader")
 
 		s.worker.Serve(ctx, titleHandlersCount)
 	}()

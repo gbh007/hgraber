@@ -3,8 +3,8 @@ package webServer
 import (
 	"app/internal/domain"
 	"app/internal/service/webServer/static"
+	"app/pkg/logger"
 	"app/pkg/webtool"
-	"app/system"
 	"context"
 	"io"
 	"net/http"
@@ -47,6 +47,8 @@ type WebServer struct {
 	files   files
 	monitor monitor
 
+	logger *logger.Logger
+
 	addr      string
 	outerAddr string
 	staticDir string
@@ -60,6 +62,8 @@ type Config struct {
 	Files   files
 	Monitor monitor
 
+	Logger *logger.Logger
+
 	Addr          string
 	Token         string
 	StaticDirPath string
@@ -72,6 +76,8 @@ func New(cfg Config) *WebServer {
 		page:    cfg.Page,
 		files:   cfg.Files,
 		monitor: cfg.Monitor,
+
+		logger: cfg.Logger,
 
 		addr:      cfg.Addr,
 		outerAddr: "http://" + cfg.Addr,
@@ -108,11 +114,8 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	server := &http.Server{
 		Addr: ws.addr,
 		Handler: webtool.PanicDefender(
-			webtool.Stopwatch(
-				webtool.CORS(mux),
-			),
+			webtool.CORS(mux),
 		),
-		ErrorLog:    system.StdErrorLogger(parentCtx),
 		BaseContext: webtool.NewBaseContext(context.WithoutCancel(parentCtx)),
 	}
 

@@ -2,7 +2,7 @@ package externalfile
 
 import (
 	"app/internal/dto"
-	"app/system"
+	"app/pkg/logger"
 	"bytes"
 	"context"
 	"fmt"
@@ -24,6 +24,9 @@ type fileWriter struct {
 
 	client *http.Client
 	url    string
+
+	logger *logger.Logger
+
 	// FIXME: это очеееееееееееень плохо, но с текущей сигнатурой пока никак по другому.
 	requestContext context.Context
 }
@@ -31,6 +34,7 @@ type fileWriter struct {
 func (s *Storage) newPageFileWriter(ctx context.Context, bookID int, pageNumber int, pageExt string) *fileWriter {
 	return &fileWriter{
 		requestContext: ctx,
+		logger:         s.logger,
 
 		token: s.token,
 
@@ -96,7 +100,7 @@ func (fw *fileWriter) Close() error {
 		return fmt.Errorf("%s: %w", storageName, err)
 	}
 
-	defer system.IfErrFunc(fw.requestContext, response.Body.Close)
+	defer fw.logger.IfErrFunc(fw.requestContext, response.Body.Close)
 
 	// Принудительно удаляем буффер на случай некорректных вызовов.
 	fw.buff = nil

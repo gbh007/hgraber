@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"app/internal/domain"
-	"app/system"
 	"context"
 )
 
@@ -43,21 +42,21 @@ func (d *Database) UpdateAttributes(ctx context.Context, id int, attr domain.Att
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM book_attributes WHERE book_id = $1 AND attr = $2;`, id, attrCode)
 	if err != nil {
-		system.IfErrFunc(ctx, tx.Rollback)
+		d.logger.IfErrFunc(ctx, tx.Rollback)
 
 		return err
 	}
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM book_attributes_parsed WHERE book_id = $1 AND attr = $2;`, id, attrCode)
 	if err != nil {
-		system.IfErrFunc(ctx, tx.Rollback)
+		d.logger.IfErrFunc(ctx, tx.Rollback)
 
 		return err
 	}
 
 	_, err = tx.ExecContext(ctx, `INSERT INTO book_attributes_parsed (book_id, attr, parsed) VALUES($1, $2, $3);`, id, attrCode, true)
 	if err != nil {
-		system.IfErrFunc(ctx, tx.Rollback)
+		d.logger.IfErrFunc(ctx, tx.Rollback)
 
 		return err
 	}
@@ -69,7 +68,7 @@ func (d *Database) UpdateAttributes(ctx context.Context, id int, attr domain.Att
 			id, attrCode, v,
 		)
 		if err != nil {
-			system.IfErrFunc(ctx, tx.Rollback)
+			d.logger.IfErrFunc(ctx, tx.Rollback)
 
 			return err
 		}

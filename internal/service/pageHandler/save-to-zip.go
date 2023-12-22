@@ -2,7 +2,6 @@ package pageHandler
 
 import (
 	"app/internal/service/webServer/rendering"
-	"app/system"
 	"archive/zip"
 	"context"
 	"encoding/json"
@@ -29,8 +28,6 @@ func (s *Service) ExportBooksToZip(ctx context.Context, from, to int) error {
 
 // saveToZip сохраняет тайтлы на диск zip архивом
 func (s *Service) saveToZip(ctx context.Context, id int) error {
-	defer system.Stopwatch(ctx, "saveToZip")()
-
 	titleInfo, err := s.storage.GetBook(ctx, id)
 	if err != nil {
 		return err
@@ -41,38 +38,38 @@ func (s *Service) saveToZip(ctx context.Context, id int) error {
 		escapeFileName(titleInfo.Data.Name),
 	))
 	if err != nil {
-		system.Error(ctx, err)
+		s.logger.Error(ctx, err)
 		return err
 	}
 
-	defer system.IfErrFunc(ctx, zipFile.Close)
+	defer s.logger.IfErrFunc(ctx, zipFile.Close)
 
 	zipWriter := zip.NewWriter(zipFile)
 
 	for pageNumber, p := range titleInfo.Pages {
 		pageReader, err := s.files.OpenPageFile(ctx, id, pageNumber+1, p.Ext)
 		if err != nil {
-			system.Error(ctx, err)
+			s.logger.Error(ctx, err)
 			return err
 		}
-		defer system.IfErrFunc(ctx, pageReader.Close)
+		defer s.logger.IfErrFunc(ctx, pageReader.Close)
 
 		w, err := zipWriter.Create(fmt.Sprintf("%d.%s", pageNumber+1, p.Ext))
 		if err != nil {
-			system.Error(ctx, err)
+			s.logger.Error(ctx, err)
 			return err
 		}
 
 		_, err = io.Copy(w, pageReader)
 		if err != nil {
-			system.Error(ctx, err)
+			s.logger.Error(ctx, err)
 			return err
 		}
 	}
 
 	w, err := zipWriter.Create("info.txt")
 	if err != nil {
-		system.Error(ctx, err)
+		s.logger.Error(ctx, err)
 		return err
 	}
 
@@ -85,26 +82,26 @@ func (s *Service) saveToZip(ctx context.Context, id int) error {
 		titleInfo.ID,
 	)
 	if err != nil {
-		system.Error(ctx, err)
+		s.logger.Error(ctx, err)
 		return err
 	}
 
 	w, err = zipWriter.Create("data.json")
 	if err != nil {
-		system.Error(ctx, err)
+		s.logger.Error(ctx, err)
 		return err
 	}
 
 	// FIXME: на данный момент используется формат веб сервера, это очень плохо, необходимо продублировать и разделить
 	err = json.NewEncoder(w).Encode(rendering.TitleFromStorageWrap("")(titleInfo))
 	if err != nil {
-		system.Error(ctx, err)
+		s.logger.Error(ctx, err)
 		return err
 	}
 
 	err = zipWriter.Close()
 	if err != nil {
-		system.Error(ctx, err)
+		s.logger.Error(ctx, err)
 		return err
 	}
 

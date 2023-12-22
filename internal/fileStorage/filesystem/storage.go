@@ -1,7 +1,6 @@
 package filesystem
 
 import (
-	"app/system"
 	"context"
 	"errors"
 	"fmt"
@@ -45,22 +44,17 @@ func (s *Storage) Prepare(ctx context.Context) error {
 func createDir(ctx context.Context, dirPath string) error {
 	info, err := os.Stat(dirPath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		system.Error(ctx, err)
-
 		return err
 	}
 
 	if info != nil && !info.IsDir() {
 		err = fmt.Errorf("dir path is not dir")
-		system.Error(ctx, err)
 
 		return err
 	}
 
 	err = os.MkdirAll(dirPath, os.ModeDir|os.ModePerm)
 	if err != nil {
-		system.Error(ctx, err)
-
 		return err
 	}
 

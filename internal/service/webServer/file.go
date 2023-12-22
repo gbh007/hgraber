@@ -2,7 +2,6 @@ package webServer
 
 import (
 	"app/pkg/webtool"
-	"app/system"
 	"bytes"
 	"io"
 	"net/http"
@@ -57,7 +56,7 @@ func (ws *WebServer) getFile() http.Handler {
 			return
 		}
 
-		defer system.IfErrFunc(ctx, rawFile.Close)
+		defer ws.logger.IfErrFunc(ctx, rawFile.Close)
 
 		rawData, err := io.ReadAll(rawFile)
 		if err != nil {

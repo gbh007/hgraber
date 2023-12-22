@@ -2,14 +2,14 @@ package main
 
 import (
 	"app/internal/application/inmemory"
-	"app/system"
+	"app/pkg/ctxtool"
+	"app/pkg/logger"
 	"context"
 	"os/signal"
 	"syscall"
 )
 
 func main() {
-
 
 	notifyCtx, stop := signal.NotifyContext(
 		context.Background(),
@@ -20,29 +20,26 @@ func main() {
 	)
 	defer stop()
 
-	ctx := system.NewSystemContext(notifyCtx, "Main")
+	ctx := ctxtool.NewSystemContext(notifyCtx, "main")
 
-
-	system.Debug(ctx, "Версия", system.Version)
-	system.Debug(ctx, "Коммит", system.Commit)
-	system.Debug(ctx, "Собрано", system.BuildAt)
-	system.Info(ctx, "Инициализация сервера")
+	// FIXME: сейчас 2 логгера
+	logger := logger.New(false)
 
 	app := inmemory.New()
 
 	err := app.Init(ctx)
 	if err != nil {
-		system.Error(ctx, err)
+		logger.Error(ctx, err)
 
 		return
 	}
 
-	system.Info(ctx, "Система запущена")
+	logger.Info(ctx, "Система запущена")
 
 	err = app.Serve(ctx)
 	if err != nil {
-		system.Error(ctx, err)
+		logger.Error(ctx, err)
 	}
 
-	system.Info(ctx, "Процессы завершены, выход")
+	logger.Info(ctx, "Процессы завершены, выход")
 }
