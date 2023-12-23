@@ -1,7 +1,7 @@
 package externalfile
 
 import (
-	"app/internal/dto"
+	"app/internal/dataprovider/fileStorage/externalfile/dto"
 	"app/pkg/logger"
 	"bytes"
 	"context"
