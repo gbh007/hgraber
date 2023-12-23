@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        BINARY_PATH: _build/hgraber-docker-server
+    ports:
+      - 127.0.0.1:8080:8080
+    command: --fs-token fs-local --fs-addr file:8080 --ws-token=local-debug
+    depends_on:
+      - file
+      - postgres
+    environment:
+      PG_SOURCE: postgres://hguser:hgpass@postgres:5432/hgdb?sslmode=disable
+
+  file:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        BINARY_PATH: _build/hgraber-docker-fileserver
+    command: --token fs-local
+    volumes:
+      - file-loads:/app/loads
+      - file-exported:/app/exported
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD: hgpass
+      POSTGRES_USER: hguser
+      POSTGRES_DB: hgdb
+    volumes:
+      - postgresql:/var/lib/postgresql/data
+    ports:
+      - :5432 
+
+
+volumes:
+  file-loads:
+  file-exported:
+  postgresql:

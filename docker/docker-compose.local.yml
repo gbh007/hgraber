@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        BINARY_PATH: _build/hgraber-docker-server
+    ports:
+      - 127.0.0.1:8080:8080
+    command: --fs-token fs-local --fs-addr file:8080 --access-token=local-debug
+    depends_on:
+      - file
+    env_file: ../.env
+
+  file:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        BINARY_PATH: _build/hgraber-docker-fileserver
+    command: --token fs-local
+    volumes:
+      - ../loads:/app/loads
+      - ../exported:/app/exported

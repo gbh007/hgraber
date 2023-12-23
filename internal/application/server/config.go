@@ -1,6 +1,9 @@
 package server
 
-import "flag"
+import (
+	"flag"
+	"os"
+)
 
 type configRaw struct {
 	fs configFS
@@ -39,7 +42,7 @@ func parseFlag() configRaw {
 
 	flag.Parse()
 
-	return configRaw{
+	cfg := configRaw{
 		fs: configFS{
 			Scheme: *fsScheme,
 			Addr:   *fsAddr,
@@ -53,4 +56,10 @@ func parseFlag() configRaw {
 		PGSource: *pgSource,
 		ReadOnly: *onlyView,
 	}
+
+	if pgSource := os.Getenv("PG_SOURCE"); pgSource != "" {
+		cfg.PGSource = pgSource
+	}
+
+	return cfg
 }

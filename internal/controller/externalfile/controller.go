@@ -37,6 +37,7 @@ func New(fileStorage fileStorage, addr string, token string, logger *logger.Logg
 	return &Controller{
 		logger:      logger,
 		fileStorage: fileStorage,
+		webtool:     web,
 
 		addr:  addr,
 		token: token,

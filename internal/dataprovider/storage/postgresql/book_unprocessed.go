@@ -3,6 +3,7 @@ package postgresql
 import (
 	"app/internal/domain"
 	"context"
+	"database/sql"
 )
 
 func (d *Database) GetUnloadedBooks(ctx context.Context) []domain.Book {
@@ -63,11 +64,11 @@ func (d *Database) bookUnprocessed(ctx context.Context) ([]int, error) {
 }
 
 func (d *Database) bookAttrUnprocessed(ctx context.Context) ([]int, error) {
-	ids := make([]int, 0)
+	raw := make([]sql.NullInt64, 0)
 
 	// TODO: проверить работоспособность.
 	err := d.db.SelectContext(
-		ctx, &ids,
+		ctx, &raw,
 		`SELECT l.book_id
 		 FROM attributes AS a 
 		 LEFT JOIN book_attributes_parsed AS l ON l.attr = a.code
@@ -75,6 +76,11 @@ func (d *Database) bookAttrUnprocessed(ctx context.Context) ([]int, error) {
 		 GROUP BY l.book_id;`)
 	if err != nil {
 		return nil, err
+	}
+
+	ids := make([]int, 0, len(raw))
+	for _, id := range raw {
+		ids = append(ids, int(id.Int64))
 	}
 
 	return ids, nil

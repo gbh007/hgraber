@@ -34,6 +34,8 @@ func Parse(ctx context.Context, URL string) (p Parser, err error) {
 		return new(Parser_MANGAONLINE_BIZ), nil
 	case strings.HasPrefix(URL, "https://doujins.com/"):
 		return new(Parser_DOUJINS_COM), nil
+	case strings.HasPrefix(URL, "http://localhost"):
+		return new(mockParser), nil
 	default:
 		return nil, domain.ErrInvalidLink
 	}

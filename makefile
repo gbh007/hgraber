@@ -23,8 +23,26 @@ debug: create_build_dir
 
 demo: create_build_dir
 	go build -trimpath -o ./_build/hgraber-bin  ./cmd/inmemory
-	./_build/hgraber-bin -debug -h 127.0.0.1 -p 8081 --access-token=local-debug
+	./_build/hgraber-bin -debug -h 127.0.0.1 -p 8080 --access-token=local-debug
 
 fileserver: create_build_dir
 	go build -trimpath -o ./_build/hgraber-fileserver  ./cmd/fileserver
-	./_build/hgraber-fileserver -addr 127.0.0.1:8082 -token fs-local
+	./_build/hgraber-fileserver -addr 127.0.0.1:8080 -token fs-local
+
+
+build-docker: create_build_dir
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ./_build/hgraber-docker-fileserver  ./cmd/fileserver
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ./_build/hgraber-docker-server  ./cmd/server
+
+local-up: build-docker
+	docker compose -f ./docker/docker-compose.local.yml up --build --remove-orphans
+
+local-down:
+	docker compose -f ./docker/docker-compose.local.yml down --remove-orphans
+
+
+demo-up: build-docker
+	docker compose -f ./docker/docker-compose.demo.yml up --build --remove-orphans
+
+demo-down:
+	docker compose -f ./docker/docker-compose.demo.yml down --remove-orphans
