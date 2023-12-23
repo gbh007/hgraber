@@ -1,15 +1,16 @@
-package webServer
+package hgraberweb
 
 import (
-	"app/internal/controller/webServer/internal/rendering"
 	"net/http"
 )
 
-func (ws *WebServer) routeTitleInfo() http.Handler {
+func (ws *WebServer) routeSetTitleRate() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
-			ID int `json:"id"`
+			ID   int `json:"id"`
+			Rate int `json:"rate"`
 		}{}
+
 		ctx := r.Context()
 
 		err := ws.webtool.ParseJSON(r, &request)
@@ -18,12 +19,12 @@ func (ws *WebServer) routeTitleInfo() http.Handler {
 			return
 		}
 
-		data, err := ws.useCases.GetBook(ctx, request.ID)
+		err = ws.useCases.UpdateBookRate(ctx, request.ID, request.Rate)
 		if err != nil {
 			ws.webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
 		}
 
-		ws.webtool.WriteJSON(ctx, w, http.StatusOK, rendering.TitleFromStorageWrap(ws.outerAddr)(data))
+		ws.webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 	})
 }

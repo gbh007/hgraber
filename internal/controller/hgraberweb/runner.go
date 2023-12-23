@@ -1,4 +1,4 @@
-package webServer
+package hgraberweb
 
 import (
 	"app/pkg/ctxtool"

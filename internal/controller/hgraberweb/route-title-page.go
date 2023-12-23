@@ -1,14 +1,15 @@
-package webServer
+package hgraberweb
 
 import (
+	"app/internal/controller/hgraberweb/internal/rendering"
 	"net/http"
 )
 
-func (ws *WebServer) routeSaveToZIP() http.Handler {
+func (ws *WebServer) routeTitlePage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
-			From int `json:"from"`
-			To   int `json:"to"`
+			ID   int `json:"id"`
+			Page int `json:"page"`
 		}{}
 
 		ctx := r.Context()
@@ -19,12 +20,12 @@ func (ws *WebServer) routeSaveToZIP() http.Handler {
 			return
 		}
 
-		err = ws.useCases.ExportBooksToZip(ctx, request.From, request.To)
+		data, err := ws.useCases.GetPage(ctx, request.ID, request.Page)
 		if err != nil {
 			ws.webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
 		}
 
-		ws.webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
+		ws.webtool.WriteJSON(ctx, w, http.StatusOK, rendering.PageFromStorageWrap(ws.outerAddr)(*data))
 	})
 }

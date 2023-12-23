@@ -1,35 +1,29 @@
-package webServer
+package hgraberweb
 
 import (
 	"net/http"
 )
 
-func (ws *WebServer) routeLogin(token string) http.Handler {
+func (ws *WebServer) routeSaveToZIP() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
-			Token string `json:"token"`
+			From int `json:"from"`
+			To   int `json:"to"`
 		}{}
+
 		ctx := r.Context()
 
 		err := ws.webtool.ParseJSON(r, &request)
 		if err != nil {
 			ws.webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
-
 			return
 		}
 
-		if request.Token != token {
-			ws.webtool.WriteJSON(ctx, w, http.StatusBadRequest, false)
-
+		err = ws.useCases.ExportBooksToZip(ctx, request.From, request.To)
+		if err != nil {
+			ws.webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
 		}
-
-		http.SetCookie(w, &http.Cookie{
-			Name:     tokenCookieName,
-			Value:    token,
-			Path:     "/",
-			HttpOnly: true,
-		})
 
 		ws.webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 	})

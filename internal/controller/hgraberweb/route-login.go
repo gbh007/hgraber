@@ -1,30 +1,35 @@
-package webServer
+package hgraberweb
 
 import (
 	"net/http"
 )
 
-func (ws *WebServer) routeSetPageRate() http.Handler {
+func (ws *WebServer) routeLogin(token string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
-			ID   int `json:"id"`
-			Page int `json:"page"`
-			Rate int `json:"rate"`
+			Token string `json:"token"`
 		}{}
-
 		ctx := r.Context()
 
 		err := ws.webtool.ParseJSON(r, &request)
 		if err != nil {
 			ws.webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
+
 			return
 		}
 
-		err = ws.useCases.UpdatePageRate(ctx, request.ID, request.Page, request.Rate)
-		if err != nil {
-			ws.webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
+		if request.Token != token {
+			ws.webtool.WriteJSON(ctx, w, http.StatusBadRequest, false)
+
 			return
 		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     tokenCookieName,
+			Value:    token,
+			Path:     "/",
+			HttpOnly: true,
+		})
 
 		ws.webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 	})

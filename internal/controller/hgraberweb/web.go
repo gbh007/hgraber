@@ -1,7 +1,7 @@
-package webServer
+package hgraberweb
 
 import (
-	"app/internal/controller/webServer/internal/static"
+	"app/internal/controller/hgraberweb/internal/static"
 	"app/internal/domain"
 	"app/pkg/logger"
 	"context"

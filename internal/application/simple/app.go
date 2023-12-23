@@ -3,8 +3,8 @@ package simple
 import (
 	"app/internal/controller"
 	"app/internal/controller/bookHandler"
+	"app/internal/controller/hgraberweb"
 	"app/internal/controller/pageHandler"
-	"app/internal/controller/webServer"
 	"app/internal/dataprovider/fileStorage/filesystem"
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/jdb"
@@ -19,7 +19,7 @@ import (
 type App struct {
 	fs *filesystem.Storage
 
-	ws *webServer.WebServer
+	ws *hgraberweb.WebServer
 
 	async *controller.Object
 }
@@ -75,7 +75,7 @@ func (app *App) Init(ctx context.Context) error {
 		Logger:   logger,
 	})
 
-	app.ws = webServer.New(webServer.Config{
+	app.ws = hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
 		Monitor:       monitor,
 		Addr:          fmt.Sprintf("%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),

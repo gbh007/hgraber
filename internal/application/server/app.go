@@ -3,8 +3,8 @@ package server
 import (
 	"app/internal/controller"
 	"app/internal/controller/bookHandler"
+	"app/internal/controller/hgraberweb"
 	"app/internal/controller/pageHandler"
-	"app/internal/controller/webServer"
 	"app/internal/dataprovider/fileStorage/externalfile"
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/postgresql"
@@ -19,7 +19,7 @@ import (
 type App struct {
 	fs *externalfile.Storage
 
-	ws *webServer.WebServer
+	ws *hgraberweb.WebServer
 
 	async *controller.Object
 }
@@ -64,7 +64,7 @@ func (app *App) Init(ctx context.Context) error {
 		Logger:   logger,
 	})
 
-	app.ws = webServer.New(webServer.Config{
+	app.ws = hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
 		Monitor:       monitor,
 		Addr:          cfg.ws.Addr,

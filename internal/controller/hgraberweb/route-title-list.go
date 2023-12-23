@@ -1,7 +1,7 @@
-package webServer
+package hgraberweb
 
 import (
-	"app/internal/controller/webServer/internal/rendering"
+	"app/internal/controller/hgraberweb/internal/rendering"
 	"app/internal/domain"
 	"net/http"
 )

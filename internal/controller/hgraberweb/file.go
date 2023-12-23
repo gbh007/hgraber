@@ -1,4 +1,4 @@
-package webServer
+package hgraberweb
 
 import (
 	"bytes"
