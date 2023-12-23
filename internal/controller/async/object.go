@@ -1,4 +1,4 @@
-package controller
+package async
 
 import (
 	"app/pkg/logger"
@@ -13,13 +13,13 @@ type Runner interface {
 
 type AfterStopHandler func()
 
-func NewObject(logger *logger.Logger) *Object {
-	return &Object{
+func New(logger *logger.Logger) *Controller {
+	return &Controller{
 		logger: logger,
 	}
 }
 
-type Object struct {
+type Controller struct {
 	logger *logger.Logger
 
 	runnerChannels []chan struct{}
@@ -27,38 +27,38 @@ type Object struct {
 	after          []AfterStopHandler
 }
 
-func (o *Object) RegisterRunner(ctx context.Context, runner Runner) {
-	o.runners = append(o.runners, runner)
+func (c *Controller) RegisterRunner(ctx context.Context, runner Runner) {
+	c.runners = append(c.runners, runner)
 }
 
-func (o *Object) RegisterAfterStop(ctx context.Context, handler AfterStopHandler) {
-	o.after = append(o.after, handler)
+func (c *Controller) RegisterAfterStop(ctx context.Context, handler AfterStopHandler) {
+	c.after = append(c.after, handler)
 }
 
-func (o *Object) Run(parentCtx context.Context) error {
+func (c *Controller) Serve(parentCtx context.Context) error {
 	ctx, cnl := context.WithCancel(parentCtx)
 	defer cnl()
 
-	for _, r := range o.runners {
-		c, err := r.Start(ctx)
+	for _, r := range c.runners {
+		exitCh, err := r.Start(ctx)
 		if err != nil {
 			err = fmt.Errorf("start %s: %w", r.Name(), err)
 
-			o.logger.Error(ctx, err)
+			c.logger.Error(ctx, err)
 
 			return err
 		}
 
-		o.runnerChannels = append(o.runnerChannels, c)
+		c.runnerChannels = append(c.runnerChannels, exitCh)
 	}
 
 	// Дожидаемся завершения потоков
-	for _, c := range o.runnerChannels {
-		<-c
+	for _, exitCh := range c.runnerChannels {
+		<-exitCh
 	}
 
 	// Проходим по всем послеостановочным функциям
-	for _, handler := range o.after {
+	for _, handler := range c.after {
 		handler()
 	}
 

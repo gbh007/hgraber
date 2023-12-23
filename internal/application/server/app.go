@@ -1,7 +1,7 @@
 package server
 
 import (
-	"app/internal/controller"
+	"app/internal/controller/async"
 	"app/internal/controller/bookHandler"
 	"app/internal/controller/hgraberweb"
 	"app/internal/controller/pageHandler"
@@ -21,7 +21,7 @@ type App struct {
 
 	ws *hgraberweb.WebServer
 
-	async *controller.Object
+	async *async.Controller
 }
 
 func New() *App {
@@ -74,7 +74,7 @@ func (app *App) Init(ctx context.Context) error {
 		Webtool:       webtool,
 	})
 
-	app.async = controller.NewObject(logger)
+	app.async = async.New(logger)
 	app.async.RegisterRunner(ctx, app.ws)
 
 	if !cfg.ReadOnly {
@@ -86,7 +86,7 @@ func (app *App) Init(ctx context.Context) error {
 }
 
 func (app *App) Serve(ctx context.Context) error {
-	err := app.async.Run(ctx)
+	err := app.async.Serve(ctx)
 	if err != nil {
 		return fmt.Errorf("app: %w", err)
 	}

@@ -1,7 +1,7 @@
 package filestorage
 
 import (
-	"app/internal/controller"
+	"app/internal/controller/async"
 	"app/internal/controller/externalfile"
 	"app/internal/dataprovider/fileStorage/filesystem"
 	"app/internal/usecase/web"
@@ -13,7 +13,7 @@ import (
 type App struct {
 	storage    *filesystem.Storage
 	controller *externalfile.Controller
-	async      *controller.Object
+	async      *async.Controller
 }
 
 func New() *App {
@@ -32,7 +32,7 @@ func (app *App) Init(ctx context.Context) {
 
 	app.controller = externalfile.New(app.storage, cfg.Addr, cfg.Token, logger, webtool)
 
-	app.async = controller.NewObject(logger)
+	app.async = async.New(logger)
 	app.async.RegisterRunner(ctx, app.controller)
 }
 
@@ -42,7 +42,7 @@ func (app *App) Serve(ctx context.Context) error {
 		return fmt.Errorf("app: %w", err)
 	}
 
-	err = app.async.Run(ctx)
+	err = app.async.Serve(ctx)
 	if err != nil {
 		return fmt.Errorf("app: %w", err)
 	}

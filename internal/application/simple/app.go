@@ -1,7 +1,7 @@
 package simple
 
 import (
-	"app/internal/controller"
+	"app/internal/controller/async"
 	"app/internal/controller/bookHandler"
 	"app/internal/controller/hgraberweb"
 	"app/internal/controller/pageHandler"
@@ -21,7 +21,7 @@ type App struct {
 
 	ws *hgraberweb.WebServer
 
-	async *controller.Object
+	async *async.Controller
 }
 
 func New() *App {
@@ -34,7 +34,7 @@ func (app *App) Init(ctx context.Context) error {
 	logger := logger.New(cfg.Log.DebugMode)
 	webtool := web.New(logger, cfg.Log.DebugMode)
 
-	app.async = controller.NewObject(logger)
+	app.async = async.New(logger)
 	app.fs = filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView)
 
 	err := app.fs.Prepare(ctx)
@@ -96,7 +96,7 @@ func (app *App) Init(ctx context.Context) error {
 }
 
 func (app *App) Serve(ctx context.Context) error {
-	err := app.async.Run(ctx)
+	err := app.async.Serve(ctx)
 	if err != nil {
 		return fmt.Errorf("app: %w", err)
 	}

@@ -19,7 +19,7 @@ view: create_build_dir
 
 debug: create_build_dir
 	go build -trimpath -o ./_build/hgraber-bin  ./cmd/simple
-	./_build/hgraber-bin -stdfile-append -debug -debug-fullpath -h 127.0.0.1 -p 8080 -static="internal/controller/webServer/internal/static" --access-token=local-debug
+	./_build/hgraber-bin -stdfile-append -debug -debug-fullpath -h 127.0.0.1 -p 8080 -static="internal/controller/hgraberweb/internal/static" --access-token=local-debug
 
 demo: create_build_dir
 	go build -trimpath -o ./_build/hgraber-bin  ./cmd/inmemory
