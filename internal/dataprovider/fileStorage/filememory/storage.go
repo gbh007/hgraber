@@ -9,84 +9,64 @@ import (
 	"sync"
 )
 
-type sValue struct {
-	buff      *bytes.Buffer
-	buffMutex *sync.Mutex
-}
-
-func (v *sValue) Write(p []byte) (n int, err error) {
-	return v.buff.Write(p)
-}
-
-func (v *sValue) Read(p []byte) (n int, err error) {
-	return v.buff.Read(p)
-}
-
-func (v *sValue) Close() error {
-	v.buffMutex.Unlock()
-
-	return nil
-}
-
 type Storage struct {
-	data map[string]*sValue
+	data map[string][]byte
 
 	dataMutex *sync.Mutex
 }
 
 func New() *Storage {
 	return &Storage{
-		data:      make(map[string]*sValue),
+		data:      make(map[string][]byte),
 		dataMutex: new(sync.Mutex),
 	}
 }
 
-func (s *Storage) CreateExportFile(ctx context.Context, name string) (io.WriteCloser, error) {
+func (s *Storage) CreateExportFile(ctx context.Context, name string, body io.Reader) error {
 	s.dataMutex.Lock()
 	defer s.dataMutex.Unlock()
 
 	name = "export/" + name
 
-	return s.file(name)
+	data, err := io.ReadAll(body)
+	if err != nil {
+		return fmt.Errorf("export file: %w", err)
+	}
+
+	s.data[name] = data
+
+	return nil
 }
 
-func (s *Storage) CreatePageFile(ctx context.Context, id int, page int, ext string) (io.WriteCloser, error) {
+func (s *Storage) CreatePageFile(ctx context.Context, id int, page int, ext string, body io.Reader) error {
 	s.dataMutex.Lock()
 	defer s.dataMutex.Unlock()
 
-	return s.file(s.loadFilename(id, page, ext))
+	name := s.loadFilename(id, page, ext)
+
+	data, err := io.ReadAll(body)
+	if err != nil {
+		return fmt.Errorf("create page file: %w", err)
+	}
+
+	s.data[name] = data
+
+	return nil
 }
 
 func (s *Storage) OpenPageFile(ctx context.Context, id int, page int, ext string) (io.ReadCloser, error) {
 	s.dataMutex.Lock()
 	defer s.dataMutex.Unlock()
 
-	return s.file(s.loadFilename(id, page, ext))
+	name := s.loadFilename(id, page, ext)
+	raw, ok := s.data[name]
+	if !ok {
+		return nil, fmt.Errorf("open page file: %w", os.ErrNotExist)
+	}
+
+	return io.NopCloser(bytes.NewReader(raw)), nil
 }
 
 func (s *Storage) loadFilename(id int, page int, ext string) string {
 	return fmt.Sprintf("load/%d/%d.%s", id, page, ext)
-}
-
-func (s *Storage) file(name string) (*sValue, error) {
-	r, found := s.data[name]
-	if !found {
-		v := &sValue{
-			buff:      new(bytes.Buffer),
-			buffMutex: new(sync.Mutex),
-		}
-
-		v.buffMutex.Lock()
-
-		s.data[name] = v
-
-		return v, nil
-	}
-
-	locked := r.buffMutex.TryLock()
-	if !locked {
-		return nil, os.ErrPermission
-	}
-
-	return r, nil
 }

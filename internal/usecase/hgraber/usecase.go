@@ -37,15 +37,15 @@ type tempStorage interface {
 }
 
 type files interface {
-	CreatePageFile(ctx context.Context, id, page int, ext string) (io.WriteCloser, error)
+	CreatePageFile(ctx context.Context, id, page int, ext string, body io.Reader) error
 	OpenPageFile(ctx context.Context, id, page int, ext string) (io.ReadCloser, error)
-	CreateExportFile(ctx context.Context, name string) (io.WriteCloser, error)
+	CreateExportFile(ctx context.Context, name string, body io.Reader) error
 }
 
 type loader interface {
 	Parse(ctx context.Context, URL string) (domain.Parser, error)
 	Load(ctx context.Context, URL string) (domain.Parser, error)
-	LoadImage(ctx context.Context, URL string) ([]byte, error)
+	LoadImage(ctx context.Context, URL string) (io.ReadCloser, error)
 }
 
 type UseCase struct {

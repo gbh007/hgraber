@@ -28,7 +28,7 @@ func (app *App) Init(ctx context.Context) {
 	logger := logger.New(debug)
 	webtool := web.New(logger, debug)
 
-	app.storage = filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly)
+	app.storage = filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly, logger)
 
 	app.controller = externalfile.New(app.storage, cfg.Addr, cfg.Token, logger, webtool)
 

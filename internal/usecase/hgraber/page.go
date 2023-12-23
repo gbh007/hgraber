@@ -23,25 +23,20 @@ func (uc *UseCase) LoadPageWithUpdate(ctx context.Context, page domain.Page) err
 
 func (uc *UseCase) downloadPageImage(ctx context.Context, id, page int, URL, ext string) error {
 	// скачиваем изображение
-	data, err := uc.loader.LoadImage(ctx, URL)
+	body, err := uc.loader.LoadImage(ctx, URL)
 	if err != nil {
 		return fmt.Errorf("download page image: %w", err)
 	}
+
+	defer uc.logger.IfErrFunc(ctx, body.Close)
 
 	// создаем файл и загружаем туда изображение
-	f, err := uc.files.CreatePageFile(ctx, id, page, ext)
+	err = uc.files.CreatePageFile(ctx, id, page, ext, body)
 	if err != nil {
 		return fmt.Errorf("download page image: %w", err)
 	}
 
-	_, err = f.Write(data)
-	if err != nil {
-		uc.logger.IfErr(ctx, f.Close())
-
-		return fmt.Errorf("download page image: %w", err)
-	}
-
-	return f.Close()
+	return nil
 }
 
 func (uc *UseCase) PageWithBody(ctx context.Context, bookID int, pageNumber int) (*domain.Page, io.ReadCloser, error) {

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 )
@@ -83,4 +84,14 @@ func (r *Requester) RequestBytes(ctx context.Context, URL string) ([]byte, error
 	}
 
 	return buff.Bytes(), nil
+}
+
+func (r *Requester) Request(ctx context.Context, URL string) (io.ReadCloser, error) {
+	// FIXME: работать с потоком напрямую
+	buff, err := r.requestBuffer(ctx, URL)
+	if err != nil {
+		return nil, err
+	}
+
+	return io.NopCloser(buff), nil
 }

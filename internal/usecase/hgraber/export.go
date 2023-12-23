@@ -2,6 +2,7 @@ package hgraber
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -19,19 +20,11 @@ func (uc *UseCase) ExportBooksToZip(ctx context.Context, from, to int) error {
 func (uc *UseCase) ExportBook(ctx context.Context, id int) error {
 	titleInfo, err := uc.storage.GetBook(ctx, id)
 	if err != nil {
-		return err
+		return fmt.Errorf("export book: %w", err)
 	}
 
-	zipFile, err := uc.files.CreateExportFile(ctx, fmt.Sprintf(
-		"%d)_%s.zip", id,
-		escapeFileName(titleInfo.Data.Name),
-	))
-	if err != nil {
-		uc.logger.Error(ctx, err)
-		return err
-	}
-
-	defer uc.logger.IfErrFunc(ctx, zipFile.Close)
+	// FIXME: заменить на работу с временным файлом
+	zipFile := new(bytes.Buffer)
 
 	zipWriter := zip.NewWriter(zipFile)
 
@@ -44,28 +37,24 @@ func (uc *UseCase) ExportBook(ctx context.Context, id int) error {
 
 		pageReader, err := uc.files.OpenPageFile(ctx, id, pageNumber+1, p.Ext)
 		if err != nil {
-			uc.logger.Error(ctx, err)
-			return err
+			return fmt.Errorf("export book: %w", err)
 		}
 		defer uc.logger.IfErrFunc(ctx, pageReader.Close)
 
 		w, err := zipWriter.Create(fmt.Sprintf("%d.%s", pageNumber+1, p.Ext))
 		if err != nil {
-			uc.logger.Error(ctx, err)
-			return err
+			return fmt.Errorf("export book: %w", err)
 		}
 
 		_, err = io.Copy(w, pageReader)
 		if err != nil {
-			uc.logger.Error(ctx, err)
-			return err
+			return fmt.Errorf("export book: %w", err)
 		}
 	}
 
 	w, err := zipWriter.Create("info.txt")
 	if err != nil {
-		uc.logger.Error(ctx, err)
-		return err
+		return fmt.Errorf("export book: %w", err)
 	}
 
 	_, err = fmt.Fprintf(
@@ -77,14 +66,12 @@ func (uc *UseCase) ExportBook(ctx context.Context, id int) error {
 		titleInfo.ID,
 	)
 	if err != nil {
-		uc.logger.Error(ctx, err)
-		return err
+		return fmt.Errorf("export book: %w", err)
 	}
 
 	w, err = zipWriter.Create("data.json")
 	if err != nil {
-		uc.logger.Error(ctx, err)
-		return err
+		return fmt.Errorf("export book: %w", err)
 	}
 
 	enc := json.NewEncoder(w)
@@ -92,14 +79,21 @@ func (uc *UseCase) ExportBook(ctx context.Context, id int) error {
 
 	err = enc.Encode(TitleFromStorageWrap(titleInfo))
 	if err != nil {
-		uc.logger.Error(ctx, err)
-		return err
+		return fmt.Errorf("export book: %w", err)
 	}
 
 	err = zipWriter.Close()
 	if err != nil {
-		uc.logger.Error(ctx, err)
-		return err
+		return fmt.Errorf("export book: %w", err)
+	}
+
+	err = uc.files.CreateExportFile(
+		ctx,
+		fmt.Sprintf("%d)_%s.zip", id, escapeFileName(titleInfo.Data.Name)),
+		zipFile,
+	)
+	if err != nil {
+		return fmt.Errorf("export book: %w", err)
 	}
 
 	return nil

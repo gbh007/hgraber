@@ -34,7 +34,7 @@ func (app *App) Init(ctx context.Context) error {
 	webtool := web.New(logger, cfg.Log.DebugMode)
 
 	app.async = async.New(logger)
-	app.fs = filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView)
+	app.fs = filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView, logger)
 
 	err := app.fs.Prepare(ctx)
 	if err != nil {

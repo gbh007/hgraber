@@ -7,6 +7,7 @@ import (
 	"app/pkg/logger"
 	"context"
 	"fmt"
+	"io"
 )
 
 type Loader struct {
@@ -44,8 +45,8 @@ func (l *Loader) Load(ctx context.Context, URL string) (domain.Parser, error) {
 	return p, nil
 }
 
-func (l *Loader) LoadImage(ctx context.Context, URL string) ([]byte, error) {
-	data, err := l.requester.RequestBytes(ctx, URL)
+func (l *Loader) LoadImage(ctx context.Context, URL string) (io.ReadCloser, error) {
+	data, err := l.requester.Request(ctx, URL)
 	if err != nil {
 		return nil, fmt.Errorf("load image: %w", err)
 	}

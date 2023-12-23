@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"app/pkg/logger"
 	"context"
 	"errors"
 	"fmt"
@@ -13,13 +14,16 @@ type Storage struct {
 	loadPath   string
 	exportPath string
 	readOnly   bool
+
+	logger *logger.Logger
 }
 
-func New(load, export string, readOnly bool) *Storage {
+func New(load, export string, readOnly bool, logger *logger.Logger) *Storage {
 	return &Storage{
 		loadPath:   load,
 		exportPath: export,
 		readOnly:   readOnly,
+		logger:     logger,
 	}
 }
 

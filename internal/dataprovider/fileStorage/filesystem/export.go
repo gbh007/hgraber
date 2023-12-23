@@ -2,20 +2,33 @@ package filesystem
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path"
 )
 
-func (s *Storage) CreateExportFile(ctx context.Context, name string) (io.WriteCloser, error) {
+func (s *Storage) CreateExportFile(ctx context.Context, name string, body io.Reader) error {
 	if s.readOnly {
-		return nil, readOnlyModeError
+		return readOnlyModeError
 	}
 
 	f, err := os.Create(path.Join(s.exportPath, name))
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("export file: %w", err)
 	}
 
-	return f, nil
+	_, err = io.Copy(f, body)
+	if err != nil {
+		s.logger.IfErr(ctx, f.Close())
+
+		return fmt.Errorf("export file: %w", err)
+	}
+
+	err = f.Close()
+	if err != nil {
+		return fmt.Errorf("export file: %w", err)
+	}
+
+	return nil
 }

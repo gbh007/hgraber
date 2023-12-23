@@ -2,7 +2,6 @@ package externalfile
 
 import (
 	"app/internal/dataprovider/fileStorage/externalfile/dto"
-	"io"
 	"net/http"
 	"strconv"
 )
@@ -27,24 +26,9 @@ func (c *Controller) setPage() http.Handler {
 
 		ext := r.Header.Get(dto.ExternalFilePageExtension)
 
-		pageFileToWrite, err := c.fileStorage.CreatePageFile(ctx, bookID, page, ext)
+		err = c.fileStorage.CreatePageFile(ctx, bookID, page, ext, r.Body)
 		if err != nil {
 			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
-
-			return
-		}
-
-		_, err = io.Copy(pageFileToWrite, r.Body)
-		if err != nil {
-			c.logger.IfErrFunc(ctx, pageFileToWrite.Close)
-			c.webtool.WritePlain(ctx, w, http.StatusInternalServerError, err.Error())
-
-			return
-		}
-
-		err = pageFileToWrite.Close()
-		if err != nil {
-			c.webtool.WritePlain(ctx, w, http.StatusInternalServerError, err.Error())
 
 			return
 		}

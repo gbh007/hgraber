@@ -9,7 +9,7 @@ services:
         BINARY_PATH: _build/hgraber-docker-server
     ports:
       - 127.0.0.1:8080:8080
-    command: --fs-token fs-local --fs-addr file:8080 --access-token=local-debug
+    command: --fs-token fs-local --fs-addr file:8080 --ws-token=local-debug
     depends_on:
       - file
     env_file: ../.env
