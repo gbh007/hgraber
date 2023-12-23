@@ -2,7 +2,6 @@ package webServer
 
 import (
 	"app/internal/controller/webServer/internal/rendering"
-	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -15,9 +14,9 @@ func (ws *WebServer) routeNewTitle() http.Handler {
 
 		ctx := r.Context()
 
-		err := webtool.ParseJSON(r, &request)
+		err := ws.webtool.ParseJSON(r, &request)
 		if err != nil {
-			webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
+			ws.webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
 
 			return
 		}
@@ -25,12 +24,12 @@ func (ws *WebServer) routeNewTitle() http.Handler {
 		if len(request.URLs) > 0 {
 			data, err := ws.useCases.FirstHandleMultiple(ctx, request.URLs)
 			if err != nil {
-				webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
+				ws.webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
 
 				return
 			}
 
-			webtool.WriteJSON(
+			ws.webtool.WriteJSON(
 				ctx, w, http.StatusOK,
 				rendering.HandleMultipleResultFromDomain(data),
 			)
@@ -40,9 +39,9 @@ func (ws *WebServer) routeNewTitle() http.Handler {
 
 		err = ws.useCases.FirstHandle(ctx, request.URL)
 		if err != nil {
-			webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
+			ws.webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 		} else {
-			webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
+			ws.webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 		}
 	})
 }

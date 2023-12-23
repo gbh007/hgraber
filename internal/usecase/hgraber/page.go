@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-func (uc *UseCases) LoadPageWithUpdate(ctx context.Context, page domain.Page) error {
+func (uc *UseCase) LoadPageWithUpdate(ctx context.Context, page domain.Page) error {
 	err := uc.downloadPageImage(ctx, page.BookID, page.PageNumber, page.URL, page.Ext)
 	if err != nil {
 		return fmt.Errorf("load page with update: %w", err)
@@ -21,7 +21,7 @@ func (uc *UseCases) LoadPageWithUpdate(ctx context.Context, page domain.Page) er
 	return nil
 }
 
-func (uc *UseCases) downloadPageImage(ctx context.Context, id, page int, URL, ext string) error {
+func (uc *UseCase) downloadPageImage(ctx context.Context, id, page int, URL, ext string) error {
 	// скачиваем изображение
 	data, err := uc.loader.LoadImage(ctx, URL)
 	if err != nil {
@@ -44,7 +44,7 @@ func (uc *UseCases) downloadPageImage(ctx context.Context, id, page int, URL, ex
 	return f.Close()
 }
 
-func (uc *UseCases) PageWithBody(ctx context.Context, bookID int, pageNumber int) (*domain.Page, io.ReadCloser, error) {
+func (uc *UseCase) PageWithBody(ctx context.Context, bookID int, pageNumber int) (*domain.Page, io.ReadCloser, error) {
 	info, err := uc.storage.GetPage(ctx, bookID, pageNumber)
 	if err != nil {
 		return nil, nil, fmt.Errorf("page with body: %w", err)

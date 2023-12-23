@@ -8,7 +8,7 @@ import (
 	"io"
 )
 
-func (uc *UseCases) ExportBooksToZip(ctx context.Context, from, to int) error {
+func (uc *UseCase) ExportBooksToZip(ctx context.Context, from, to int) error {
 	for i := from; i <= to; i++ {
 		select {
 		case <-ctx.Done():
@@ -25,7 +25,7 @@ func (uc *UseCases) ExportBooksToZip(ctx context.Context, from, to int) error {
 	return nil
 }
 
-func (uc *UseCases) saveToZip(ctx context.Context, id int) error {
+func (uc *UseCase) saveToZip(ctx context.Context, id int) error {
 	titleInfo, err := uc.storage.GetBook(ctx, id)
 	if err != nil {
 		return err

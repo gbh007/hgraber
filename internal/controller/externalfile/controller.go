@@ -3,9 +3,9 @@ package externalfile
 import (
 	"app/internal/dto"
 	"app/pkg/logger"
-	"app/pkg/webtool"
 	"context"
 	"io"
+	"net"
 	"net/http"
 )
 
@@ -15,16 +15,25 @@ type fileStorage interface {
 	CreateExportFile(ctx context.Context, name string) (io.WriteCloser, error)
 }
 
+type webtool interface {
+	CORS(next http.Handler) http.Handler
+	NewBaseContext(ctx context.Context) func(l net.Listener) context.Context
+	PanicDefender(next http.Handler) http.Handler
+	WriteNoContent(ctx context.Context, w http.ResponseWriter)
+	WritePlain(ctx context.Context, w http.ResponseWriter, statusCode int, data string)
+}
+
 type Controller struct {
 	logger *logger.Logger
 
 	fileStorage fileStorage
+	webtool     webtool
 
 	addr  string
 	token string
 }
 
-func New(fileStorage fileStorage, addr string, token string, logger *logger.Logger) *Controller {
+func New(fileStorage fileStorage, addr string, token string, logger *logger.Logger, web webtool) *Controller {
 	return &Controller{
 		logger:      logger,
 		fileStorage: fileStorage,
@@ -42,12 +51,12 @@ func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 
 	server := &http.Server{
 		Addr: c.addr,
-		Handler: webtool.PanicDefender(
-			webtool.CORS(
+		Handler: c.webtool.PanicDefender(
+			c.webtool.CORS(
 				c.tokenMiddleware(mux),
 			),
 		),
-		BaseContext: webtool.NewBaseContext(context.WithoutCancel(parentCtx)),
+		BaseContext: c.webtool.NewBaseContext(context.WithoutCancel(parentCtx)),
 	}
 
 	return server
@@ -66,7 +75,7 @@ func (c *Controller) pageHandler() http.Handler {
 			setPage.ServeHTTP(w, r)
 
 		default:
-			webtool.WritePlain(r.Context(), w, http.StatusMethodNotAllowed, "unsupported method")
+			c.webtool.WritePlain(r.Context(), w, http.StatusMethodNotAllowed, "unsupported method")
 		}
 	})
 }

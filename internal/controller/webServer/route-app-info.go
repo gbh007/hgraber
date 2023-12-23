@@ -1,7 +1,6 @@
 package webServer
 
 import (
-	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -14,6 +13,6 @@ func (ws *WebServer) routeAppInfo() http.Handler {
 			BuildAt string `json:"build_at"`
 		}{}
 
-		webtool.WriteJSON(r.Context(), w, http.StatusOK, response)
+		ws.webtool.WriteJSON(r.Context(), w, http.StatusOK, response)
 	})
 }

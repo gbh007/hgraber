@@ -4,6 +4,7 @@ import (
 	"app/internal/controller"
 	"app/internal/controller/externalfile"
 	"app/internal/dataprovider/fileStorage/filesystem"
+	"app/internal/usecase/web"
 	"app/pkg/logger"
 	"context"
 	"fmt"
@@ -22,11 +23,14 @@ func New() *App {
 func (app *App) Init(ctx context.Context) {
 	cfg := parseFlag()
 
-	logger := logger.New(false) // FIXME
+	debug := false // FIXME: управлять отладкой с конфигурации
+
+	logger := logger.New(debug)
+	webtool := web.New(logger, debug)
 
 	app.storage = filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly)
 
-	app.controller = externalfile.New(app.storage, cfg.Addr, cfg.Token, logger)
+	app.controller = externalfile.New(app.storage, cfg.Addr, cfg.Token, logger, webtool)
 
 	app.async = controller.NewObject(logger)
 	app.async.RegisterRunner(ctx, app.controller)

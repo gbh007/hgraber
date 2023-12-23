@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (uc *UseCases) ParseWithUpdate(ctx context.Context, book domain.Book) {
+func (uc *UseCase) ParseWithUpdate(ctx context.Context, book domain.Book) {
 	uc.logger.Info(ctx, "начата обработка", book.ID, book.URL)
 	defer uc.logger.Info(ctx, "завершена обработка", book.ID, book.URL)
 

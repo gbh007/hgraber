@@ -1,7 +1,6 @@
 package webServer
 
 import (
-	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -14,18 +13,18 @@ func (ws *WebServer) routeSetTitleRate() http.Handler {
 
 		ctx := r.Context()
 
-		err := webtool.ParseJSON(r, &request)
+		err := ws.webtool.ParseJSON(r, &request)
 		if err != nil {
-			webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
+			ws.webtool.WriteJSON(ctx, w, http.StatusBadRequest, err)
 			return
 		}
 
 		err = ws.useCases.UpdateBookRate(ctx, request.ID, request.Rate)
 		if err != nil {
-			webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
+			ws.webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 			return
 		}
 
-		webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
+		ws.webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
 	})
 }

@@ -9,6 +9,7 @@ import (
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/postgresql"
 	"app/internal/usecase/hgraber"
+	"app/internal/usecase/web"
 	"app/pkg/logger"
 	"app/pkg/worker"
 	"context"
@@ -30,7 +31,10 @@ func New() *App {
 func (app *App) Init(ctx context.Context) error {
 	cfg := parseFlag()
 
-	logger := logger.New(false) //FIXME
+	debug := false // FIXME: получать из конфигурации
+
+	logger := logger.New(debug)
+	webtool := web.New(logger, debug)
 
 	app.fs = externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr, logger)
 	db, err := postgresql.Connect(ctx, cfg.PGSource, logger)
@@ -67,6 +71,7 @@ func (app *App) Init(ctx context.Context) error {
 		Token:         cfg.ws.Token,
 		StaticDirPath: cfg.ws.Static,
 		Logger:        logger,
+		Webtool:       webtool,
 	})
 
 	app.async = controller.NewObject(logger)

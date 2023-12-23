@@ -43,7 +43,7 @@ type loader interface {
 	LoadImage(ctx context.Context, URL string) ([]byte, error)
 }
 
-type UseCases struct {
+type UseCase struct {
 	logger *logger.Logger
 
 	storage storage
@@ -51,8 +51,8 @@ type UseCases struct {
 	loader  loader
 }
 
-func New(storage storage, logger *logger.Logger, loader loader, files files) *UseCases {
-	return &UseCases{
+func New(storage storage, logger *logger.Logger, loader loader, files files) *UseCase {
+	return &UseCase{
 		storage: storage,
 		logger:  logger,
 		loader:  loader,

@@ -2,7 +2,6 @@ package webServer
 
 import (
 	"app/internal/controller/webServer/internal/rendering"
-	"app/pkg/webtool"
 	"net/http"
 )
 
@@ -12,12 +11,12 @@ func (ws *WebServer) routeMainInfo() http.Handler {
 
 		info, err := ws.useCases.Info(ctx)
 		if err != nil {
-			webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
+			ws.webtool.WriteJSON(ctx, w, http.StatusInternalServerError, err)
 
 			return
 		}
 
-		webtool.WriteJSON(ctx, w, http.StatusOK, map[string]interface{}{
+		ws.webtool.WriteJSON(ctx, w, http.StatusOK, map[string]interface{}{
 			"count":               info.BookCount,
 			"not_load_count":      info.NotLoadBookCount,
 			"page_count":          info.PageCount,

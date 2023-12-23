@@ -9,6 +9,7 @@ import (
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/jdb"
 	"app/internal/usecase/hgraber"
+	"app/internal/usecase/web"
 	"app/pkg/logger"
 	"app/pkg/worker"
 	"context"
@@ -31,6 +32,7 @@ func (app *App) Init(ctx context.Context) error {
 	cfg := parseFlag()
 
 	logger := logger.New(cfg.Log.DebugMode)
+	webtool := web.New(logger, cfg.Log.DebugMode)
 
 	app.async = controller.NewObject(logger)
 	app.fs = filememory.New()
@@ -59,6 +61,7 @@ func (app *App) Init(ctx context.Context) error {
 		Token:         cfg.WebServer.Token,
 		StaticDirPath: cfg.WebServer.StaticDirPath,
 		Logger:        logger,
+		Webtool:       webtool,
 	})
 
 	app.async.RegisterRunner(ctx, app.ws)

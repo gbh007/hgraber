@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-func (uc *UseCases) Info(ctx context.Context) (*domain.MainInfo, error) {
+func (uc *UseCase) Info(ctx context.Context) (*domain.MainInfo, error) {
 	info := &domain.MainInfo{
 		BookCount:        uc.storage.BooksCount(ctx),
 		NotLoadBookCount: uc.storage.UnloadedBooksCount(ctx),

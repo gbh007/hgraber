@@ -2,7 +2,6 @@ package externalfile
 
 import (
 	"app/internal/dto"
-	"app/pkg/webtool"
 	"bytes"
 	"fmt"
 	"io"
@@ -17,14 +16,14 @@ func (c *Controller) getPage() http.Handler {
 
 		bookID, err := strconv.Atoi(r.Header.Get(dto.ExternalFileBookID))
 		if err != nil {
-			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
 		page, err := strconv.Atoi(r.Header.Get(dto.ExternalFilePageNumber))
 		if err != nil {
-			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
@@ -33,7 +32,7 @@ func (c *Controller) getPage() http.Handler {
 
 		rawFile, err := c.fileStorage.OpenPageFile(ctx, bookID, page, ext)
 		if err != nil {
-			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
@@ -42,7 +41,7 @@ func (c *Controller) getPage() http.Handler {
 
 		rawData, err := io.ReadAll(rawFile)
 		if err != nil {
-			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}

@@ -15,7 +15,7 @@ func (ws *WebServer) Name() string {
 func (ws *WebServer) Start(parentCtx context.Context) (chan struct{}, error) {
 	done := make(chan struct{})
 
-	webCtx := ctxtool.NewSystemContext(parentCtx, "Web-srv")
+	webCtx := ctxtool.NewSystemContext(parentCtx, "web")
 	server := makeServer(webCtx, ws)
 
 	go func() {

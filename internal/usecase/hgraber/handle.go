@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (uc *UseCases) FirstHandle(ctx context.Context, u string) error {
+func (uc *UseCase) FirstHandle(ctx context.Context, u string) error {
 	uc.logger.Info(ctx, "начата обработка", u)
 	defer uc.logger.Info(ctx, "завершена обработка", u)
 
@@ -26,7 +26,7 @@ func (uc *UseCases) FirstHandle(ctx context.Context, u string) error {
 	return nil
 }
 
-func (uc *UseCases) FirstHandleMultiple(ctx context.Context, data []string) (*domain.FirstHandleMultipleResult, error) {
+func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*domain.FirstHandleMultipleResult, error) {
 	res := &domain.FirstHandleMultipleResult{}
 
 	for _, link := range data {

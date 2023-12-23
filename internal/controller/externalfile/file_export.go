@@ -2,7 +2,6 @@ package externalfile
 
 import (
 	"app/internal/dto"
-	"app/pkg/webtool"
 	"io"
 	"net/http"
 )
@@ -15,7 +14,7 @@ func (c *Controller) fileExport() http.Handler {
 
 		pageFileToWrite, err := c.fileStorage.CreateExportFile(ctx, filename)
 		if err != nil {
-			webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
+			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
@@ -23,18 +22,18 @@ func (c *Controller) fileExport() http.Handler {
 		_, err = io.Copy(pageFileToWrite, r.Body)
 		if err != nil {
 			c.logger.IfErrFunc(ctx, pageFileToWrite.Close)
-			webtool.WritePlain(ctx, w, http.StatusInternalServerError, err.Error())
+			c.webtool.WritePlain(ctx, w, http.StatusInternalServerError, err.Error())
 
 			return
 		}
 
 		err = pageFileToWrite.Close()
 		if err != nil {
-			webtool.WritePlain(ctx, w, http.StatusInternalServerError, err.Error())
+			c.webtool.WritePlain(ctx, w, http.StatusInternalServerError, err.Error())
 
 			return
 		}
 
-		webtool.WriteNoContent(ctx, w)
+		c.webtool.WriteNoContent(ctx, w)
 	})
 }

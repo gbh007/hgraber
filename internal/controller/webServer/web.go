@@ -4,9 +4,9 @@ import (
 	"app/internal/controller/webServer/internal/static"
 	"app/internal/domain"
 	"app/pkg/logger"
-	"app/pkg/webtool"
 	"context"
 	"io"
+	"net"
 	"net/http"
 )
 
@@ -28,6 +28,16 @@ type useCases interface {
 	PageWithBody(ctx context.Context, bookID int, pageNumber int) (*domain.Page, io.ReadCloser, error)
 }
 
+type webtool interface {
+	CORS(next http.Handler) http.Handler
+	NewBaseContext(ctx context.Context) func(l net.Listener) context.Context
+	PanicDefender(next http.Handler) http.Handler
+	ParseJSON(r *http.Request, data any) error
+	WriteJSON(ctx context.Context, w http.ResponseWriter, statusCode int, data any)
+	WriteNoContent(ctx context.Context, w http.ResponseWriter)
+	WritePlain(ctx context.Context, w http.ResponseWriter, statusCode int, data string)
+}
+
 type monitor interface {
 	Info() []domain.MonitorStat
 }
@@ -36,7 +46,8 @@ type WebServer struct {
 	useCases useCases
 	monitor  monitor
 
-	logger *logger.Logger
+	logger  *logger.Logger
+	webtool webtool
 
 	addr      string
 	outerAddr string
@@ -48,7 +59,8 @@ type Config struct {
 	UseCases useCases
 	Monitor  monitor
 
-	Logger *logger.Logger
+	Logger  *logger.Logger
+	Webtool webtool
 
 	Addr          string
 	Token         string
@@ -60,7 +72,8 @@ func New(cfg Config) *WebServer {
 		useCases: cfg.UseCases,
 		monitor:  cfg.Monitor,
 
-		logger: cfg.Logger,
+		logger:  cfg.Logger,
+		webtool: cfg.Webtool,
 
 		addr:      cfg.Addr,
 		outerAddr: "http://" + cfg.Addr,
@@ -96,10 +109,10 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 
 	server := &http.Server{
 		Addr: ws.addr,
-		Handler: webtool.PanicDefender(
-			webtool.CORS(mux),
+		Handler: ws.webtool.PanicDefender(
+			ws.webtool.CORS(mux),
 		),
-		BaseContext: webtool.NewBaseContext(context.WithoutCancel(parentCtx)),
+		BaseContext: ws.webtool.NewBaseContext(context.WithoutCancel(parentCtx)),
 	}
 
 	return server
