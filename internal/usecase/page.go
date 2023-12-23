@@ -23,7 +23,7 @@ func (uc *UseCases) LoadPageWithUpdate(ctx context.Context, page domain.Page) er
 
 func (uc *UseCases) downloadPageImage(ctx context.Context, id, page int, URL, ext string) error {
 	// скачиваем изображение
-	data, err := uc.requester.RequestBytes(ctx, URL)
+	data, err := uc.loader.LoadImage(ctx, URL)
 	if err != nil {
 		return fmt.Errorf("download page image: %w", err)
 	}

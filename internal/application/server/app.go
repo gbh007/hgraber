@@ -5,9 +5,9 @@ import (
 	"app/internal/controller/bookHandler"
 	"app/internal/controller/pageHandler"
 	"app/internal/controller/webServer"
-	"app/internal/fileStorage/externalfile"
-	"app/internal/request"
-	"app/internal/storage/postgresql"
+	"app/internal/dataprovider/fileStorage/externalfile"
+	"app/internal/dataprovider/loader"
+	"app/internal/dataprovider/storage/postgresql"
 	"app/internal/usecase"
 	"app/pkg/logger"
 	"app/pkg/worker"
@@ -46,8 +46,8 @@ func (app *App) Init(ctx context.Context) error {
 	}
 
 	monitor := worker.NewMonitor()
-	requester := request.New(logger)
-	useCases := usecase.New(db, logger, requester, app.fs)
+	loader := loader.New(logger)
+	useCases := usecase.New(db, logger, loader, app.fs)
 
 	bh := bookHandler.New(bookHandler.Config{
 		UseCases: useCases,

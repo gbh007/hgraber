@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"app/internal/domain"
 	"context"
 	"regexp"
 	"strconv"
@@ -16,7 +17,7 @@ type Parser_MANGAONLINE_BIZ struct {
 	r Requester
 }
 
-func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, r Requester, URL string) bool {
+func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, r Requester, URL string) error {
 	p.r = r
 
 	var err error
@@ -25,7 +26,11 @@ func (p *Parser_MANGAONLINE_BIZ) Load(ctx context.Context, r Requester, URL stri
 	tmpUrl := trimLastSlash(URL, 4) + ".html"
 	p.main_raw, err = r.RequestString(ctx, tmpUrl)
 
-	return err == nil
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p Parser_MANGAONLINE_BIZ) ParseName(ctx context.Context) string {
@@ -37,8 +42,8 @@ func (p Parser_MANGAONLINE_BIZ) ParseName(ctx context.Context) string {
 	return res[0][1]
 }
 
-func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []Page {
-	result := make([]Page, 0)
+func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []domain.Page {
+	result := make([]domain.Page, 0)
 	pcDataRaw, err := p.r.RequestString(ctx, p.url)
 	if err != nil {
 		return result
@@ -53,12 +58,12 @@ func (p Parser_MANGAONLINE_BIZ) ParsePages(ctx context.Context) []Page {
 	for _, pg := range rp_img.FindAllStringSubmatch(pcDataRaw, -1) {
 		i, err := strconv.Atoi(pg[1])
 		if err != nil {
-			return []Page{}
+			return []domain.Page{}
 		}
 		res := baseURL + strings.ReplaceAll(pg[2], `\/`, `/`)
 		fnameTmp := strings.Split(res, "/")                      // название файла
 		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
-		result = append(result, Page{URL: res, Number: i, Ext: fnameTmp[len(fnameTmp)-1]})
+		result = append(result, domain.Page{URL: res, PageNumber: i, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 	return result
 }

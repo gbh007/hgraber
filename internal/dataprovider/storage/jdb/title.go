@@ -1,8 +1,8 @@
 package jdb
 
 import (
+	"app/internal/dataprovider/storage/jdb/internal/model"
 	"app/internal/domain"
-	"app/internal/storage/jdb/internal/model"
 	"context"
 	"strings"
 	"time"

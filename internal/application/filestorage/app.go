@@ -3,7 +3,7 @@ package filestorage
 import (
 	"app/internal/controller"
 	"app/internal/controller/externalfile"
-	"app/internal/fileStorage/filesystem"
+	"app/internal/dataprovider/fileStorage/filesystem"
 	"app/pkg/logger"
 	"context"
 	"fmt"

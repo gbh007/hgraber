@@ -37,24 +37,25 @@ type files interface {
 	CreateExportFile(ctx context.Context, name string) (io.WriteCloser, error)
 }
 
-type requester interface {
-	RequestString(ctx context.Context, URL string) (string, error)
-	RequestBytes(ctx context.Context, URL string) ([]byte, error)
+type loader interface {
+	Parse(ctx context.Context, URL string) (domain.Parser, error)
+	Load(ctx context.Context, URL string) (domain.Parser, error)
+	LoadImage(ctx context.Context, URL string) ([]byte, error)
 }
 
 type UseCases struct {
 	logger *logger.Logger
 
-	storage   storage
-	files     files
-	requester requester
+	storage storage
+	files   files
+	loader  loader
 }
 
-func New(storage storage, logger *logger.Logger, requester requester, files files) *UseCases {
+func New(storage storage, logger *logger.Logger, loader loader, files files) *UseCases {
 	return &UseCases{
-		storage:   storage,
-		logger:    logger,
-		requester: requester,
-		files:     files,
+		storage: storage,
+		logger:  logger,
+		loader:  loader,
+		files:   files,
 	}
 }

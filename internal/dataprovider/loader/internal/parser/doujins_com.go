@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"app/internal/domain"
 	"context"
 	"html"
 	"net/url"
@@ -16,13 +17,17 @@ type Parser_DOUJINS_COM struct {
 	url      string
 }
 
-func (p *Parser_DOUJINS_COM) Load(ctx context.Context, r Requester, URL string) bool {
+func (p *Parser_DOUJINS_COM) Load(ctx context.Context, r Requester, URL string) error {
 	var err error
 
 	p.url = URL
 	p.main_raw, err = r.RequestString(ctx, URL)
 
-	return err == nil
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p Parser_DOUJINS_COM) ParseName(ctx context.Context) string {
@@ -79,11 +84,11 @@ func (p Parser_DOUJINS_COM) parsePages(s string) []string {
 	return result
 }
 
-func (p Parser_DOUJINS_COM) ParsePages(ctx context.Context) []Page {
-	result := make([]Page, 0)
+func (p Parser_DOUJINS_COM) ParsePages(ctx context.Context) []domain.Page {
+	result := make([]domain.Page, 0)
 	res := p.parsePages(p.main_raw)
 	if len(res) < 1 {
-		return []Page{}
+		return []domain.Page{}
 	}
 
 	for i, rURL := range res {
@@ -97,7 +102,7 @@ func (p Parser_DOUJINS_COM) ParsePages(ctx context.Context) []Page {
 
 		fnameTmp := strings.Split(u.Path, "/")                   // название файла
 		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
-		result = append(result, Page{URL: rURL, Number: i + 1, Ext: fnameTmp[len(fnameTmp)-1]})
+		result = append(result, domain.Page{URL: rURL, PageNumber: i + 1, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 
 	return result

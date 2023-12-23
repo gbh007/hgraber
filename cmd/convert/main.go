@@ -2,8 +2,8 @@ package main
 
 import (
 	"app/internal/converter"
-	"app/internal/storage/jdb"
-	"app/internal/storage/postgresql"
+	"app/internal/dataprovider/storage/jdb"
+	"app/internal/dataprovider/storage/postgresql"
 	"app/pkg/ctxtool"
 	"app/pkg/logger"
 	"context"

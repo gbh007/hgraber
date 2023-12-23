@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"app/internal/domain"
 	"context"
 	"fmt"
 	"regexp"
@@ -16,7 +17,7 @@ type Parser_IMHENTAI_XXX struct {
 	r Requester
 }
 
-func (p *Parser_IMHENTAI_XXX) Load(ctx context.Context, r Requester, URL string) bool {
+func (p *Parser_IMHENTAI_XXX) Load(ctx context.Context, r Requester, URL string) error {
 	p.r = r
 
 	var err error
@@ -24,7 +25,11 @@ func (p *Parser_IMHENTAI_XXX) Load(ctx context.Context, r Requester, URL string)
 	p.url = URL
 	p.main_raw, err = r.RequestString(ctx, URL)
 
-	return err == nil
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // parseTags парсит теги авторов и тд
@@ -60,16 +65,16 @@ func (p Parser_IMHENTAI_XXX) ParseTags(ctx context.Context) []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []Page {
-	result := make([]Page, 0)
+func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []domain.Page {
+	result := make([]domain.Page, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<li class="pages">Pages: `) + `(\d+).*?` + regexp.QuoteMeta(`</li>`)
 	res := regexp.MustCompile(rp).FindStringSubmatch(p.main_raw)
 	if len(res) < 2 {
-		return []Page{}
+		return []domain.Page{}
 	}
 	count, err := strconv.Atoi(res[1])
 	if err != nil {
-		return []Page{}
+		return []domain.Page{}
 	}
 	u := strings.Replace(p.url, "gallery", "view", -1)
 	rp_img := regexp.MustCompile(regexp.QuoteMeta(`<img id="gimg" class="lazy`) + `.+?` + `src="(.+?)" alt`)
@@ -77,11 +82,11 @@ func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []Page {
 		// символ / и так будет в конце
 		data, err := p.r.RequestString(ctx, fmt.Sprintf("%s%d", u, i))
 		if err != nil {
-			return []Page{}
+			return []domain.Page{}
 		}
 		res := rp_img.FindStringSubmatch(data)
 		if len(res) < 2 {
-			return []Page{}
+			return []domain.Page{}
 		}
 		url := res[1]
 		if strings.Contains(url, "data-src=\"") {
@@ -89,7 +94,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []Page {
 		}
 		fnameTmp := strings.Split(url, "/")                      // название файла
 		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
-		result = append(result, Page{URL: url, Number: i, Ext: fnameTmp[len(fnameTmp)-1]})
+		result = append(result, domain.Page{URL: url, PageNumber: i, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 	return result
 }

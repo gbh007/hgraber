@@ -1,7 +1,7 @@
 package jdb
 
 import (
-	"app/internal/storage/jdb/internal/model"
+	"app/internal/dataprovider/storage/jdb/internal/model"
 	"app/pkg/ctxtool"
 	"app/pkg/logger"
 	"context"

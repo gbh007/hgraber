@@ -1,7 +1,7 @@
 package postgresql
 
 import (
-	"app/internal/storage/postgresql/internal/migration"
+	"app/internal/dataprovider/storage/postgresql/internal/migration"
 	"app/pkg/logger"
 	"context"
 	"database/sql"
@@ -19,7 +19,7 @@ type Database struct {
 }
 
 // Connect - возвращает соединение с хранилищем данных
-func Connect(ctx context.Context, dataSourceName string,logger *logger.Logger) (*Database, error) {
+func Connect(ctx context.Context, dataSourceName string, logger *logger.Logger) (*Database, error) {
 	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func Connect(ctx context.Context, dataSourceName string,logger *logger.Logger) (
 
 	db.SetMaxOpenConns(10)
 
-	return &Database{db: db,logger: logger}, nil
+	return &Database{db: db, logger: logger}, nil
 }
 
 // MigrateAll - производит миграции данных

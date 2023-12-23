@@ -2,69 +2,69 @@ package usecase
 
 import (
 	"app/internal/domain"
-	"app/internal/usecase/internal/parser"
 	"context"
 	"strings"
 )
 
-func (s *UseCases) ParseWithUpdate(ctx context.Context, title domain.Book) {
-	s.logger.Info(ctx, "начата обработка", title.ID, title.URL)
-	defer s.logger.Info(ctx, "завершена обработка", title.ID, title.URL)
+func (uc *UseCases) ParseWithUpdate(ctx context.Context, book domain.Book) {
+	uc.logger.Info(ctx, "начата обработка", book.ID, book.URL)
+	defer uc.logger.Info(ctx, "завершена обработка", book.ID, book.URL)
 
-	p, ok, err := parser.Load(ctx, s.requester, strings.TrimSpace(title.URL))
+	p, err := uc.loader.Load(ctx, strings.TrimSpace(book.URL))
 	if err != nil {
-		s.logger.Error(ctx, err)
+		uc.logger.Error(ctx, err)
 
 		return
 	}
-	if !ok {
-		return
-	}
 
-	if !title.Data.Parsed.Name {
-		err = s.storage.UpdateBookName(ctx, title.ID, p.ParseName(ctx))
+	if !book.Data.Parsed.Name {
+		err = uc.storage.UpdateBookName(ctx, book.ID, p.ParseName(ctx))
 		if err != nil {
-			s.logger.Error(ctx, err)
+			uc.logger.Error(ctx, err)
 
 			return
 		}
-		s.logger.Info(ctx, "обновлено название", title.ID, title.URL)
+
+		uc.logger.Info(ctx, "обновлено название", book.ID, book.URL)
 	}
 
 	for _, attr := range domain.AllAttributes {
-		if !title.Data.Parsed.Attributes[attr] {
-			err = s.storage.UpdateAttributes(ctx, title.ID, attr, parser.ParseAttr(ctx, p, attr))
-			if err != nil {
-				s.logger.Error(ctx, err)
-
-				return
-			}
-			s.logger.Info(ctx, "обновлен аттрибут "+string(attr), title.ID, title.URL)
+		if book.Data.Parsed.Attributes[attr] {
+			continue
 		}
+
+		err = uc.storage.UpdateAttributes(ctx, book.ID, attr, domain.ParseAttr(ctx, p, attr))
+		if err != nil {
+			uc.logger.Error(ctx, err)
+
+			return
+		}
+
+		uc.logger.Info(ctx, "обновлен аттрибут "+string(attr), book.ID, book.URL)
 	}
 
-	if !title.Data.Parsed.Page {
+	if !book.Data.Parsed.Page {
 		pages := p.ParsePages(ctx)
 		if len(pages) > 0 {
 			pagesDB := make([]domain.Page, len(pages))
 
 			for i, page := range pages {
 				pagesDB[i] = domain.Page{
-					BookID:     title.ID,
-					PageNumber: page.Number,
+					BookID:     book.ID,
+					PageNumber: page.PageNumber,
 					URL:        page.URL,
 					Ext:        page.Ext,
 				}
 			}
 
-			err = s.storage.UpdateBookPages(ctx, title.ID, pagesDB)
+			err = uc.storage.UpdateBookPages(ctx, book.ID, pagesDB)
 			if err != nil {
-				s.logger.Error(ctx, err)
+				uc.logger.Error(ctx, err)
 
 				return
 			}
 
-			s.logger.Info(ctx, "обновлены страницы", title.ID, title.URL)
+			uc.logger.Info(ctx, "обновлены страницы", book.ID, book.URL)
 		}
 	}
 }

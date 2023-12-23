@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"app/internal/domain"
-	"app/internal/usecase/internal/parser"
 	"context"
 	"errors"
 	"strings"
@@ -14,7 +13,7 @@ func (uc *UseCases) FirstHandle(ctx context.Context, u string) error {
 
 	u = strings.TrimSpace(u)
 
-	_, err := parser.Parse(ctx, u)
+	_, err := uc.loader.Parse(ctx, u)
 	if err != nil {
 		return err
 	}
@@ -39,7 +38,7 @@ func (uc *UseCases) FirstHandleMultiple(ctx context.Context, data []string) (*do
 		case errors.Is(err, domain.BookAlreadyExistsError):
 			res.DuplicateCount++
 
-		case errors.Is(err, parser.ErrInvalidLink):
+		case errors.Is(err, domain.ErrInvalidLink):
 			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
 
