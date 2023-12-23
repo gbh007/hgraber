@@ -2,16 +2,14 @@ package server
 
 import (
 	"app/internal/controller/async"
-	"app/internal/controller/bookHandler"
 	"app/internal/controller/hgraberweb"
-	"app/internal/controller/pageHandler"
+	"app/internal/controller/hgraberworker"
 	"app/internal/dataprovider/fileStorage/externalfile"
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/postgresql"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
 	"app/pkg/logger"
-	"app/pkg/worker"
 	"context"
 	"fmt"
 )
@@ -49,24 +47,14 @@ func (app *App) Init(ctx context.Context) error {
 		}
 	}
 
-	monitor := worker.NewMonitor()
 	loader := loader.New(logger)
 	useCases := hgraber.New(db, logger, loader, app.fs)
 
-	bh := bookHandler.New(bookHandler.Config{
-		UseCases: useCases,
-		Monitor:  monitor,
-		Logger:   logger,
-	})
-	ph := pageHandler.New(pageHandler.Config{
-		UseCases: useCases,
-		Monitor:  monitor,
-		Logger:   logger,
-	})
+	worker := hgraberworker.New(useCases, logger)
 
 	app.ws = hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
-		Monitor:       monitor,
+		Monitor:       worker,
 		Addr:          cfg.ws.Addr,
 		Token:         cfg.ws.Token,
 		StaticDirPath: cfg.ws.Static,
@@ -78,8 +66,7 @@ func (app *App) Init(ctx context.Context) error {
 	app.async.RegisterRunner(ctx, app.ws)
 
 	if !cfg.ReadOnly {
-		app.async.RegisterRunner(ctx, bh)
-		app.async.RegisterRunner(ctx, ph)
+		app.async.RegisterRunner(ctx, worker)
 	}
 
 	return nil

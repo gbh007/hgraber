@@ -2,16 +2,14 @@ package simple
 
 import (
 	"app/internal/controller/async"
-	"app/internal/controller/bookHandler"
 	"app/internal/controller/hgraberweb"
-	"app/internal/controller/pageHandler"
+	"app/internal/controller/hgraberworker"
 	"app/internal/dataprovider/fileStorage/filesystem"
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/jdb"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
 	"app/pkg/logger"
-	"app/pkg/worker"
 	"context"
 	"fmt"
 )
@@ -60,24 +58,14 @@ func (app *App) Init(ctx context.Context) error {
 		})
 	}
 
-	monitor := worker.NewMonitor()
 	loader := loader.New(logger)
 	useCases := hgraber.New(db, logger, loader, app.fs)
 
-	bh := bookHandler.New(bookHandler.Config{
-		UseCases: useCases,
-		Monitor:  monitor,
-		Logger:   logger,
-	})
-	ph := pageHandler.New(pageHandler.Config{
-		UseCases: useCases,
-		Monitor:  monitor,
-		Logger:   logger,
-	})
+	worker := hgraberworker.New(useCases, logger)
 
 	app.ws = hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
-		Monitor:       monitor,
+		Monitor:       worker,
 		Addr:          fmt.Sprintf("%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),
 		Token:         cfg.WebServer.Token,
 		StaticDirPath: cfg.WebServer.StaticDirPath,
@@ -88,8 +76,7 @@ func (app *App) Init(ctx context.Context) error {
 	app.async.RegisterRunner(ctx, app.ws)
 
 	if !cfg.Base.OnlyView {
-		app.async.RegisterRunner(ctx, bh)
-		app.async.RegisterRunner(ctx, ph)
+		app.async.RegisterRunner(ctx, worker)
 	}
 
 	return nil
