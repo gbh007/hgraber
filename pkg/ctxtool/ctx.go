@@ -40,11 +40,6 @@ func GetRequestID(ctx context.Context) string {
 }
 
 // FIXME: удалить
-func WithDebug(ctx context.Context) context.Context {
-	return context.WithValue(ctx, debugKey, true)
-}
-
-// FIXME: удалить
 func IsDebug(ctx context.Context) bool {
 	v := ctx.Value(debugKey)
 	if v == nil {

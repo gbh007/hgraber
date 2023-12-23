@@ -1,10 +1,9 @@
 package main
 
 import (
-	"app/internal/converter"
 	"app/internal/dataprovider/storage/jdb"
 	"app/internal/dataprovider/storage/postgresql"
-	"app/pkg/ctxtool"
+	"app/internal/usecase/converter"
 	"app/pkg/logger"
 	"context"
 	"flag"
@@ -34,8 +33,6 @@ func main() {
 		syscall.SIGQUIT,
 	)
 	defer stop()
-
-	ctx = ctxtool.WithDebug(ctx)
 
 	logger := logger.New(true)
 

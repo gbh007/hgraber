@@ -58,7 +58,7 @@ func (l *Logger) Warning(ctx context.Context, args ...interface{}) {
 }
 
 func (l *Logger) Debug(ctx context.Context, args ...interface{}) {
-	if !ctxtool.IsDebug(ctx) {
+	if !l.debug {
 		return
 	}
 

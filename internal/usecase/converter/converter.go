@@ -20,7 +20,6 @@ type storageTo interface {
 	UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error
 }
 
-// FIXME: переместить в controller
 type Builder struct {
 	src storageFrom
 	dst storageTo

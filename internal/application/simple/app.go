@@ -8,7 +8,7 @@ import (
 	"app/internal/dataprovider/fileStorage/filesystem"
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/jdb"
-	"app/internal/usecase"
+	"app/internal/usecase/hgraber"
 	"app/pkg/logger"
 	"app/pkg/worker"
 	"context"
@@ -60,7 +60,7 @@ func (app *App) Init(ctx context.Context) error {
 
 	monitor := worker.NewMonitor()
 	loader := loader.New(logger)
-	useCases := usecase.New(db, logger, loader, app.fs)
+	useCases := hgraber.New(db, logger, loader, app.fs)
 
 	bh := bookHandler.New(bookHandler.Config{
 		UseCases: useCases,

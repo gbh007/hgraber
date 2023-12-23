@@ -1,4 +1,4 @@
-package usecase
+package hgraber
 
 import (
 	"app/internal/domain"
