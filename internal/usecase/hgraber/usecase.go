@@ -31,6 +31,11 @@ type storage interface {
 	UpdateBookRate(ctx context.Context, id int, rate int) error
 }
 
+type tempStorage interface {
+	AddExport(ctx context.Context, bookID int)
+	ExportList(ctx context.Context) []int
+}
+
 type files interface {
 	CreatePageFile(ctx context.Context, id, page int, ext string) (io.WriteCloser, error)
 	OpenPageFile(ctx context.Context, id, page int, ext string) (io.ReadCloser, error)
@@ -49,13 +54,16 @@ type UseCase struct {
 	storage storage
 	files   files
 	loader  loader
+
+	tempStorage tempStorage
 }
 
-func New(storage storage, logger *logger.Logger, loader loader, files files) *UseCase {
+func New(storage storage, logger *logger.Logger, loader loader, files files, tempStorage tempStorage) *UseCase {
 	return &UseCase{
-		storage: storage,
-		logger:  logger,
-		loader:  loader,
-		files:   files,
+		storage:     storage,
+		logger:      logger,
+		loader:      loader,
+		files:       files,
+		tempStorage: tempStorage,
 	}
 }

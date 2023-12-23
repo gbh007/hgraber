@@ -7,6 +7,7 @@ import (
 	"app/internal/dataprovider/fileStorage/externalfile"
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/postgresql"
+	"app/internal/dataprovider/temp"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
 	"app/pkg/logger"
@@ -48,7 +49,8 @@ func (app *App) Init(ctx context.Context) error {
 	}
 
 	loader := loader.New(logger)
-	useCases := hgraber.New(db, logger, loader, app.fs)
+	tempStorage := temp.New()
+	useCases := hgraber.New(db, logger, loader, app.fs, tempStorage)
 
 	worker := hgraberworker.New(useCases, logger)
 

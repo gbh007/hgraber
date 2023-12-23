@@ -29,6 +29,12 @@ func (c *Controller) Start(parentCtx context.Context) (chan struct{}, error) {
 		c.serveBookWorker(ctx)
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		c.serveExportWorker(ctx)
+	}()
+
 	go func() {
 		defer close(done)
 

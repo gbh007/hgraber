@@ -10,22 +10,13 @@ import (
 
 func (uc *UseCase) ExportBooksToZip(ctx context.Context, from, to int) error {
 	for i := from; i <= to; i++ {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		default:
-		}
-
-		err := uc.saveToZip(ctx, i)
-		if err != nil {
-			return err
-		}
+		uc.tempStorage.AddExport(ctx, i)
 	}
 
 	return nil
 }
 
-func (uc *UseCase) saveToZip(ctx context.Context, id int) error {
+func (uc *UseCase) ExportBook(ctx context.Context, id int) error {
 	titleInfo, err := uc.storage.GetBook(ctx, id)
 	if err != nil {
 		return err
@@ -96,7 +87,10 @@ func (uc *UseCase) saveToZip(ctx context.Context, id int) error {
 		return err
 	}
 
-	err = json.NewEncoder(w).Encode(TitleFromStorageWrap(titleInfo))
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+
+	err = enc.Encode(TitleFromStorageWrap(titleInfo))
 	if err != nil {
 		uc.logger.Error(ctx, err)
 		return err

@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	pageWOrkerInterval      = time.Second * 15
+	pageWorkerInterval      = time.Second * 15
 	pageWorkerQueueSize     = 10000
 	pageWorkerHandlersCount = 10
 )
@@ -19,7 +19,7 @@ func (c *Controller) servePageWorker(ctx context.Context) {
 
 	w := worker.New[domain.Page](
 		pageWorkerQueueSize,
-		pageWOrkerInterval,
+		pageWorkerInterval,
 		c.logger,
 		func(ctx context.Context, page domain.Page) {
 			err := c.useCases.LoadPageWithUpdate(ctx, page)

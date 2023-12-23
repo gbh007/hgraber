@@ -32,3 +32,7 @@ func (uc *UseCase) UpdatePageRate(ctx context.Context, id int, page int, rate in
 func (uc *UseCase) UpdateBookRate(ctx context.Context, id int, rate int) error {
 	return uc.storage.UpdateBookRate(ctx, id, rate)
 }
+
+func (uc *UseCase) ExportList(ctx context.Context) []int {
+	return uc.tempStorage.ExportList(ctx)
+}

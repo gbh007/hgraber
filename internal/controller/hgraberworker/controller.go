@@ -13,6 +13,9 @@ type useCases interface {
 
 	ParseWithUpdate(ctx context.Context, book domain.Book)
 	GetUnloadedBooks(ctx context.Context) []domain.Book
+
+	ExportBook(ctx context.Context, id int) error
+	ExportList(ctx context.Context) []int
 }
 
 type Controller struct {
