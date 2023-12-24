@@ -1,7 +1,7 @@
 package model
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"time"
 )
 
@@ -23,8 +23,8 @@ func (p RawPage) Copy() RawPage {
 	}
 }
 
-func (p RawPage) Super(bookID, pageNumber int) domain.Page {
-	return domain.Page{
+func (p RawPage) Super(bookID, pageNumber int) hgraber.Page {
+	return hgraber.Page{
 		BookID:     bookID,
 		PageNumber: pageNumber,
 		URL:        p.URL,
@@ -35,7 +35,7 @@ func (p RawPage) Super(bookID, pageNumber int) domain.Page {
 	}
 }
 
-func RawPageFromSuper(p domain.Page) RawPage {
+func RawPageFromSuper(p hgraber.Page) RawPage {
 	return RawPage{
 		URL:      p.URL,
 		Ext:      p.Ext,
@@ -45,7 +45,7 @@ func RawPageFromSuper(p domain.Page) RawPage {
 	}
 }
 
-func RawPagesFromSuper(in []domain.Page) []RawPage {
+func RawPagesFromSuper(in []hgraber.Page) []RawPage {
 	out := make([]RawPage, len(in))
 
 	for i, p := range in {

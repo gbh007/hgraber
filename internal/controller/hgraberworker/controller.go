@@ -1,25 +1,25 @@
 package hgraberworker
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"app/pkg/logger"
 	"context"
 	"sync"
 )
 
 type useCases interface {
-	GetUnsuccessPages(ctx context.Context) []domain.Page
-	LoadPageWithUpdate(ctx context.Context, page domain.Page) error
+	GetUnsuccessPages(ctx context.Context) []hgraber.Page
+	LoadPageWithUpdate(ctx context.Context, page hgraber.Page) error
 
-	ParseWithUpdate(ctx context.Context, book domain.Book)
-	GetUnloadedBooks(ctx context.Context) []domain.Book
+	ParseWithUpdate(ctx context.Context, book hgraber.Book)
+	GetUnloadedBooks(ctx context.Context) []hgraber.Book
 
 	ExportBook(ctx context.Context, id int) error
 	ExportList(ctx context.Context) []int
 }
 
 type Controller struct {
-	workers map[string]domain.WorkerStat
+	workers map[string]hgraber.WorkerStat
 	mutex   *sync.RWMutex
 
 	useCases useCases
@@ -31,7 +31,7 @@ func New(useCases useCases, logger *logger.Logger) *Controller {
 		useCases: useCases,
 		logger:   logger,
 
-		workers: make(map[string]domain.WorkerStat),
+		workers: make(map[string]hgraber.WorkerStat),
 		mutex:   new(sync.RWMutex),
 	}
 }

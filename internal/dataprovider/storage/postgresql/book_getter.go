@@ -1,14 +1,14 @@
 package postgresql
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"database/sql"
 	"errors"
 )
 
-func (d *Database) GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book {
-	out := make([]domain.Book, 0)
+func (d *Database) GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book {
+	out := make([]hgraber.Book, 0)
 
 	ids, err := d.bookIDs(ctx, filter)
 	if err != nil {
@@ -29,44 +29,44 @@ func (d *Database) GetBooks(ctx context.Context, filter domain.BookFilter) []dom
 	return out
 }
 
-func (d *Database) GetBook(ctx context.Context, bookID int) (domain.Book, error) {
+func (d *Database) GetBook(ctx context.Context, bookID int) (hgraber.Book, error) {
 	raw := new(Book)
 
 	err := d.db.GetContext(ctx, raw, `SELECT * FROM books WHERE id = $1 LIMIT 1;`, bookID)
 	if errors.Is(err, sql.ErrNoRows) {
-		return domain.Book{}, domain.BookNotFoundError
+		return hgraber.Book{}, hgraber.BookNotFoundError
 	}
 
 	if err != nil {
-		return domain.Book{}, err
+		return hgraber.Book{}, err
 	}
 
-	out := domain.Book{
+	out := hgraber.Book{
 		ID:      raw.ID,
 		Created: raw.CreateAt,
 		URL:     raw.Url.String,
-		Pages:   []domain.Page{},
-		Data: domain.BookInfo{
-			Parsed: domain.BookInfoParsed{
+		Pages:   []hgraber.Page{},
+		Data: hgraber.BookInfo{
+			Parsed: hgraber.BookInfoParsed{
 				Name:       raw.Name.Valid,
 				Page:       raw.PageCount.Valid,
-				Attributes: map[domain.Attribute]bool{},
+				Attributes: map[hgraber.Attribute]bool{},
 			},
 			Name:       raw.Name.String,
 			Rate:       raw.Rate,
-			Attributes: map[domain.Attribute][]string{},
+			Attributes: map[hgraber.Attribute][]string{},
 		},
 	}
 
 	attributes, err := d.getBookAttr(ctx, bookID)
 	if err != nil {
-		return domain.Book{}, err
+		return hgraber.Book{}, err
 	}
 
 	for _, attribute := range attributes {
 		attr, ok := reverseAttrMap[attribute.Attr]
 		if !ok {
-			return domain.Book{}, domain.UnsupportedAttributeError
+			return hgraber.Book{}, hgraber.UnsupportedAttributeError
 		}
 
 		out.Data.Attributes[attr] = append(out.Data.Attributes[attr], attribute.Value)
@@ -74,13 +74,13 @@ func (d *Database) GetBook(ctx context.Context, bookID int) (domain.Book, error)
 
 	attributesParsed, err := d.getBookAttrParsed(ctx, bookID)
 	if err != nil {
-		return domain.Book{}, err
+		return hgraber.Book{}, err
 	}
 
 	for _, attribute := range attributesParsed {
 		attr, ok := reverseAttrMap[attribute.Attr]
 		if !ok {
-			return domain.Book{}, domain.UnsupportedAttributeError
+			return hgraber.Book{}, hgraber.UnsupportedAttributeError
 		}
 
 		out.Data.Parsed.Attributes[attr] = attribute.Parsed
@@ -88,7 +88,7 @@ func (d *Database) GetBook(ctx context.Context, bookID int) (domain.Book, error)
 
 	pages, err := d.getBookPages(ctx, bookID)
 	if err != nil {
-		return domain.Book{}, err
+		return hgraber.Book{}, err
 	}
 
 	for _, p := range pages {
@@ -98,7 +98,7 @@ func (d *Database) GetBook(ctx context.Context, bookID int) (domain.Book, error)
 	return out, nil
 }
 
-func (d *Database) bookIDs(ctx context.Context, filter domain.BookFilter) ([]int, error) {
+func (d *Database) bookIDs(ctx context.Context, filter hgraber.BookFilter) ([]int, error) {
 	ids := make([]int, 0)
 
 	query := `SELECT id FROM books ORDER BY id ASC LIMIT $1 OFFSET $2;`

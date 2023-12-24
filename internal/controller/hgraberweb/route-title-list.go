@@ -2,7 +2,7 @@ package hgraberweb
 
 import (
 	"app/internal/controller/hgraberweb/internal/rendering"
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (ws *WebServer) routeTitleList() http.Handler {
 			return
 		}
 
-		data := ws.useCases.GetBooks(ctx, domain.BookFilter{
+		data := ws.useCases.GetBooks(ctx, hgraber.BookFilter{
 			Limit:    request.Count,
 			Offset:   request.Offset,
 			NewFirst: true,

@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"html"
 	"net/url"
@@ -84,11 +84,11 @@ func (p Parser_DOUJINS_COM) parsePages(s string) []string {
 	return result
 }
 
-func (p Parser_DOUJINS_COM) ParsePages(ctx context.Context) []domain.Page {
-	result := make([]domain.Page, 0)
+func (p Parser_DOUJINS_COM) ParsePages(ctx context.Context) []hgraber.Page {
+	result := make([]hgraber.Page, 0)
 	res := p.parsePages(p.main_raw)
 	if len(res) < 1 {
-		return []domain.Page{}
+		return []hgraber.Page{}
 	}
 
 	for i, rURL := range res {
@@ -102,7 +102,7 @@ func (p Parser_DOUJINS_COM) ParsePages(ctx context.Context) []domain.Page {
 
 		fnameTmp := strings.Split(u.Path, "/")                   // название файла
 		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
-		result = append(result, domain.Page{URL: rURL, PageNumber: i + 1, Ext: fnameTmp[len(fnameTmp)-1]})
+		result = append(result, hgraber.Page{URL: rURL, PageNumber: i + 1, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 
 	return result

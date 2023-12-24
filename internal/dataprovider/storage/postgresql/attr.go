@@ -1,26 +1,26 @@
 package postgresql
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 )
 
 var (
-	attrMap = map[domain.Attribute]string{
-		domain.AttrAuthor:    "author",
-		domain.AttrCategory:  "category",
-		domain.AttrCharacter: "character",
-		domain.AttrGroup:     "group",
-		domain.AttrLanguage:  "language",
-		domain.AttrParody:    "parody",
-		domain.AttrTag:       "tag",
+	attrMap = map[hgraber.Attribute]string{
+		hgraber.AttrAuthor:    "author",
+		hgraber.AttrCategory:  "category",
+		hgraber.AttrCharacter: "character",
+		hgraber.AttrGroup:     "group",
+		hgraber.AttrLanguage:  "language",
+		hgraber.AttrParody:    "parody",
+		hgraber.AttrTag:       "tag",
 	}
 
 	reverseAttrMap = reverseAttr(attrMap)
 )
 
-func reverseAttr(in map[domain.Attribute]string) map[string]domain.Attribute {
-	out := make(map[string]domain.Attribute, len(in))
+func reverseAttr(in map[hgraber.Attribute]string) map[string]hgraber.Attribute {
+	out := make(map[string]hgraber.Attribute, len(in))
 
 	for k, v := range in {
 		out[v] = k
@@ -29,10 +29,10 @@ func reverseAttr(in map[domain.Attribute]string) map[string]domain.Attribute {
 	return out
 }
 
-func (d *Database) UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error {
+func (d *Database) UpdateAttributes(ctx context.Context, id int, attr hgraber.Attribute, data []string) error {
 	attrCode, found := attrMap[attr]
 	if !found {
-		return domain.UnsupportedAttributeError
+		return hgraber.UnsupportedAttributeError
 	}
 
 	tx, err := d.db.BeginTxx(ctx, nil)

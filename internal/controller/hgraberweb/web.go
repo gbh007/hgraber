@@ -2,7 +2,7 @@ package hgraberweb
 
 import (
 	"app/internal/controller/hgraberweb/internal/static"
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"app/pkg/logger"
 	"context"
 	"io"
@@ -11,11 +11,11 @@ import (
 )
 
 type useCases interface {
-	Info(ctx context.Context) (*domain.MainInfo, error)
+	Info(ctx context.Context) (*hgraber.MainInfo, error)
 
-	GetBook(ctx context.Context, id int) (domain.Book, error)
-	GetPage(ctx context.Context, id int, page int) (*domain.Page, error)
-	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
+	GetBook(ctx context.Context, id int) (hgraber.Book, error)
+	GetPage(ctx context.Context, id int, page int) (*hgraber.Page, error)
+	GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book
 
 	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
 	UpdateBookRate(ctx context.Context, id int, rate int) error
@@ -23,9 +23,9 @@ type useCases interface {
 	ExportBooksToZip(ctx context.Context, from, to int) error
 
 	FirstHandle(ctx context.Context, u string) error
-	FirstHandleMultiple(ctx context.Context, data []string) (*domain.FirstHandleMultipleResult, error)
+	FirstHandleMultiple(ctx context.Context, data []string) (*hgraber.FirstHandleMultipleResult, error)
 
-	PageWithBody(ctx context.Context, bookID int, pageNumber int) (*domain.Page, io.ReadCloser, error)
+	PageWithBody(ctx context.Context, bookID int, pageNumber int) (*hgraber.Page, io.ReadCloser, error)
 }
 
 type webtool interface {
@@ -39,7 +39,7 @@ type webtool interface {
 }
 
 type monitor interface {
-	Info() []domain.MonitorStat
+	Info() []hgraber.MonitorStat
 }
 
 type WebServer struct {

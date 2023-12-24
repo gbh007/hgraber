@@ -1,7 +1,7 @@
 package hgraber
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"strings"
 	"time"
 )
@@ -74,7 +74,7 @@ func convertSlice[From any, To any](to []To, from []From, conv func(From) To) {
 	}
 }
 
-func TitleFromStorageWrap(raw domain.Book) Title {
+func TitleFromStorageWrap(raw hgraber.Book) Title {
 	out := Title{
 		ID:      raw.ID,
 		Created: raw.Created,
@@ -88,32 +88,32 @@ func TitleFromStorageWrap(raw domain.Book) Title {
 	return out
 }
 
-func TitleInfoFromStorage(raw domain.BookInfo) TitleInfo {
+func TitleInfoFromStorage(raw hgraber.BookInfo) TitleInfo {
 	out := TitleInfo{
 		Parsed:     TitleInfoParsedFromStorage(raw.Parsed),
 		Name:       raw.Name,
 		Rate:       raw.Rate,
-		Tags:       make([]string, len(raw.Attributes[domain.AttrTag])),
-		Authors:    make([]string, len(raw.Attributes[domain.AttrAuthor])),
-		Characters: make([]string, len(raw.Attributes[domain.AttrCharacter])),
-		Languages:  make([]string, len(raw.Attributes[domain.AttrLanguage])),
-		Categories: make([]string, len(raw.Attributes[domain.AttrCategory])),
-		Parodies:   make([]string, len(raw.Attributes[domain.AttrParody])),
-		Groups:     make([]string, len(raw.Attributes[domain.AttrGroup])),
+		Tags:       make([]string, len(raw.Attributes[hgraber.AttrTag])),
+		Authors:    make([]string, len(raw.Attributes[hgraber.AttrAuthor])),
+		Characters: make([]string, len(raw.Attributes[hgraber.AttrCharacter])),
+		Languages:  make([]string, len(raw.Attributes[hgraber.AttrLanguage])),
+		Categories: make([]string, len(raw.Attributes[hgraber.AttrCategory])),
+		Parodies:   make([]string, len(raw.Attributes[hgraber.AttrParody])),
+		Groups:     make([]string, len(raw.Attributes[hgraber.AttrGroup])),
 	}
 
-	copy(out.Tags, raw.Attributes[domain.AttrTag])
-	copy(out.Authors, raw.Attributes[domain.AttrAuthor])
-	copy(out.Characters, raw.Attributes[domain.AttrCharacter])
-	copy(out.Languages, raw.Attributes[domain.AttrLanguage])
-	copy(out.Categories, raw.Attributes[domain.AttrCategory])
-	copy(out.Parodies, raw.Attributes[domain.AttrParody])
-	copy(out.Groups, raw.Attributes[domain.AttrGroup])
+	copy(out.Tags, raw.Attributes[hgraber.AttrTag])
+	copy(out.Authors, raw.Attributes[hgraber.AttrAuthor])
+	copy(out.Characters, raw.Attributes[hgraber.AttrCharacter])
+	copy(out.Languages, raw.Attributes[hgraber.AttrLanguage])
+	copy(out.Categories, raw.Attributes[hgraber.AttrCategory])
+	copy(out.Parodies, raw.Attributes[hgraber.AttrParody])
+	copy(out.Groups, raw.Attributes[hgraber.AttrGroup])
 
 	return out
 }
 
-func PageFromStorageWrap(raw domain.Page) Page {
+func PageFromStorageWrap(raw hgraber.Page) Page {
 	return Page{
 		TitleID:    raw.BookID,
 		PageNumber: raw.PageNumber,
@@ -125,17 +125,17 @@ func PageFromStorageWrap(raw domain.Page) Page {
 	}
 }
 
-func TitleInfoParsedFromStorage(raw domain.BookInfoParsed) TitleInfoParsed {
+func TitleInfoParsedFromStorage(raw hgraber.BookInfoParsed) TitleInfoParsed {
 	return TitleInfoParsed{
 		Name: raw.Name,
 		Page: raw.Page,
 
-		Tags:       raw.Attributes[domain.AttrTag],
-		Authors:    raw.Attributes[domain.AttrAuthor],
-		Characters: raw.Attributes[domain.AttrCharacter],
-		Languages:  raw.Attributes[domain.AttrLanguage],
-		Categories: raw.Attributes[domain.AttrCategory],
-		Parodies:   raw.Attributes[domain.AttrParody],
-		Groups:     raw.Attributes[domain.AttrGroup],
+		Tags:       raw.Attributes[hgraber.AttrTag],
+		Authors:    raw.Attributes[hgraber.AttrAuthor],
+		Characters: raw.Attributes[hgraber.AttrCharacter],
+		Languages:  raw.Attributes[hgraber.AttrLanguage],
+		Categories: raw.Attributes[hgraber.AttrCategory],
+		Parodies:   raw.Attributes[hgraber.AttrParody],
+		Groups:     raw.Attributes[hgraber.AttrGroup],
 	}
 }

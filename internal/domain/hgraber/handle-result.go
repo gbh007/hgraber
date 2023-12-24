@@ -1,4 +1,4 @@
-package domain
+package hgraber
 
 type FirstHandleMultipleResult struct {
 	TotalCount     int64

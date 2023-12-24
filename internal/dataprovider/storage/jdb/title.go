@@ -2,7 +2,7 @@ package jdb
 
 import (
 	"app/internal/dataprovider/storage/jdb/internal/model"
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"strings"
 	"time"
@@ -10,11 +10,11 @@ import (
 	"slices"
 )
 
-func (db *Database) GetUnloadedBooks(ctx context.Context) []domain.Book {
+func (db *Database) GetUnloadedBooks(ctx context.Context) []hgraber.Book {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	res := []domain.Book{}
+	res := []hgraber.Book{}
 
 	for _, t := range db.data.Titles {
 		if !t.Data.Parsed.IsFullParsed() {
@@ -32,7 +32,7 @@ func (db *Database) NewBook(ctx context.Context, name, URL string, loaded bool) 
 	URL = strings.TrimSpace(URL)
 
 	if _, found := db.uniqueURLs[URL]; found {
-		return 0, domain.BookAlreadyExistsError
+		return 0, hgraber.BookAlreadyExistsError
 	}
 
 	db.lastTitleID++
@@ -68,13 +68,13 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, page int, success
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return domain.PageNotFoundError
+		return hgraber.PageNotFoundError
 	}
 
 	title.Pages[page].Success = success
@@ -94,13 +94,13 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return domain.PageNotFoundError
+		return hgraber.PageNotFoundError
 	}
 
 	title.Pages[page].Rate = rate
@@ -111,23 +111,23 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 	return nil
 }
 
-func (db *Database) GetBook(ctx context.Context, id int) (domain.Book, error) {
+func (db *Database) GetBook(ctx context.Context, id int) (hgraber.Book, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.Book{}, domain.BookNotFoundError
+		return hgraber.Book{}, hgraber.BookNotFoundError
 	}
 
 	return title.Super(), nil
 }
 
-func (db *Database) GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book {
+func (db *Database) GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	res := []domain.Book{}
+	res := []hgraber.Book{}
 
 	ids := db.getTitleIDs(filter.NewFirst)
 	n := len(ids)
@@ -174,16 +174,16 @@ func (db *Database) getTitleIDs(reverse bool) []int {
 	return res
 }
 
-func (db *Database) GetUnsuccessPages(ctx context.Context) []domain.Page {
+func (db *Database) GetUnsuccessPages(ctx context.Context) []hgraber.Page {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	res := []domain.Page{}
+	res := []hgraber.Page{}
 
 	for _, t := range db.data.Titles {
 		for i, p := range t.Pages {
 			if !p.Success {
-				res = append(res, domain.Page{
+				res = append(res, hgraber.Page{
 					BookID:     t.ID,
 					PageNumber: i + 1,
 					URL:        p.URL,
@@ -198,13 +198,13 @@ func (db *Database) GetUnsuccessPages(ctx context.Context) []domain.Page {
 	return res
 }
 
-func (db *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error {
+func (db *Database) UpdateBookPages(ctx context.Context, id int, pages []hgraber.Page) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	title.Pages = model.RawPagesFromSuper(pages)
@@ -223,7 +223,7 @@ func (db *Database) UpdateBookRate(ctx context.Context, id int, rate int) error 
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	title.Data.Rate = rate
@@ -234,24 +234,24 @@ func (db *Database) UpdateBookRate(ctx context.Context, id int, rate int) error 
 	return nil
 }
 
-func (db *Database) GetPage(ctx context.Context, id, page int) (*domain.Page, error) {
+func (db *Database) GetPage(ctx context.Context, id, page int) (*hgraber.Page, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return nil, domain.BookNotFoundError
+		return nil, hgraber.BookNotFoundError
 	}
 
 	page--
 
 	if page < 0 || page >= len(title.Pages) {
-		return nil, domain.PageNotFoundError
+		return nil, hgraber.PageNotFoundError
 	}
 
 	p := title.Pages[page]
 
-	return &domain.Page{
+	return &hgraber.Page{
 		BookID:     title.ID,
 		PageNumber: page + 1,
 		URL:        p.URL,

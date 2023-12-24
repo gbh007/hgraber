@@ -1,7 +1,7 @@
 package hgraber
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"app/pkg/logger"
 	"context"
 	"io"
@@ -14,19 +14,19 @@ type storage interface {
 	UnloadedBooksCount(ctx context.Context) int
 
 	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
-	GetBook(ctx context.Context, id int) (domain.Book, error)
+	GetBook(ctx context.Context, id int) (hgraber.Book, error)
 
-	GetUnloadedBooks(ctx context.Context) []domain.Book
+	GetUnloadedBooks(ctx context.Context) []hgraber.Book
 
-	UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error
+	UpdateBookPages(ctx context.Context, id int, pages []hgraber.Page) error
 	UpdateBookName(ctx context.Context, id int, name string) error
-	UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error
+	UpdateAttributes(ctx context.Context, id int, attr hgraber.Attribute, data []string) error
 
-	GetUnsuccessPages(ctx context.Context) []domain.Page
+	GetUnsuccessPages(ctx context.Context) []hgraber.Page
 	UpdatePageSuccess(ctx context.Context, id int, page int, success bool) error
 
-	GetPage(ctx context.Context, id int, page int) (*domain.Page, error)
-	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
+	GetPage(ctx context.Context, id int, page int) (*hgraber.Page, error)
+	GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book
 	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
 	UpdateBookRate(ctx context.Context, id int, rate int) error
 }
@@ -43,8 +43,8 @@ type files interface {
 }
 
 type loader interface {
-	Parse(ctx context.Context, URL string) (domain.Parser, error)
-	Load(ctx context.Context, URL string) (domain.Parser, error)
+	Parse(ctx context.Context, URL string) (hgraber.Parser, error)
+	Load(ctx context.Context, URL string) (hgraber.Parser, error)
 	LoadImage(ctx context.Context, URL string) (io.ReadCloser, error)
 }
 

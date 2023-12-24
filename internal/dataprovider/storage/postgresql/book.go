@@ -1,7 +1,7 @@
 package postgresql
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"database/sql"
 	"strings"
@@ -16,7 +16,7 @@ func (d *Database) NewBook(ctx context.Context, name string, URL string, loaded 
 	}
 
 	if count > 0 {
-		return 0, domain.BookAlreadyExistsError
+		return 0, hgraber.BookAlreadyExistsError
 	}
 
 	var id int
@@ -42,7 +42,7 @@ func (d *Database) UpdateBookName(ctx context.Context, id int, name string) erro
 	}
 
 	if !d.isApply(ctx, res) {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	return nil
@@ -55,7 +55,7 @@ func (d *Database) UpdateBookRate(ctx context.Context, id int, rate int) error {
 	}
 
 	if !d.isApply(ctx, res) {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	return nil

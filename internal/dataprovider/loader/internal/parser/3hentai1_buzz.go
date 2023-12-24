@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"fmt"
 	"regexp"
@@ -76,11 +76,11 @@ func (p Parser_3HENTAI1_BUZZ) parsePages(s string) []string {
 	return result
 }
 
-func (p Parser_3HENTAI1_BUZZ) ParsePages(ctx context.Context) []domain.Page {
-	result := make([]domain.Page, 0)
+func (p Parser_3HENTAI1_BUZZ) ParsePages(ctx context.Context) []hgraber.Page {
+	result := make([]hgraber.Page, 0)
 	res := p.parsePages(p.main_raw)
 	if len(res) < 1 {
-		return []domain.Page{}
+		return []hgraber.Page{}
 	}
 
 	rp_img := regexp.MustCompile(regexp.QuoteMeta(`<img src="`) + `(.+?)` + regexp.QuoteMeta(`"`))
@@ -88,17 +88,17 @@ func (p Parser_3HENTAI1_BUZZ) ParsePages(ctx context.Context) []domain.Page {
 		// символ / и так будет в конце
 		data, err := p.r.RequestString(ctx, fmt.Sprintf("https://www.3hentai1.buzz/%s", rURL))
 		if err != nil {
-			return []domain.Page{}
+			return []hgraber.Page{}
 		}
 		res := rp_img.FindStringSubmatch(data)
 		if len(res) < 2 {
-			return []domain.Page{}
+			return []hgraber.Page{}
 		}
 		url := res[1]
 
 		fnameTmp := strings.Split(url, "/")                      // название файла
 		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
-		result = append(result, domain.Page{URL: url, PageNumber: i + 1, Ext: fnameTmp[len(fnameTmp)-1]})
+		result = append(result, hgraber.Page{URL: url, PageNumber: i + 1, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 
 	return result

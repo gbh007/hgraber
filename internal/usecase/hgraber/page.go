@@ -1,13 +1,13 @@
 package hgraber
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"fmt"
 	"io"
 )
 
-func (uc *UseCase) LoadPageWithUpdate(ctx context.Context, page domain.Page) error {
+func (uc *UseCase) LoadPageWithUpdate(ctx context.Context, page hgraber.Page) error {
 	err := uc.downloadPageImage(ctx, page.BookID, page.PageNumber, page.URL, page.Ext)
 	if err != nil {
 		return fmt.Errorf("load page with update: %w", err)
@@ -39,7 +39,7 @@ func (uc *UseCase) downloadPageImage(ctx context.Context, id, page int, URL, ext
 	return nil
 }
 
-func (uc *UseCase) PageWithBody(ctx context.Context, bookID int, pageNumber int) (*domain.Page, io.ReadCloser, error) {
+func (uc *UseCase) PageWithBody(ctx context.Context, bookID int, pageNumber int) (*hgraber.Page, io.ReadCloser, error) {
 	info, err := uc.storage.GetPage(ctx, bookID, pageNumber)
 	if err != nil {
 		return nil, nil, fmt.Errorf("page with body: %w", err)

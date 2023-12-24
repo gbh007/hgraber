@@ -1,7 +1,7 @@
 package postgresql
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"database/sql"
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func (d *Database) GetPage(ctx context.Context, id int, page int) (*domain.Page, error) {
+func (d *Database) GetPage(ctx context.Context, id int, page int) (*hgraber.Page, error) {
 	raw := new(Page)
 
 	err := d.db.GetContext(
@@ -18,7 +18,7 @@ func (d *Database) GetPage(ctx context.Context, id int, page int) (*domain.Page,
 		id, page,
 	)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, domain.PageNotFoundError
+		return nil, hgraber.PageNotFoundError
 	}
 
 	if err != nil {
@@ -30,17 +30,17 @@ func (d *Database) GetPage(ctx context.Context, id int, page int) (*domain.Page,
 	return &p, nil
 }
 
-func (d *Database) GetUnsuccessPages(ctx context.Context) []domain.Page {
+func (d *Database) GetUnsuccessPages(ctx context.Context) []hgraber.Page {
 	raw := make([]*Page, 0)
 
 	err := d.db.SelectContext(ctx, &raw, `SELECT * FROM pages WHERE success = FALSE;`)
 	if err != nil {
 		d.logger.Error(ctx, err)
 
-		return []domain.Page{}
+		return []hgraber.Page{}
 	}
 
-	out := make([]domain.Page, len(raw))
+	out := make([]hgraber.Page, len(raw))
 	for i, v := range raw {
 		out[i] = pageToDomain(ctx, v)
 	}
@@ -59,7 +59,7 @@ func (d *Database) UpdatePageSuccess(ctx context.Context, id int, page int, succ
 	}
 
 	if !d.isApply(ctx, res) {
-		return domain.PageNotFoundError
+		return hgraber.PageNotFoundError
 	}
 
 	return nil
@@ -77,13 +77,13 @@ func (d *Database) UpdatePageRate(ctx context.Context, id int, page int, rate in
 	}
 
 	if !d.isApply(ctx, res) {
-		return domain.PageNotFoundError
+		return hgraber.PageNotFoundError
 	}
 
 	return nil
 }
 
-func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error {
+func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []hgraber.Page) error {
 	tx, err := d.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
@@ -99,7 +99,7 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []domain.P
 	if !d.isApply(ctx, res) {
 		d.logger.IfErrFunc(ctx, tx.Rollback)
 
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM pages WHERE book_id = $1;`, id)
@@ -141,8 +141,8 @@ func (d *Database) getBookPages(ctx context.Context, bookID int) ([]*Page, error
 	return raw, nil
 }
 
-func pageToDomain(ctx context.Context, in *Page) domain.Page {
-	return domain.Page{
+func pageToDomain(ctx context.Context, in *Page) hgraber.Page {
+	return hgraber.Page{
 		BookID:     in.BookID,
 		PageNumber: in.PageNumber,
 		URL:        in.Url,

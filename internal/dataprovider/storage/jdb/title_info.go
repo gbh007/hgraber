@@ -1,7 +1,7 @@
 package jdb
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 )
 
@@ -11,7 +11,7 @@ func (db *Database) UpdateBookName(ctx context.Context, id int, name string) err
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	title.Data.Name = name
@@ -24,47 +24,47 @@ func (db *Database) UpdateBookName(ctx context.Context, id int, name string) err
 
 }
 
-func (db *Database) UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error {
+func (db *Database) UpdateAttributes(ctx context.Context, id int, attr hgraber.Attribute, data []string) error {
 
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
 	title, ok := db.data.Titles[id]
 	if !ok {
-		return domain.BookNotFoundError
+		return hgraber.BookNotFoundError
 	}
 
 	switch attr {
-	case domain.AttrAuthor:
+	case hgraber.AttrAuthor:
 		title.Data.Authors = data
 		title.Data.Parsed.Authors = true
 
-	case domain.AttrCategory:
+	case hgraber.AttrCategory:
 		title.Data.Categories = data
 		title.Data.Parsed.Categories = true
 
-	case domain.AttrCharacter:
+	case hgraber.AttrCharacter:
 		title.Data.Characters = data
 		title.Data.Parsed.Characters = true
 
-	case domain.AttrGroup:
+	case hgraber.AttrGroup:
 		title.Data.Groups = data
 		title.Data.Parsed.Groups = true
 
-	case domain.AttrLanguage:
+	case hgraber.AttrLanguage:
 		title.Data.Languages = data
 		title.Data.Parsed.Languages = true
 
-	case domain.AttrParody:
+	case hgraber.AttrParody:
 		title.Data.Parodies = data
 		title.Data.Parsed.Parodies = true
 
-	case domain.AttrTag:
+	case hgraber.AttrTag:
 		title.Data.Tags = data
 		title.Data.Parsed.Tags = true
 
 	default:
-		return domain.UnsupportedAttributeError
+		return hgraber.UnsupportedAttributeError
 	}
 
 	db.data.Titles[id] = title

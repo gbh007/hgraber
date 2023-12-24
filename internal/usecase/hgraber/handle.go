@@ -1,7 +1,7 @@
 package hgraber
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"errors"
 	"strings"
@@ -26,8 +26,8 @@ func (uc *UseCase) FirstHandle(ctx context.Context, u string) error {
 	return nil
 }
 
-func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*domain.FirstHandleMultipleResult, error) {
-	res := &domain.FirstHandleMultipleResult{}
+func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*hgraber.FirstHandleMultipleResult, error) {
+	res := &hgraber.FirstHandleMultipleResult{}
 
 	for _, link := range data {
 		res.TotalCount++
@@ -35,10 +35,10 @@ func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*dom
 		err := uc.FirstHandle(ctx, link)
 
 		switch {
-		case errors.Is(err, domain.BookAlreadyExistsError):
+		case errors.Is(err, hgraber.BookAlreadyExistsError):
 			res.DuplicateCount++
 
-		case errors.Is(err, domain.ErrInvalidLink):
+		case errors.Is(err, hgraber.ErrInvalidLink):
 			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
 

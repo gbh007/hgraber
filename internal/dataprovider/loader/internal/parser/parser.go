@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"strings"
 )
@@ -37,7 +37,7 @@ func Parse(ctx context.Context, URL string) (p Parser, err error) {
 	case strings.HasPrefix(URL, "http://localhost"):
 		return new(mockParser), nil
 	default:
-		return nil, domain.ErrInvalidLink
+		return nil, hgraber.ErrInvalidLink
 	}
 }
 
@@ -55,7 +55,7 @@ func Load(ctx context.Context, r Requester, URL string) (p Parser,  err error) {
 type Parser interface {
 	Load(ctx context.Context, r Requester, URL string) error
 	ParseName(ctx context.Context) string
-	ParsePages(ctx context.Context) []domain.Page
+	ParsePages(ctx context.Context) []hgraber.Page
 	ParseTags(ctx context.Context) []string
 	ParseAuthors(ctx context.Context) []string
 	ParseCharacters(ctx context.Context) []string
@@ -72,7 +72,7 @@ type baseParser struct{}
 
 func (p baseParser) Load(ctx context.Context, r Requester, URL string) error { return nil }
 func (p baseParser) ParseName(ctx context.Context) string                    { return "" }
-func (p baseParser) ParsePages(ctx context.Context) []domain.Page            { return []domain.Page{} }
+func (p baseParser) ParsePages(ctx context.Context) []hgraber.Page           { return []hgraber.Page{} }
 func (p baseParser) ParseTags(ctx context.Context) []string                  { return []string{} }
 func (p baseParser) ParseAuthors(ctx context.Context) []string               { return []string{} }
 func (p baseParser) ParseCharacters(ctx context.Context) []string            { return []string{} }

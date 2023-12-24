@@ -1,7 +1,7 @@
 package model
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 )
 
 type RawTitleInfoParsed struct {
@@ -30,20 +30,20 @@ func (tip RawTitleInfoParsed) Copy() RawTitleInfoParsed {
 	}
 }
 
-func (tip RawTitleInfoParsed) Super() domain.BookInfoParsed {
-	t := domain.BookInfoParsed{
+func (tip RawTitleInfoParsed) Super() hgraber.BookInfoParsed {
+	t := hgraber.BookInfoParsed{
 		Name:       tip.Name,
 		Page:       tip.Page,
-		Attributes: make(map[domain.Attribute]bool, len(domain.AllAttributes)),
+		Attributes: make(map[hgraber.Attribute]bool, len(hgraber.AllAttributes)),
 	}
 
-	t.Attributes[domain.AttrTag] = tip.Tags
-	t.Attributes[domain.AttrAuthor] = tip.Authors
-	t.Attributes[domain.AttrCharacter] = tip.Characters
-	t.Attributes[domain.AttrLanguage] = tip.Languages
-	t.Attributes[domain.AttrCategory] = tip.Categories
-	t.Attributes[domain.AttrParody] = tip.Parodies
-	t.Attributes[domain.AttrGroup] = tip.Groups
+	t.Attributes[hgraber.AttrTag] = tip.Tags
+	t.Attributes[hgraber.AttrAuthor] = tip.Authors
+	t.Attributes[hgraber.AttrCharacter] = tip.Characters
+	t.Attributes[hgraber.AttrLanguage] = tip.Languages
+	t.Attributes[hgraber.AttrCategory] = tip.Categories
+	t.Attributes[hgraber.AttrParody] = tip.Parodies
+	t.Attributes[hgraber.AttrGroup] = tip.Groups
 
 	return t
 }
@@ -98,29 +98,29 @@ func (ti RawTitleInfo) Copy() RawTitleInfo {
 	return c
 }
 
-func (ti RawTitleInfo) Super() domain.BookInfo {
-	c := domain.BookInfo{
+func (ti RawTitleInfo) Super() hgraber.BookInfo {
+	c := hgraber.BookInfo{
 		Parsed:     ti.Parsed.Super(),
 		Name:       ti.Name,
 		Rate:       ti.Rate,
-		Attributes: make(map[domain.Attribute][]string, len(domain.AllAttributes)),
+		Attributes: make(map[hgraber.Attribute][]string, len(hgraber.AllAttributes)),
 	}
 
-	c.Attributes[domain.AttrTag] = make([]string, len(ti.Tags))
-	c.Attributes[domain.AttrAuthor] = make([]string, len(ti.Authors))
-	c.Attributes[domain.AttrCharacter] = make([]string, len(ti.Characters))
-	c.Attributes[domain.AttrLanguage] = make([]string, len(ti.Languages))
-	c.Attributes[domain.AttrCategory] = make([]string, len(ti.Categories))
-	c.Attributes[domain.AttrParody] = make([]string, len(ti.Parodies))
-	c.Attributes[domain.AttrGroup] = make([]string, len(ti.Groups))
+	c.Attributes[hgraber.AttrTag] = make([]string, len(ti.Tags))
+	c.Attributes[hgraber.AttrAuthor] = make([]string, len(ti.Authors))
+	c.Attributes[hgraber.AttrCharacter] = make([]string, len(ti.Characters))
+	c.Attributes[hgraber.AttrLanguage] = make([]string, len(ti.Languages))
+	c.Attributes[hgraber.AttrCategory] = make([]string, len(ti.Categories))
+	c.Attributes[hgraber.AttrParody] = make([]string, len(ti.Parodies))
+	c.Attributes[hgraber.AttrGroup] = make([]string, len(ti.Groups))
 
-	copy(c.Attributes[domain.AttrTag], ti.Tags)
-	copy(c.Attributes[domain.AttrAuthor], ti.Authors)
-	copy(c.Attributes[domain.AttrCharacter], ti.Characters)
-	copy(c.Attributes[domain.AttrLanguage], ti.Languages)
-	copy(c.Attributes[domain.AttrCategory], ti.Categories)
-	copy(c.Attributes[domain.AttrParody], ti.Parodies)
-	copy(c.Attributes[domain.AttrGroup], ti.Groups)
+	copy(c.Attributes[hgraber.AttrTag], ti.Tags)
+	copy(c.Attributes[hgraber.AttrAuthor], ti.Authors)
+	copy(c.Attributes[hgraber.AttrCharacter], ti.Characters)
+	copy(c.Attributes[hgraber.AttrLanguage], ti.Languages)
+	copy(c.Attributes[hgraber.AttrCategory], ti.Categories)
+	copy(c.Attributes[hgraber.AttrParody], ti.Parodies)
+	copy(c.Attributes[hgraber.AttrGroup], ti.Groups)
 
 	return c
 }

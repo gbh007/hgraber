@@ -1,7 +1,7 @@
 package model
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"time"
 )
 
@@ -30,12 +30,12 @@ func (t RawTitle) Copy() RawTitle {
 	return c
 }
 
-func (t RawTitle) Super() domain.Book {
-	c := domain.Book{
+func (t RawTitle) Super() hgraber.Book {
+	c := hgraber.Book{
 		ID:      t.ID,
 		Created: t.Created,
 		URL:     t.URL,
-		Pages:   make([]domain.Page, len(t.Pages)),
+		Pages:   make([]hgraber.Page, len(t.Pages)),
 		Data:    t.Data.Super(),
 	}
 

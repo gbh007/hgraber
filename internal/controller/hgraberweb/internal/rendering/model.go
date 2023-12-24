@@ -1,13 +1,13 @@
 package rendering
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"fmt"
 	"time"
 )
 
-func PageFromStorageWrap(addr string) func(raw domain.Page) Page {
-	return func(raw domain.Page) Page {
+func PageFromStorageWrap(addr string) func(raw hgraber.Page) Page {
+	return func(raw hgraber.Page) Page {
 		return Page{
 			TitleID:    raw.BookID,
 			PageNumber: raw.PageNumber,
@@ -44,18 +44,18 @@ type TitleInfoParsed struct {
 	Groups     bool `json:"groups,omitempty"`
 }
 
-func TitleInfoParsedFromStorage(raw domain.BookInfoParsed) TitleInfoParsed {
+func TitleInfoParsedFromStorage(raw hgraber.BookInfoParsed) TitleInfoParsed {
 	return TitleInfoParsed{
 		Name: raw.Name,
 		Page: raw.Page,
 
-		Tags:       raw.Attributes[domain.AttrTag],
-		Authors:    raw.Attributes[domain.AttrAuthor],
-		Characters: raw.Attributes[domain.AttrCharacter],
-		Languages:  raw.Attributes[domain.AttrLanguage],
-		Categories: raw.Attributes[domain.AttrCategory],
-		Parodies:   raw.Attributes[domain.AttrParody],
-		Groups:     raw.Attributes[domain.AttrGroup],
+		Tags:       raw.Attributes[hgraber.AttrTag],
+		Authors:    raw.Attributes[hgraber.AttrAuthor],
+		Characters: raw.Attributes[hgraber.AttrCharacter],
+		Languages:  raw.Attributes[hgraber.AttrLanguage],
+		Categories: raw.Attributes[hgraber.AttrCategory],
+		Parodies:   raw.Attributes[hgraber.AttrParody],
+		Groups:     raw.Attributes[hgraber.AttrGroup],
 	}
 }
 
@@ -72,27 +72,27 @@ type TitleInfo struct {
 	Groups     []string        `json:"groups,omitempty"`
 }
 
-func TitleInfoFromStorage(raw domain.BookInfo) TitleInfo {
+func TitleInfoFromStorage(raw hgraber.BookInfo) TitleInfo {
 	out := TitleInfo{
 		Parsed:     TitleInfoParsedFromStorage(raw.Parsed),
 		Name:       raw.Name,
 		Rate:       raw.Rate,
-		Tags:       make([]string, len(raw.Attributes[domain.AttrTag])),
-		Authors:    make([]string, len(raw.Attributes[domain.AttrAuthor])),
-		Characters: make([]string, len(raw.Attributes[domain.AttrCharacter])),
-		Languages:  make([]string, len(raw.Attributes[domain.AttrLanguage])),
-		Categories: make([]string, len(raw.Attributes[domain.AttrCategory])),
-		Parodies:   make([]string, len(raw.Attributes[domain.AttrParody])),
-		Groups:     make([]string, len(raw.Attributes[domain.AttrGroup])),
+		Tags:       make([]string, len(raw.Attributes[hgraber.AttrTag])),
+		Authors:    make([]string, len(raw.Attributes[hgraber.AttrAuthor])),
+		Characters: make([]string, len(raw.Attributes[hgraber.AttrCharacter])),
+		Languages:  make([]string, len(raw.Attributes[hgraber.AttrLanguage])),
+		Categories: make([]string, len(raw.Attributes[hgraber.AttrCategory])),
+		Parodies:   make([]string, len(raw.Attributes[hgraber.AttrParody])),
+		Groups:     make([]string, len(raw.Attributes[hgraber.AttrGroup])),
 	}
 
-	copy(out.Tags, raw.Attributes[domain.AttrTag])
-	copy(out.Authors, raw.Attributes[domain.AttrAuthor])
-	copy(out.Characters, raw.Attributes[domain.AttrCharacter])
-	copy(out.Languages, raw.Attributes[domain.AttrLanguage])
-	copy(out.Categories, raw.Attributes[domain.AttrCategory])
-	copy(out.Parodies, raw.Attributes[domain.AttrParody])
-	copy(out.Groups, raw.Attributes[domain.AttrGroup])
+	copy(out.Tags, raw.Attributes[hgraber.AttrTag])
+	copy(out.Authors, raw.Attributes[hgraber.AttrAuthor])
+	copy(out.Characters, raw.Attributes[hgraber.AttrCharacter])
+	copy(out.Languages, raw.Attributes[hgraber.AttrLanguage])
+	copy(out.Categories, raw.Attributes[hgraber.AttrCategory])
+	copy(out.Parodies, raw.Attributes[hgraber.AttrParody])
+	copy(out.Groups, raw.Attributes[hgraber.AttrGroup])
 
 	return out
 }
@@ -106,8 +106,8 @@ type Title struct {
 	Data  TitleInfo `json:"info"`
 }
 
-func TitleFromStorageWrap(addr string) func(raw domain.Book) Title {
-	return func(raw domain.Book) Title {
+func TitleFromStorageWrap(addr string) func(raw hgraber.Book) Title {
+	return func(raw hgraber.Book) Title {
 		out := Title{
 			ID:      raw.ID,
 			Created: raw.Created,
@@ -122,7 +122,7 @@ func TitleFromStorageWrap(addr string) func(raw domain.Book) Title {
 	}
 }
 
-func TitlesFromStorage(addr string, raw []domain.Book) []Title {
+func TitlesFromStorage(addr string, raw []hgraber.Book) []Title {
 	out := make([]Title, len(raw))
 
 	convertSlice(out, raw, TitleFromStorageWrap(addr))
@@ -138,7 +138,7 @@ type FirstHandleMultipleResult struct {
 	NotHandled     []string `json:"not_handled,omitempty"`
 }
 
-func HandleMultipleResultFromDomain(raw *domain.FirstHandleMultipleResult) FirstHandleMultipleResult {
+func HandleMultipleResultFromDomain(raw *hgraber.FirstHandleMultipleResult) FirstHandleMultipleResult {
 	out := FirstHandleMultipleResult{
 		TotalCount:     raw.TotalCount,
 		LoadedCount:    raw.LoadedCount,

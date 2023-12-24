@@ -1,12 +1,12 @@
 package hgraber
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"strings"
 )
 
-func (uc *UseCase) ParseWithUpdate(ctx context.Context, book domain.Book) {
+func (uc *UseCase) ParseWithUpdate(ctx context.Context, book hgraber.Book) {
 	uc.logger.Info(ctx, "начата обработка", book.ID, book.URL)
 	defer uc.logger.Info(ctx, "завершена обработка", book.ID, book.URL)
 
@@ -28,12 +28,12 @@ func (uc *UseCase) ParseWithUpdate(ctx context.Context, book domain.Book) {
 		uc.logger.Info(ctx, "обновлено название", book.ID, book.URL)
 	}
 
-	for _, attr := range domain.AllAttributes {
+	for _, attr := range hgraber.AllAttributes {
 		if book.Data.Parsed.Attributes[attr] {
 			continue
 		}
 
-		err = uc.storage.UpdateAttributes(ctx, book.ID, attr, domain.ParseAttr(ctx, p, attr))
+		err = uc.storage.UpdateAttributes(ctx, book.ID, attr, hgraber.ParseAttr(ctx, p, attr))
 		if err != nil {
 			uc.logger.Error(ctx, err)
 
@@ -46,10 +46,10 @@ func (uc *UseCase) ParseWithUpdate(ctx context.Context, book domain.Book) {
 	if !book.Data.Parsed.Page {
 		pages := p.ParsePages(ctx)
 		if len(pages) > 0 {
-			pagesDB := make([]domain.Page, len(pages))
+			pagesDB := make([]hgraber.Page, len(pages))
 
 			for i, page := range pages {
-				pagesDB[i] = domain.Page{
+				pagesDB[i] = hgraber.Page{
 					BookID:     book.ID,
 					PageNumber: page.PageNumber,
 					URL:        page.URL,

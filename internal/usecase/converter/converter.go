@@ -1,7 +1,7 @@
 package converter
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"app/pkg/logger"
 	"context"
 	"errors"
@@ -9,15 +9,15 @@ import (
 )
 
 type storageFrom interface {
-	GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book
+	GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book
 	BooksCount(ctx context.Context) int
 }
 
 type storageTo interface {
 	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
 	UpdateBookRate(ctx context.Context, id int, rate int) error
-	UpdateBookPages(ctx context.Context, id int, pages []domain.Page) error
-	UpdateAttributes(ctx context.Context, id int, attr domain.Attribute, data []string) error
+	UpdateBookPages(ctx context.Context, id int, pages []hgraber.Page) error
+	UpdateAttributes(ctx context.Context, id int, attr hgraber.Attribute, data []string) error
 }
 
 type Builder struct {
@@ -46,7 +46,7 @@ func (b *Builder) WithTo(dst storageTo) *Builder {
 }
 
 func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround bool) {
-	books := b.src.GetBooks(ctx, domain.BookFilter{
+	books := b.src.GetBooks(ctx, hgraber.BookFilter{
 		Limit:  b.src.BooksCount(ctx),
 		Offset: offset,
 	})
@@ -60,7 +60,7 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 
 			b.logger.Debug(ctx, book)
 
-			if !notUniqWorkaround || !errors.Is(err, domain.BookAlreadyExistsError) {
+			if !notUniqWorkaround || !errors.Is(err, hgraber.BookAlreadyExistsError) {
 				return
 			}
 

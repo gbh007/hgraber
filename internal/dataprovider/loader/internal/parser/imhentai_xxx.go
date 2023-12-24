@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"fmt"
 	"regexp"
@@ -65,16 +65,16 @@ func (p Parser_IMHENTAI_XXX) ParseTags(ctx context.Context) []string {
 	raw = strings.Split(raw, `</li>`)[0]
 	return p.parseTags(raw)
 }
-func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []domain.Page {
-	result := make([]domain.Page, 0)
+func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []hgraber.Page {
+	result := make([]hgraber.Page, 0)
 	rp := `(?sm)` + regexp.QuoteMeta(`<li class="pages">Pages: `) + `(\d+).*?` + regexp.QuoteMeta(`</li>`)
 	res := regexp.MustCompile(rp).FindStringSubmatch(p.main_raw)
 	if len(res) < 2 {
-		return []domain.Page{}
+		return []hgraber.Page{}
 	}
 	count, err := strconv.Atoi(res[1])
 	if err != nil {
-		return []domain.Page{}
+		return []hgraber.Page{}
 	}
 	u := strings.Replace(p.url, "gallery", "view", -1)
 	rp_img := regexp.MustCompile(regexp.QuoteMeta(`<img id="gimg" class="lazy`) + `.+?` + `src="(.+?)" alt`)
@@ -82,11 +82,11 @@ func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []domain.Page {
 		// символ / и так будет в конце
 		data, err := p.r.RequestString(ctx, fmt.Sprintf("%s%d", u, i))
 		if err != nil {
-			return []domain.Page{}
+			return []hgraber.Page{}
 		}
 		res := rp_img.FindStringSubmatch(data)
 		if len(res) < 2 {
-			return []domain.Page{}
+			return []hgraber.Page{}
 		}
 		url := res[1]
 		if strings.Contains(url, "data-src=\"") {
@@ -94,7 +94,7 @@ func (p Parser_IMHENTAI_XXX) ParsePages(ctx context.Context) []domain.Page {
 		}
 		fnameTmp := strings.Split(url, "/")                      // название файла
 		fnameTmp = strings.Split(fnameTmp[len(fnameTmp)-1], ".") // расширение
-		result = append(result, domain.Page{URL: url, PageNumber: i, Ext: fnameTmp[len(fnameTmp)-1]})
+		result = append(result, hgraber.Page{URL: url, PageNumber: i, Ext: fnameTmp[len(fnameTmp)-1]})
 	}
 	return result
 }

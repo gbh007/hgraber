@@ -2,7 +2,7 @@ package hgraberworker
 
 import (
 	"app/internal/controller/internal/worker"
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"app/pkg/ctxtool"
 	"context"
 	"time"
@@ -17,11 +17,11 @@ const (
 func (c *Controller) servePageWorker(ctx context.Context) {
 	ctx = ctxtool.NewSystemContext(ctx, "worker-page")
 
-	w := worker.New[domain.Page](
+	w := worker.New[hgraber.Page](
 		pageWorkerQueueSize,
 		pageWorkerInterval,
 		c.logger,
-		func(ctx context.Context, page domain.Page) {
+		func(ctx context.Context, page hgraber.Page) {
 			err := c.useCases.LoadPageWithUpdate(ctx, page)
 			if err != nil {
 				c.logger.Error(ctx, err)

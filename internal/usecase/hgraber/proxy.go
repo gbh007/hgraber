@@ -1,27 +1,27 @@
 package hgraber
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 )
 
-func (uc *UseCase) GetUnsuccessPages(ctx context.Context) []domain.Page {
+func (uc *UseCase) GetUnsuccessPages(ctx context.Context) []hgraber.Page {
 	return uc.storage.GetUnsuccessPages(ctx)
 }
 
-func (uc *UseCase) GetUnloadedBooks(ctx context.Context) []domain.Book {
+func (uc *UseCase) GetUnloadedBooks(ctx context.Context) []hgraber.Book {
 	return uc.storage.GetUnloadedBooks(ctx)
 }
 
-func (uc *UseCase) GetBook(ctx context.Context, id int) (domain.Book, error) {
+func (uc *UseCase) GetBook(ctx context.Context, id int) (hgraber.Book, error) {
 	return uc.storage.GetBook(ctx, id)
 }
 
-func (uc *UseCase) GetPage(ctx context.Context, id int, page int) (*domain.Page, error) {
+func (uc *UseCase) GetPage(ctx context.Context, id int, page int) (*hgraber.Page, error) {
 	return uc.storage.GetPage(ctx, id, page)
 }
 
-func (uc *UseCase) GetBooks(ctx context.Context, filter domain.BookFilter) []domain.Book {
+func (uc *UseCase) GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book {
 	return uc.storage.GetBooks(ctx, filter)
 }
 

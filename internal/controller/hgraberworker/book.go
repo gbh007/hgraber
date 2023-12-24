@@ -2,7 +2,7 @@ package hgraberworker
 
 import (
 	"app/internal/controller/internal/worker"
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"app/pkg/ctxtool"
 	"context"
 	"time"
@@ -17,7 +17,7 @@ const (
 func (c *Controller) serveBookWorker(ctx context.Context) {
 	ctx = ctxtool.NewSystemContext(ctx, "worker-book")
 
-	w := worker.New[domain.Book](
+	w := worker.New[hgraber.Book](
 		bookWorkerQueueSize,
 		bookWorkerInterval,
 		c.logger,

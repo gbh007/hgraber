@@ -3,7 +3,7 @@ package loader
 import (
 	"app/internal/dataprovider/loader/internal/parser"
 	"app/internal/dataprovider/loader/internal/request"
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"app/pkg/logger"
 	"context"
 	"fmt"
@@ -22,7 +22,7 @@ func New(logger *logger.Logger) *Loader {
 	}
 }
 
-func (l *Loader) Parse(ctx context.Context, URL string) (domain.Parser, error) {
+func (l *Loader) Parse(ctx context.Context, URL string) (hgraber.Parser, error) {
 	p, err := parser.Parse(ctx, URL)
 	if err != nil {
 		return nil, fmt.Errorf("parse: %w", err)
@@ -31,7 +31,7 @@ func (l *Loader) Parse(ctx context.Context, URL string) (domain.Parser, error) {
 	return p, nil
 }
 
-func (l *Loader) Load(ctx context.Context, URL string) (domain.Parser, error) {
+func (l *Loader) Load(ctx context.Context, URL string) (hgraber.Parser, error) {
 	p, err := parser.Parse(ctx, URL)
 	if err != nil {
 		return nil, fmt.Errorf("load: %w", err)

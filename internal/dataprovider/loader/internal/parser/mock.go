@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"fmt"
 	"regexp"
@@ -31,13 +31,13 @@ func (p *mockParser) Load(ctx context.Context, r Requester, URL string) error {
 	return nil
 }
 
-func (p *mockParser) ParsePages(ctx context.Context) []domain.Page {
-	result := make([]domain.Page, 0)
+func (p *mockParser) ParsePages(ctx context.Context) []hgraber.Page {
+	result := make([]hgraber.Page, 0)
 
 	rp := `(?sm)` + regexp.QuoteMeta(`<a href="`) + `(.+?)\.(.+?)` + regexp.QuoteMeta(`">`)
 	for i, name := range regexp.MustCompile(rp).FindAllStringSubmatch(p.body, -1) {
 		if len(name) > 1 {
-			result = append(result, domain.Page{
+			result = append(result, hgraber.Page{
 				PageNumber: i + 1,
 				URL:        p.url + "/" + strings.TrimSpace(name[1]) + "." + strings.TrimSpace(name[2]),
 				Ext:        name[2],

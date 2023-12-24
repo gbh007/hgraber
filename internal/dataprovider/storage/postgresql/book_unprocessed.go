@@ -1,13 +1,13 @@
 package postgresql
 
 import (
-	"app/internal/domain"
+	"app/internal/domain/hgraber"
 	"context"
 	"database/sql"
 )
 
-func (d *Database) GetUnloadedBooks(ctx context.Context) []domain.Book {
-	out := make([]domain.Book, 0)
+func (d *Database) GetUnloadedBooks(ctx context.Context) []hgraber.Book {
+	out := make([]hgraber.Book, 0)
 
 	ids, err := d.bookUnprocessedMap(ctx)
 	if err != nil {

@@ -1,6 +1,6 @@
 package rendering
 
-import "app/internal/domain"
+import "app/internal/domain/hgraber"
 
 type Monitor struct {
 	Workers []WorkerUnit `json:"workers"`
@@ -13,7 +13,7 @@ type WorkerUnit struct {
 	Runners int    `json:"runners"`
 }
 
-func MonitorFromDomain(workers []domain.MonitorStat) Monitor {
+func MonitorFromDomain(workers []hgraber.MonitorStat) Monitor {
 	workersOut := make([]WorkerUnit, len(workers))
 
 	convertSlice(workersOut, workers, WorkerUnitFromDomain)
@@ -23,7 +23,7 @@ func MonitorFromDomain(workers []domain.MonitorStat) Monitor {
 	}
 }
 
-func WorkerUnitFromDomain(worker domain.MonitorStat) WorkerUnit {
+func WorkerUnitFromDomain(worker hgraber.MonitorStat) WorkerUnit {
 	return WorkerUnit{
 		Name:    worker.Name,
 		InQueue: worker.InQueueCount,

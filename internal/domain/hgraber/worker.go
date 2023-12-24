@@ -1,4 +1,4 @@
-package domain
+package hgraber
 
 type WorkerStat interface {
 	InQueueCount() int
