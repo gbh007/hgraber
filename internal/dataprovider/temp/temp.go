@@ -3,19 +3,36 @@ package temp
 import (
 	"context"
 	"sync"
+	"time"
 )
 
 const exportQueueCapacity = 100
 
+type pageSimple struct {
+	BookID     int
+	PageNumber int
+}
+
 type Storage struct {
 	exportQueue      []int
 	exportQueueMutex *sync.Mutex
+
+	lockBookHandle      map[int]time.Time
+	lockBookHandleMutex *sync.RWMutex
+
+	lockPageHandle      map[pageSimple]time.Time
+	lockPageHandleMutex *sync.RWMutex
 }
 
 func New() *Storage {
 	return &Storage{
 		exportQueue:      make([]int, 0, exportQueueCapacity),
 		exportQueueMutex: new(sync.Mutex),
+
+		lockBookHandle:      make(map[int]time.Time),
+		lockBookHandleMutex: new(sync.RWMutex),
+		lockPageHandle:      make(map[pageSimple]time.Time),
+		lockPageHandleMutex: new(sync.RWMutex),
 	}
 }
 

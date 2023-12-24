@@ -30,5 +30,5 @@ type UnprocessedRequest struct {
 }
 
 type UnprocessedResponse[T BookToHandle | PageToHandle] struct {
-	ToHandle []T `json:"to_handle"`
+	ToHandle []T `json:"to_handle,omitempty"`
 }

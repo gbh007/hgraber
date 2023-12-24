@@ -63,7 +63,23 @@ func (d *Database) UpdatePageSuccess(ctx context.Context, id int, page int, succ
 	}
 
 	return nil
+}
 
+func (d *Database) UpdatePage(ctx context.Context, id int, page int, success bool, url string) error {
+	res, err := d.db.ExecContext(
+		ctx,
+		`UPDATE pages SET success = $1, load_at = $2, url = $5 WHERE book_id = $3 AND page_number = $4;`,
+		success, time.Now().UTC(), id, page, url,
+	)
+	if err != nil {
+		return err
+	}
+
+	if !d.isApply(ctx, res) {
+		return hgraber.PageNotFoundError
+	}
+
+	return nil
 }
 
 func (d *Database) UpdatePageRate(ctx context.Context, id int, page int, rate int) error {

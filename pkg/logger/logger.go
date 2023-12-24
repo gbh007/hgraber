@@ -45,19 +45,19 @@ func (l *Logger) Error(ctx context.Context, err error) {
 	l.print(ctx, logLevelError, err.Error())
 }
 
-func (l *Logger) ErrorText(ctx context.Context, args ...interface{}) {
+func (l *Logger) ErrorText(ctx context.Context, args ...any) {
 	l.print(ctx, logLevelError, args...)
 }
 
-func (l *Logger) Info(ctx context.Context, args ...interface{}) {
+func (l *Logger) Info(ctx context.Context, args ...any) {
 	l.print(ctx, logLevelInfo, args...)
 }
 
-func (l *Logger) Warning(ctx context.Context, args ...interface{}) {
+func (l *Logger) Warning(ctx context.Context, args ...any) {
 	l.print(ctx, logLevelWarning, args...)
 }
 
-func (l *Logger) Debug(ctx context.Context, args ...interface{}) {
+func (l *Logger) Debug(ctx context.Context, args ...any) {
 	if !l.debug {
 		return
 	}
@@ -65,7 +65,7 @@ func (l *Logger) Debug(ctx context.Context, args ...interface{}) {
 	l.print(ctx, logLevelDebug, args...)
 }
 
-func (l *Logger) print(ctx context.Context, level string, args ...interface{}) {
+func (l *Logger) print(ctx context.Context, level string, args ...any) {
 	fmt.Fprintf(
 		os.Stderr,
 		"[%s] [%s] %s - %s",

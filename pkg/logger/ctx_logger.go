@@ -24,7 +24,7 @@ func (l *CtxLogger) Info(s string) {
 	l.print(l.innerCtx, logLevelInfo, s)
 }
 
-func (l *CtxLogger) print(ctx context.Context, level string, args ...interface{}) {
+func (l *CtxLogger) print(ctx context.Context, level string, args ...any) {
 	fmt.Fprintf(
 		os.Stderr,
 		"[%s] [%s] %s - %s",
