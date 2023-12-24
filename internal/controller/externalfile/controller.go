@@ -21,6 +21,7 @@ type webtool interface {
 	PanicDefender(next http.Handler) http.Handler
 	WriteNoContent(ctx context.Context, w http.ResponseWriter)
 	WritePlain(ctx context.Context, w http.ResponseWriter, statusCode int, data string)
+	MethodSplitter(handlers map[string]http.Handler) http.Handler
 }
 
 type Controller struct {
@@ -47,7 +48,12 @@ func New(fileStorage fileStorage, addr string, token string, logger *logger.Logg
 func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 	mux := http.NewServeMux()
 
-	mux.Handle(externalfile.EndpointPage, c.pageHandler())
+	mux.Handle(externalfile.EndpointPage, c.webtool.MethodSplitter(
+		map[string]http.Handler{
+			http.MethodGet:  c.getPage(),
+			http.MethodPost: c.setPage(),
+		},
+	))
 	mux.Handle(externalfile.EndpointExport, c.fileExport())
 
 	server := &http.Server{
@@ -61,22 +67,4 @@ func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 	}
 
 	return server
-}
-
-func (c *Controller) pageHandler() http.Handler {
-	getPage := c.getPage()
-	setPage := c.setPage()
-
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			getPage.ServeHTTP(w, r)
-
-		case http.MethodPost:
-			setPage.ServeHTTP(w, r)
-
-		default:
-			c.webtool.WritePlain(r.Context(), w, http.StatusMethodNotAllowed, "unsupported method")
-		}
-	})
 }

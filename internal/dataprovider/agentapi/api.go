@@ -1,36 +1,53 @@
 package agentapi
 
 import (
-	"app/internal/domain/agent"
-	"context"
-	"errors"
-	"io"
+	"app/pkg/logger"
+	"net/http"
+	"time"
 )
 
-var unimplementedError = errors.New("unimplemented")
+const (
+	apiTimeout = time.Second * 10
+	apiName    = "agent"
+)
+
+type Config struct {
+	Prefixes  []string
+	Token     string
+	AgentName string
+
+	Scheme       string
+	HostWithPort string
+
+	Logger *logger.Logger
+}
 
 type API struct {
-	prefixes []string
+	prefixes  []string
+	token     string
+	agentName string
+
+	scheme       string
+	hostWithPort string
+
+	client *http.Client
+
+	logger *logger.Logger
 }
 
-func New(prefixes []string) *API {
+func New(cfg Config) *API {
 	return &API{
-		prefixes: prefixes,
+		prefixes:  cfg.Prefixes,
+		token:     cfg.Token,
+		agentName: cfg.AgentName,
+
+		scheme:       cfg.Scheme,
+		hostWithPort: cfg.HostWithPort,
+
+		logger: cfg.Logger,
+
+		client: &http.Client{
+			Timeout: apiTimeout,
+		},
 	}
-}
-
-func (api *API) UnprocessedBooks(ctx context.Context, limit int) ([]agent.BookToHandle, error) {
-	return nil, unimplementedError
-}
-
-func (api *API) UnprocessedPages(ctx context.Context, limit int) ([]agent.PageToHandle, error) {
-	return nil, unimplementedError
-}
-
-func (api *API) UpdateBook(ctx context.Context, book agent.BookToUpdate) error {
-	return unimplementedError
-}
-
-func (api *API) UploadPage(ctx context.Context, info agent.PageInfoToUpload, body io.Reader) error {
-	return unimplementedError
 }

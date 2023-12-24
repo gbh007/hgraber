@@ -41,3 +41,17 @@ func (uc *UseCase) CORS(next http.Handler) http.Handler {
 		}
 	})
 }
+
+func (uc *UseCase) MethodSplitter(handlers map[string]http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler, found := handlers[r.Method]
+		if !found || handler == nil {
+			uc.WritePlain(r.Context(), w, http.StatusMethodNotAllowed, "unsupported method")
+
+			return
+		}
+
+		handler.ServeHTTP(w, r)
+	})
+
+}
