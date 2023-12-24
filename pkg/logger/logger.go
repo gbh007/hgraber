@@ -10,6 +10,7 @@ import (
 
 type Logger struct {
 	debug bool
+	trace bool // FIXME: инициализировать
 }
 
 func New(
@@ -66,12 +67,26 @@ func (l *Logger) Debug(ctx context.Context, args ...any) {
 }
 
 func (l *Logger) print(ctx context.Context, level string, args ...any) {
+	if !l.trace {
+		fmt.Fprintf(
+			os.Stderr,
+			"[%s] [%s] %s - %s",
+			level,
+			ctxtool.GetRequestID(ctx),
+			time.Now().Format(timeFormat),
+			fmt.Sprintln(args...),
+		)
+
+		return
+	}
+
 	fmt.Fprintf(
 		os.Stderr,
-		"[%s] [%s] %s - %s",
+		"[%s] [%s] %s - %s%s\n",
 		level,
 		ctxtool.GetRequestID(ctx),
 		time.Now().Format(timeFormat),
 		fmt.Sprintln(args...),
+		simpleTrace(4, 5),
 	)
 }

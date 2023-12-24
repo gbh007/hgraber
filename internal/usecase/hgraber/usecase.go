@@ -55,15 +55,18 @@ type UseCase struct {
 	files   files
 	loader  loader
 
+	hasAgent bool
+
 	tempStorage tempStorage
 }
 
-func New(storage storage, logger *logger.Logger, loader loader, files files, tempStorage tempStorage) *UseCase {
+func New(storage storage, logger *logger.Logger, loader loader, files files, tempStorage tempStorage, hasAgent bool) *UseCase {
 	return &UseCase{
 		storage:     storage,
 		logger:      logger,
 		loader:      loader,
 		files:       files,
 		tempStorage: tempStorage,
+		hasAgent:    hasAgent,
 	}
 }

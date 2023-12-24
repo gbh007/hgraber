@@ -16,10 +16,6 @@ import (
 )
 
 type App struct {
-	fs *filesystem.Storage
-
-	ws *hgraberweb.WebServer
-
 	async *async.Controller
 }
 
@@ -34,24 +30,24 @@ func (app *App) Init(ctx context.Context) error {
 	webtool := web.New(logger, cfg.Log.DebugMode)
 
 	app.async = async.New(logger)
-	app.fs = filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView, logger)
+	fileStorage := filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView, logger)
 
-	err := app.fs.Prepare(ctx)
+	err := fileStorage.Prepare(ctx)
 	if err != nil {
 		return fmt.Errorf("app: %w", err)
 	}
 
-	db := jdb.Init(ctx, logger, &cfg.Base.DBFilePath)
+	storage := jdb.Init(ctx, logger, &cfg.Base.DBFilePath)
 
 	if !cfg.Base.OnlyView {
-		err = db.Load(ctx, cfg.Base.DBFilePath)
+		err = storage.Load(ctx, cfg.Base.DBFilePath)
 		if err != nil {
 			return fmt.Errorf("app: %w", err)
 		}
 
-		app.async.RegisterRunner(ctx, db)
+		app.async.RegisterRunner(ctx, storage)
 		app.async.RegisterAfterStop(ctx, func() {
-			if db.Save(ctx, cfg.Base.DBFilePath, false) == nil {
+			if storage.Save(ctx, cfg.Base.DBFilePath, false) == nil {
 				logger.Info(ctx, "База сохранена")
 			} else {
 				logger.Warning(ctx, "База не сохранена")
@@ -61,11 +57,11 @@ func (app *App) Init(ctx context.Context) error {
 
 	loader := loader.New(logger)
 	tempStorage := temp.New()
-	useCases := hgraber.New(db, logger, loader, app.fs, tempStorage)
+	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, false)
 
-	worker := hgraberworker.New(useCases, logger)
+	worker := hgraberworker.New(useCases, logger, false)
 
-	app.ws = hgraberweb.New(hgraberweb.Config{
+	webServer := hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
 		Monitor:       worker,
 		Addr:          fmt.Sprintf("%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),
@@ -75,7 +71,7 @@ func (app *App) Init(ctx context.Context) error {
 		Webtool:       webtool,
 	})
 
-	app.async.RegisterRunner(ctx, app.ws)
+	app.async.RegisterRunner(ctx, webServer)
 
 	if !cfg.Base.OnlyView {
 		app.async.RegisterRunner(ctx, worker)

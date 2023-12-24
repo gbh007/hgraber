@@ -1,5 +1,7 @@
 version: "3.8"
 
+name: hgraber
+
 services:
   server:
     build:
@@ -9,7 +11,8 @@ services:
         BINARY_PATH: _build/hgraber-docker-server
     ports:
       - 127.0.0.1:8080:8080
-    command: --fs-token fs-local --fs-addr file:8080 --ws-token=local-debug
+      - 127.0.0.1:8081:8081
+    command: --fs-token fs-local --fs-addr file:8080 --ws-token=local-debug --ag-addr :8081 --ag-token agent-token
     depends_on:
       - file
       - postgres
@@ -26,6 +29,16 @@ services:
     volumes:
       - file-loads:/app/loads
       - file-exported:/app/exported
+
+  agent:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        BINARY_PATH: _build/hgraber-docker-agent
+    command: --token agent-token --addr server:8081 --name local-docker-debug
+    depends_on:
+      - server
 
   postgres:
     image: postgres:14

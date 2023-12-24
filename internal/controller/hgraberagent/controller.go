@@ -62,7 +62,7 @@ func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 				c.tokenMiddleware(mux),
 			),
 		),
-		BaseContext: c.webtool.NewBaseContext(context.WithoutCancel(parentCtx)),
+		BaseContext: func(l net.Listener) context.Context { return context.WithoutCancel(parentCtx) }, // FIXME: использовать название агента
 	}
 
 	return server

@@ -22,14 +22,18 @@ type Controller struct {
 	workers map[string]hgraber.WorkerStat
 	mutex   *sync.RWMutex
 
+	hasAgent bool
+
 	useCases useCases
 	logger   *logger.Logger
 }
 
-func New(useCases useCases, logger *logger.Logger) *Controller {
+func New(useCases useCases, logger *logger.Logger, hasAgent bool) *Controller {
 	return &Controller{
 		useCases: useCases,
 		logger:   logger,
+
+		hasAgent: hasAgent,
 
 		workers: make(map[string]hgraber.WorkerStat),
 		mutex:   new(sync.RWMutex),

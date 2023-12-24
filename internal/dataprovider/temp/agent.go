@@ -5,12 +5,16 @@ import (
 	"time"
 )
 
+func (s *Storage) agentTTLExpire(t time.Time) bool {
+	return time.Now().After(t.Add(agentHandleTTL))
+}
+
 func (s *Storage) TryLockBookHandle(ctx context.Context, bookID int) bool {
 	s.lockBookHandleMutex.Lock()
 	defer s.lockBookHandleMutex.Unlock()
 
-	_, ok := s.lockBookHandle[bookID]
-	if ok {
+	t, ok := s.lockBookHandle[bookID]
+	if ok && !s.agentTTLExpire(t) {
 		return false
 	}
 
@@ -30,7 +34,10 @@ func (s *Storage) HasLockBookHandle(ctx context.Context, bookID int) bool {
 	s.lockBookHandleMutex.RLock()
 	defer s.lockBookHandleMutex.RUnlock()
 
-	_, ok := s.lockBookHandle[bookID]
+	t, ok := s.lockBookHandle[bookID]
+	if ok && s.agentTTLExpire(t) {
+		ok = false
+	}
 
 	return ok
 }
@@ -41,8 +48,8 @@ func (s *Storage) TryLockPageHandle(ctx context.Context, bookID int, pageNumber 
 
 	id := pageSimple{BookID: bookID, PageNumber: pageNumber}
 
-	_, ok := s.lockPageHandle[id]
-	if ok {
+	t, ok := s.lockPageHandle[id]
+	if ok && !s.agentTTLExpire(t) {
 		return false
 	}
 
@@ -66,7 +73,10 @@ func (s *Storage) HasLockPageHandle(ctx context.Context, bookID int, pageNumber 
 
 	id := pageSimple{BookID: bookID, PageNumber: pageNumber}
 
-	_, ok := s.lockPageHandle[id]
+	t, ok := s.lockPageHandle[id]
+	if ok && s.agentTTLExpire(t) {
+		ok = false
+	}
 
 	return ok
 }

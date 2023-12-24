@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	notifyCtx, stop := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGHUP,

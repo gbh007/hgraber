@@ -8,6 +8,7 @@ import (
 type configRaw struct {
 	fs configFS
 	ws configWS
+	ag configWS
 
 	ReadOnly bool
 
@@ -40,6 +41,10 @@ func parseFlag() configRaw {
 	wsToken := flag.String("ws-token", "", "токен для доступа к контенту")
 	wsStatic := flag.String("ws-static", "", "папка со статическими файлами")
 
+	// агент сервер
+	agAddr := flag.String("ag-addr", "", "адрес агент сервера")
+	agToken := flag.String("ag-token", "", "токен для доступа к агент серверу")
+
 	flag.Parse()
 
 	cfg := configRaw{
@@ -52,6 +57,10 @@ func parseFlag() configRaw {
 			Addr:   *wsAddr,
 			Token:  *wsToken,
 			Static: *wsStatic,
+		},
+		ag: configWS{
+			Addr:  *agAddr,
+			Token: *agToken,
 		},
 		PGSource: *pgSource,
 		ReadOnly: *onlyView,

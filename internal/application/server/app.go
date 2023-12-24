@@ -2,12 +2,14 @@ package server
 
 import (
 	"app/internal/controller/async"
+	"app/internal/controller/hgraberagent"
 	"app/internal/controller/hgraberweb"
 	"app/internal/controller/hgraberworker"
 	"app/internal/dataprovider/fileStorage/externalfile"
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/storage/postgresql"
 	"app/internal/dataprovider/temp"
+	"app/internal/usecase/agentserver"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
 	"app/pkg/logger"
@@ -16,10 +18,6 @@ import (
 )
 
 type App struct {
-	fs *externalfile.Storage
-
-	ws *hgraberweb.WebServer
-
 	async *async.Controller
 }
 
@@ -31,18 +29,20 @@ func (app *App) Init(ctx context.Context) error {
 	cfg := parseFlag()
 
 	debug := false // FIXME: получать из конфигурации
+	hasAgent := cfg.ag.Addr != ""
 
 	logger := logger.New(debug)
 	webtool := web.New(logger, debug)
+	app.async = async.New(logger)
 
-	app.fs = externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr, logger)
-	db, err := postgresql.Connect(ctx, cfg.PGSource, logger)
+	fileStorage := externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr, logger)
+	storage, err := postgresql.Connect(ctx, cfg.PGSource, logger)
 	if err != nil {
 		return fmt.Errorf("app: %w", err)
 	}
 
 	if !cfg.ReadOnly {
-		err = db.MigrateAll(ctx)
+		err = storage.MigrateAll(ctx)
 		if err != nil {
 			return fmt.Errorf("app: %w", err)
 		}
@@ -50,11 +50,17 @@ func (app *App) Init(ctx context.Context) error {
 
 	loader := loader.New(logger)
 	tempStorage := temp.New()
-	useCases := hgraber.New(db, logger, loader, app.fs, tempStorage)
+	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, hasAgent)
 
-	worker := hgraberworker.New(useCases, logger)
+	worker := hgraberworker.New(useCases, logger, hasAgent)
 
-	app.ws = hgraberweb.New(hgraberweb.Config{
+	if hasAgent && !cfg.ReadOnly {
+		agentUseCases := agentserver.New(logger, storage, tempStorage, fileStorage)
+		agentServer := hgraberagent.New(agentUseCases, cfg.ag.Addr, cfg.ag.Token, logger, webtool)
+		app.async.RegisterRunner(ctx, agentServer)
+	}
+
+	webServer := hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
 		Monitor:       worker,
 		Addr:          cfg.ws.Addr,
@@ -64,8 +70,7 @@ func (app *App) Init(ctx context.Context) error {
 		Webtool:       webtool,
 	})
 
-	app.async = async.New(logger)
-	app.async.RegisterRunner(ctx, app.ws)
+	app.async.RegisterRunner(ctx, webServer)
 
 	if !cfg.ReadOnly {
 		app.async.RegisterRunner(ctx, worker)

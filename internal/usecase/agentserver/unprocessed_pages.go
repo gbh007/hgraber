@@ -49,6 +49,7 @@ func (uc *UseCase) UnprocessedPages(ctx context.Context, prefixes []string, limi
 			// CreateAt: ,
 			// BookURL: ,
 			PageURL: page.URL,
+			Ext:     page.Ext,
 		})
 
 		limit--

@@ -6,7 +6,10 @@ import (
 	"time"
 )
 
-const exportQueueCapacity = 100
+const (
+	exportQueueCapacity = 100
+	agentHandleTTL      = time.Minute * 10 // FIXME: в конфигурацию
+)
 
 type pageSimple struct {
 	BookID     int

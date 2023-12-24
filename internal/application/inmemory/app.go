@@ -16,10 +16,6 @@ import (
 )
 
 type App struct {
-	fs *filememory.Storage
-
-	ws *hgraberweb.WebServer
-
 	async *async.Controller
 }
 
@@ -34,17 +30,17 @@ func (app *App) Init(ctx context.Context) error {
 	webtool := web.New(logger, cfg.Log.DebugMode)
 
 	app.async = async.New(logger)
-	app.fs = filememory.New()
+	fileStorage := filememory.New()
 
-	db := jdb.Init(ctx, logger, nil)
+	storage := jdb.Init(ctx, logger, nil)
 
 	loader := loader.New(logger)
 	tempStorage := temp.New()
-	useCases := hgraber.New(db, logger, loader, app.fs, tempStorage)
+	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, false)
 
-	worker := hgraberworker.New(useCases, logger)
+	worker := hgraberworker.New(useCases, logger, false)
 
-	app.ws = hgraberweb.New(hgraberweb.Config{
+	webServer := hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
 		Monitor:       worker,
 		Addr:          fmt.Sprintf("%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),
@@ -54,7 +50,7 @@ func (app *App) Init(ctx context.Context) error {
 		Webtool:       webtool,
 	})
 
-	app.async.RegisterRunner(ctx, app.ws)
+	app.async.RegisterRunner(ctx, webServer)
 	app.async.RegisterRunner(ctx, worker)
 
 	return nil

@@ -106,7 +106,7 @@ handler:
 			break handler
 
 		case <-timer.C:
-			if len(w.titleQueue) > 0 || w.InWorkCount() > 0 {
+			if len(w.titleQueue) > 0 {
 				continue
 			}
 

@@ -33,6 +33,7 @@ fileserver: create_build_dir
 build-docker: create_build_dir
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ./_build/hgraber-docker-fileserver  ./cmd/fileserver
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ./_build/hgraber-docker-server  ./cmd/server
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ./_build/hgraber-docker-agent  ./cmd/agent
 
 local-up: build-docker
 	docker compose -f ./docker/docker-compose.local.yml up --build --remove-orphans
@@ -46,3 +47,10 @@ demo-up: build-docker
 
 demo-down:
 	docker compose -f ./docker/docker-compose.demo.yml down --remove-orphans
+
+agent: create_build_dir
+	go build -trimpath -o ./_build/hgraber-agent  ./cmd/agent
+	./_build/hgraber-agent --token agent-token --addr 127.0.0.1:8081
+
+mocksite:
+	go run cmd/mocksite/main.go -dir loads -addr localhost:8888

@@ -4,6 +4,7 @@ import (
 	"app/internal/domain/hgraber"
 	"context"
 	"errors"
+	"net/url"
 	"strings"
 )
 
@@ -13,7 +14,14 @@ func (uc *UseCase) FirstHandle(ctx context.Context, u string) error {
 
 	u = strings.TrimSpace(u)
 
-	_, err := uc.loader.Parse(ctx, u)
+	var err error
+
+	if uc.hasAgent { // Для обработки агентом может быть любой валидный адрес
+		_, err = url.Parse(u)
+	} else {
+		_, err = uc.loader.Parse(ctx, u)
+	}
+
 	if err != nil {
 		return err
 	}

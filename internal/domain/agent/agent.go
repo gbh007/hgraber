@@ -14,6 +14,7 @@ type PageToHandle struct {
 	CreateAt   time.Time `json:"create_at"`
 	BookURL    string    `json:"book_url"`
 	PageURL    string    `json:"page_url"`
+	Ext        string    `json:"ext"`
 }
 
 type BookToUpdate struct {

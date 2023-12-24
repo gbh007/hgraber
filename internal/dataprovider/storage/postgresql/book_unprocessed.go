@@ -80,6 +80,10 @@ func (d *Database) bookAttrUnprocessed(ctx context.Context) ([]int, error) {
 
 	ids := make([]int, 0, len(raw))
 	for _, id := range raw {
+		if !id.Valid {
+			continue
+		}
+
 		ids = append(ids, int(id.Int64))
 	}
 

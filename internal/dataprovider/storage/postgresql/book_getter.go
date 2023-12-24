@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 func (d *Database) GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book {
@@ -34,7 +35,7 @@ func (d *Database) GetBook(ctx context.Context, bookID int) (hgraber.Book, error
 
 	err := d.db.GetContext(ctx, raw, `SELECT * FROM books WHERE id = $1 LIMIT 1;`, bookID)
 	if errors.Is(err, sql.ErrNoRows) {
-		return hgraber.Book{}, hgraber.BookNotFoundError
+		return hgraber.Book{}, fmt.Errorf("%w - %d", hgraber.BookNotFoundError, bookID)
 	}
 
 	if err != nil {
