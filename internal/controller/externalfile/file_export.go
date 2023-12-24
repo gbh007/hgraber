@@ -1,7 +1,7 @@
 package externalfile
 
 import (
-	"app/internal/dataprovider/fileStorage/externalfile/dto"
+	"app/internal/domain/externalfile"
 	"net/http"
 )
 
@@ -9,7 +9,7 @@ func (c *Controller) fileExport() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		filename := r.Header.Get(dto.ExternalFileFilename)
+		filename := r.Header.Get(externalfile.HeaderFilename)
 
 		err := c.fileStorage.CreateExportFile(ctx, filename, r.Body)
 		if err != nil {

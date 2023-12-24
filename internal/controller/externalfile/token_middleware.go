@@ -1,7 +1,7 @@
 package externalfile
 
 import (
-	"app/internal/dataprovider/fileStorage/externalfile/dto"
+	"app/internal/domain/externalfile"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ func (c *Controller) tokenMiddleware(next http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userToken := r.Header.Get(dto.ExternalFileToken)
+		userToken := r.Header.Get(externalfile.HeaderToken)
 
 		if userToken == "" {
 			w.WriteHeader(http.StatusUnauthorized)

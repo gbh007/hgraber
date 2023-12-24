@@ -1,7 +1,7 @@
 package externalfile
 
 import (
-	"app/internal/dataprovider/fileStorage/externalfile/dto"
+	"app/internal/domain/externalfile"
 	"app/pkg/logger"
 	"context"
 	"io"
@@ -47,8 +47,8 @@ func New(fileStorage fileStorage, addr string, token string, logger *logger.Logg
 func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 	mux := http.NewServeMux()
 
-	mux.Handle(dto.ExternalFileEndpointPage, c.pageHandler())
-	mux.Handle(dto.ExternalFileEndpointExport, c.fileExport())
+	mux.Handle(externalfile.EndpointPage, c.pageHandler())
+	mux.Handle(externalfile.EndpointExport, c.fileExport())
 
 	server := &http.Server{
 		Addr: c.addr,

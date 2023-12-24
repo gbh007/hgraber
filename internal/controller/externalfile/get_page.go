@@ -1,7 +1,7 @@
 package externalfile
 
 import (
-	"app/internal/dataprovider/fileStorage/externalfile/dto"
+	"app/internal/domain/externalfile"
 	"bytes"
 	"fmt"
 	"io"
@@ -14,21 +14,21 @@ func (c *Controller) getPage() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
-		bookID, err := strconv.Atoi(r.Header.Get(dto.ExternalFileBookID))
+		bookID, err := strconv.Atoi(r.Header.Get(externalfile.HeaderBookID))
 		if err != nil {
 			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
-		page, err := strconv.Atoi(r.Header.Get(dto.ExternalFilePageNumber))
+		page, err := strconv.Atoi(r.Header.Get(externalfile.HeaderPageNumber))
 		if err != nil {
 			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
 		}
 
-		ext := r.Header.Get(dto.ExternalFilePageExtension)
+		ext := r.Header.Get(externalfile.HeaderPageExtension)
 
 		rawFile, err := c.fileStorage.OpenPageFile(ctx, bookID, page, ext)
 		if err != nil {

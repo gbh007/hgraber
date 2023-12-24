@@ -1,7 +1,7 @@
 package externalfile
 
 import (
-	"app/internal/dataprovider/fileStorage/externalfile/dto"
+	"app/internal/domain/externalfile"
 	"context"
 	"fmt"
 	"io"
@@ -10,15 +10,15 @@ import (
 )
 
 func (s *Storage) OpenPageFile(ctx context.Context, id int, page int, ext string) (io.ReadCloser, error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, s.url(dto.ExternalFileEndpointPage), nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, s.url(externalfile.EndpointPage), nil)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", storageName, err)
 	}
 
-	request.Header.Set(dto.ExternalFileToken, s.token)
-	request.Header.Set(dto.ExternalFileBookID, strconv.Itoa(id))
-	request.Header.Set(dto.ExternalFilePageNumber, strconv.Itoa(page))
-	request.Header.Set(dto.ExternalFilePageExtension, ext)
+	request.Header.Set(externalfile.HeaderToken, s.token)
+	request.Header.Set(externalfile.HeaderBookID, strconv.Itoa(id))
+	request.Header.Set(externalfile.HeaderPageNumber, strconv.Itoa(page))
+	request.Header.Set(externalfile.HeaderPageExtension, ext)
 
 	response, err := s.client.Do(request)
 	if err != nil {
@@ -34,11 +34,11 @@ func (s *Storage) OpenPageFile(ctx context.Context, id int, page int, ext string
 
 	switch response.StatusCode {
 	case http.StatusUnauthorized:
-		return nil, fmt.Errorf("%s: %w", storageName, dto.ExternalFileUnauthorizedError)
+		return nil, fmt.Errorf("%s: %w", storageName, externalfile.UnauthorizedError)
 	case http.StatusForbidden:
-		return nil, fmt.Errorf("%s: %w", storageName, dto.ExternalFileForbiddenError)
+		return nil, fmt.Errorf("%s: %w", storageName, externalfile.ForbiddenError)
 	case http.StatusNotFound:
-		return nil, fmt.Errorf("%s: %w", storageName, dto.ExternalFileNotFoundError)
+		return nil, fmt.Errorf("%s: %w", storageName, externalfile.NotFoundError)
 	}
 
 	partOfBodyData := make([]byte, 100)

@@ -1,14 +1,14 @@
 package externalfile
 
 import (
-	"app/internal/dataprovider/fileStorage/externalfile/dto"
+	"app/internal/domain/externalfile"
 	"context"
 	"fmt"
 	"net/http"
 )
 
 func (s *Storage) post(ctx context.Context, request *http.Request) error {
-	request.Header.Set(dto.ExternalFileToken, s.token)
+	request.Header.Set(externalfile.HeaderToken, s.token)
 
 	response, err := s.client.Do(request)
 	if err != nil {
@@ -22,9 +22,9 @@ func (s *Storage) post(ctx context.Context, request *http.Request) error {
 		return nil
 
 	case http.StatusUnauthorized:
-		return fmt.Errorf("%s: %w", storageName, dto.ExternalFileUnauthorizedError)
+		return fmt.Errorf("%s: %w", storageName, externalfile.UnauthorizedError)
 	case http.StatusForbidden:
-		return fmt.Errorf("%s: %w", storageName, dto.ExternalFileForbiddenError)
+		return fmt.Errorf("%s: %w", storageName, externalfile.ForbiddenError)
 	}
 
 	partOfBodyData := make([]byte, 100)
