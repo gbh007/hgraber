@@ -18,6 +18,8 @@ type storage interface {
 
 	UpdatePageSuccess(ctx context.Context, id int, page int, success bool) error
 	UpdatePage(ctx context.Context, id int, page int, success bool, url string) error
+
+	GetBook(ctx context.Context, id int) (hgraber.Book, error)
 }
 
 type tempStorage interface {

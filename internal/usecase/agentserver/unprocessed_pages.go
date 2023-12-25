@@ -2,7 +2,9 @@ package agentserver
 
 import (
 	"app/internal/domain/agent"
+	hgDomain "app/internal/domain/hgraber"
 	"context"
+	"fmt"
 	"strings"
 )
 
@@ -12,22 +14,39 @@ func (uc *UseCase) UnprocessedPages(ctx context.Context, prefixes []string, limi
 	}
 
 	// TODO: неоптимальное решение, нужна оптимизация
-	books := uc.storage.GetUnsuccessPages(ctx)
-	if len(books) == 0 { // Нет данных, нечего обрабатывать
+	pages := uc.storage.GetUnsuccessPages(ctx)
+	if len(pages) == 0 { // Нет данных, нечего обрабатывать
 		return nil, nil
 	}
 
+	books := make(map[int]hgDomain.Book)
 	result := make([]agent.PageToHandle, 0, limit)
 
-	for _, page := range books {
+	for _, page := range pages {
 		if uc.tempStorage.HasLockPageHandle(ctx, page.BookID, page.PageNumber) {
 			continue
 		}
+		var (
+			ok   bool
+			book hgDomain.Book
+			err  error
+		)
 
-		var ok bool
+		book, ok = books[page.BookID]
+		if !ok {
+			// TODO: неоптимальное решение, нужна оптимизация
+			book, err = uc.storage.GetBook(ctx, page.BookID)
+			if err != nil {
+				return nil, fmt.Errorf("unprocessed pages: %w", err)
+			}
+
+			books[page.BookID] = book
+		}
+
+		ok = false // Сбрасываем для другого поиска
 
 		for _, prefix := range prefixes {
-			if strings.HasPrefix(page.URL, prefix) {
+			if strings.HasPrefix(book.URL, prefix) {
 				ok = true
 
 				break
@@ -45,11 +64,10 @@ func (uc *UseCase) UnprocessedPages(ctx context.Context, prefixes []string, limi
 		result = append(result, agent.PageToHandle{
 			BookID:     page.BookID,
 			PageNumber: page.PageNumber,
-			// FIXME: работать с данными
-			// CreateAt: ,
-			// BookURL: ,
-			PageURL: page.URL,
-			Ext:     page.Ext,
+			CreateAt:   book.Created, // FIXME: использовать данные страницы
+			BookURL:    book.URL,
+			PageURL:    page.URL,
+			Ext:        page.Ext,
 		})
 
 		limit--
