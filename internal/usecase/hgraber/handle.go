@@ -14,6 +14,10 @@ func (uc *UseCase) FirstHandle(ctx context.Context, u string) error {
 
 	u = strings.TrimSpace(u)
 
+	if u == "" {
+		return hgraber.ErrInvalidLink
+	}
+
 	var err error
 
 	if uc.hasAgent { // Для обработки агентом может быть любой валидный адрес

@@ -1,0 +1,34 @@
+.rate {
+  white-space: nowrap;
+}
+
+.rate-select {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: 1px solid black;
+  border-radius: 4px;
+  margin: 2px;
+  cursor: pointer;
+  /* background: #b0c4de; */
+}
+
+span.rate-select[rate="1"] {
+  background: #ff0000;
+}
+
+span.rate-select[rate="2"] {
+  background: #ffa500;
+}
+
+span.rate-select[rate="3"] {
+  background: #ffff00;
+}
+
+span.rate-select[rate="4"] {
+  background: #90ee90;
+}
+
+span.rate-select[rate="5"] {
+  background: #008000;
+}

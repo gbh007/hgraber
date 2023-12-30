@@ -1,72 +1,116 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>HGraber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>HGrabber</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
-  <script src="/messages.js"></script>
-  <script src="/api.js"></script>
-  <script src="/top-bar.js"></script>
-</head>
+    <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="/css/main.css"
+    />
+  </head>
 
-<body>
-  <style>
-    #index-info ul {
-      padding: 0px;
-      margin: 0px;
-      list-style: none;
-    }
-  </style>
-  <div style="display: flex;">
-    <div style="display: flex; flex-direction: column;">
-      <input value="" placeholder="Загрузить новый тайтл" id="new-title-url" />
-      <span style="color: red;" id="new-title-url-err"></span>
+  <body>
+    <style>
+      #index-info ul {
+        padding: 0px;
+        margin: 0px;
+        list-style: none;
+      }
+
+      div.app-container {
+        margin-bottom: 20px;
+      }
+
+      div.app-container:last-child {
+        margin-bottom: unset;
+      }
+    </style>
+    <div class="app-header">
+      <a href="/">Главная</a>
+      <a href="/list.html">Список тайтлов</a>
+      <a href="/settings.html">Настройки</a>
     </div>
-    <button onclick="loadTitle();">Загрузить</button>
-  </div>
-  <hr />
-  <div id="index-info">
+
+    <div class="app-body">
+      <div class="app-container" style="display: flex">
+        <div style="display: flex; flex-direction: column">
+          <input
+            class="app"
+            value=""
+            placeholder="Загрузить новый тайтл"
+            id="new-title-url"
+          />
+          <span style="color: red" id="new-title-url-err"></span>
+        </div>
+        <button class="app" onclick="loadTitle();">Загрузить</button>
+      </div>
+
+      <div class="app-container" id="index-info"></div>
+
+      <div class="app-container">
+        <div>
+          Скачать архивы С
+          <input class="app" value="" placeholder="С" id="load-from" />
+          По
+          <input class="app" value="" placeholder="По" id="load-to" />
+          <button class="app" onclick="saveToZIP();">Загрузить</button>
+        </div>
+        <div>
+          <span style="color: red" id="save-to-zip-error"></span>
+        </div>
+      </div>
+
+      <div class="app-container" id="info-workers"></div>
+
+      <div class="app-container" style="display: flex">
+        <div style="display: flex; flex-direction: column">
+          <textarea
+            class="app"
+            rows="10"
+            cols="50"
+            value=""
+            placeholder="Загрузить новые тайтлы"
+            id="new-title-urls"
+          ></textarea>
+          <button class="app" onclick="loadTitles();">Загрузить</button>
+        </div>
+        <div
+          id="new-title-urls-info"
+          style="display: flex; flex-direction: column; margin-left: 10px"
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      async function remakeInfo() {
+        let indexInfo = document.getElementById("index-info");
+        let infoWorkers = document.getElementById("info-workers");
+        try {
+          let response = await fetch("/info", { method: "GET" });
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          let data = await response.json();
+
+          indexInfo.innerHTML = `
     <ul>
-      <li>Всего <b id="info-count"></b> тайтлов</li>
-      <li>Всего незагруженно <b id="info-not_load_count"></b> тайтлов</li>
-      <li>Всего <b id="info-page_count"></b> страниц</li>
-      <li>
-        Всего незагруженно <b id="info-not_load_page_count"></b> страниц
-      </li>
-    </ul>
-  </div>
-  <hr />
-  <div>
-    Скачать архивы С
-    <input value="" placeholder="С" id="load-from" />
-    По
-    <input value="" placeholder="По" id="load-to" />
-    <button onclick="saveToZIP();">Загрузить</button>
-  </div>
-  <hr />
-  <div id="info-workers"></div>
-  <hr />
-  <div style="display: flex;">
-    <div style="display: flex; flex-direction: column;">
-      <textarea rows="10" cols="50" value="" placeholder="Загрузить новые тайтлы" id="new-title-urls"></textarea>
-      <button onclick="loadTitles();">Загрузить</button>
-    </div>
-    <div id="new-title-urls-info" style="display: flex; flex-direction: column; margin-left: 10px;"></div>
-  </div>
-  <script>
-    function remakeInfo() {
-      API.getMainInfo().then((data) => {
-        document.getElementById("info-count").innerText = data.count;
-        document.getElementById("info-not_load_count").innerText =
-          data.not_load_count;
-        document.getElementById("info-page_count").innerText =
-          data.page_count;
-        document.getElementById("info-not_load_page_count").innerText =
-          data.not_load_page_count;
-        document.getElementById("info-workers").innerHTML = `<table>
+      <li>Всего <b>${data.count || 0}</b> тайтлов</li>
+      <li>Всего незагруженно <b>${data.not_load_count || 0}</b> тайтлов</li>
+      <li>Всего <b>${data.page_count || 0}</b> страниц</li>
+      <li>Всего незагруженно <b>${
+        data.not_load_page_count || 0
+      }</b> страниц</li>
+    </ul>`;
+          infoWorkers.innerHTML =
+            `<table>
               <thead>
                 <tr>
                   <td>Название</td>
@@ -75,58 +119,104 @@
                   <td>Раннеров</td>
                 </tr>
               </thead>
-              <tbody>`+ (data.monitor.workers.map(w => {
-          return `<tr>
+              <tbody>` +
+            data.monitor.workers
+              .map((w) => {
+                return `<tr>
                   <td>${w.name}</td>
                   <td>${w.in_queue}</td>
                   <td>${w.in_work}</td>
                   <td>${w.runners}</td>
-                </tr>`
-        })).join("") + `<tbody>
-          </table>`
+                </tr>`;
+              })
+              .join("") +
+            `<tbody>
+          </table>`;
+        } catch (err) {
+          indexInfo.innerHTML = `<div class="app-error-container">${err}</div>`;
+          infoWorkers.innerHTML = `<div class="app-error-container">${err}</div>`;
+        }
+      }
 
+      window.addEventListener("load", function () {
+        remakeInfo();
+        setInterval(remakeInfo, 10000);
       });
-    }
-    function loadTitle() {
-      let urlInput = document.getElementById("new-title-url");
-      let errText = document.getElementById("new-title-url-err")
-      errText.innerText = ""
-      API.newTitle(urlInput.value).then(() => {
-        document.getElementById("new-title-url").value = "";
-      });
-    }
+    </script>
 
-    function loadTitles() {
-      let urlsInput = document.getElementById("new-title-urls");
-      let loadedInfo = document.getElementById("new-title-urls-info");
-      API.newTitles(urlsInput.value.split("\n")).then((data) => {
-        loadedInfo.innerHTML = [
-          `<div><b>Всего: </b>${data.total_count || 0}</div>`,
-          `<div><b>Загружено: </b>${data.loaded_count || 0}</div>`,
-          `<div><b>Дубликаты: </b>${data.duplicate_count || 0}</div>`,
-          `<div><b>Ошибки: </b>${data.error_count || 0}</div>`,
-        ].join("\n");
-        document.getElementById("new-title-urls").value = (data.not_handled || []).join("\n");
-      });
+    <script>
+      async function loadTitle() {
+        let urlInput = document.getElementById("new-title-url");
+        let errText = document.getElementById("new-title-url-err");
+        errText.innerText = "";
 
+        try {
+          let response = await fetch("/new", {
+            method: "POST",
+            body: JSON.stringify({ url: urlInput.value }),
+          });
 
-    }
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
 
-    function saveToZIP() {
-      let loadFrom = document.getElementById("load-from");
-      let loadTo = document.getElementById("load-to");
-      API.saveToZIP(parseInt(loadFrom.value), parseInt(loadTo.value));
-    }
+          urlInput.value = "";
+        } catch (err) {
+          errText.innerText = err;
+        }
+      }
 
-    window.addEventListener("load", function () {
-      remakeInfo();
-      setInterval(remakeInfo, 10000)
-    });
+      async function loadTitles() {
+        let urlsInput = document.getElementById("new-title-urls");
+        let loadedInfo = document.getElementById("new-title-urls-info");
 
-    window.addEventListener("new-message-field", function (messageInfo) {
-      document.getElementById("new-title-url-err").innerText = messageInfo.detail.text;
-    });
-  </script>
-</body>
+        try {
+          let response = await fetch("/new", {
+            method: "POST",
+            body: JSON.stringify({ urls: urlsInput.value.split("\n") }),
+          });
 
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          let data = await response.json();
+          loadedInfo.innerHTML = [
+            `<div><b>Всего: </b>${data.total_count || 0}</div>`,
+            `<div><b>Загружено: </b>${data.loaded_count || 0}</div>`,
+            `<div><b>Дубликаты: </b>${data.duplicate_count || 0}</div>`,
+            `<div><b>Ошибки: </b>${data.error_count || 0}</div>`,
+          ].join("\n");
+          urlsInput.value = (data.not_handled || []).join("\n");
+        } catch (err) {
+          loadedInfo.innerHTML = `<div class="app-error-container">${err}</div>`;
+        }
+      }
+    </script>
+
+    <script>
+      async function saveToZIP() {
+        let loadFrom = document.getElementById("load-from");
+        let loadTo = document.getElementById("load-to");
+        let errorBox = document.getElementById("save-to-zip-error");
+        errorBox.innerText = "";
+
+        try {
+          let response = await fetch("/to-zip", {
+            method: "POST",
+            body: JSON.stringify({
+              from: parseInt(loadFrom.value),
+              to: parseInt(loadTo.value),
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+        } catch (err) {
+          errorBox.innerText = err;
+        }
+      }
+    </script>
+  </body>
 </html>

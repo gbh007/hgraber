@@ -3,54 +3,64 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>HGrabber</title>
+    <title>HGraber</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" href="/main.css" />
-    <script src="/messages.js"></script>
-    <script src="/api.js"></script>
-    <script src="/top-bar.js"></script>
-    <script src="/rate.js"></script>
+
+    <link rel="icon" type="image/svg+xml" href="/assets/logo.svg" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="/css/main.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="/css/rate.css"
+    />
+    <script src="/js/rate.js"></script>
   </head>
+
   <body>
     <style>
       body {
         text-align: center;
       }
+
       div.view {
-        height: 90vh;
+        margin-top: 10px;
+        height: calc(90vh - 30px);
         white-space: nowrap;
       }
-      span.page-switch {
-        text-decoration: none;
-        color: black;
-      }
-      h1.page-switch {
-        display: inline-block;
-        writing-mode: vertical-lr;
-        text-orientation: upright;
-        text-decoration: none;
-        color: black;
-        height: 100%;
-        text-align: center;
-        border: 2px dotted black;
-        border-radius: 10px;
-        cursor: pointer;
-      }
     </style>
-    <div>
-      Страница <span id="page-number">1</span> из <span id="page-count">1</span>
-      <span id="rate"></span>
+    <div class="app-header">
+      <a href="/">Главная</a>
+      <a href="/list.html">Список тайтлов</a>
+      <a href="/settings.html">Настройки</a>
     </div>
-    <div class="view">
-      <img src="" id="main-image" style="max-width: 100%; max-height: 100%" />
+
+    <div class="app-body">
+      <div class="app-container">
+        Страница <span id="page-number">1</span> из
+        <span id="page-count">1</span>
+        <span id="rate"></span>
+      </div>
+      <div class="view">
+        <img src="" id="main-image" style="max-width: 100%; max-height: 100%" />
+      </div>
     </div>
+
     <script>
-      let api = new Api();
       let page = 1;
       let pageCount = 1;
+
       const titleID = parseInt(
-        new URLSearchParams(window.location.search).get("title")
+        new URLSearchParams(window.location.search).get("book")
       );
+      page =
+        parseInt(new URLSearchParams(window.location.search).get("page")) || 1;
+
       function updatePage(info) {
         document
           .getElementById("main-image")
@@ -61,22 +71,44 @@
         page = info.page_number;
         document.getElementById("page-number").innerText = page;
         let rate = document.getElementById("rate");
-        rate.innerHTML = "";
-        rate.appendChild(new Rate(titleID, info.rate, page).node);
+        rate.innerHTML = `<span class="rate" book="${titleID}" page="${page}" rate="${info.rate}" unprocessed></span>`;
+        refreshRates();
       }
+
+      async function goPage(page) {
+        try {
+          let response = await fetch("/title/page", {
+            method: "POST",
+            body: JSON.stringify({ id: titleID, page: page }),
+          });
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          let data = await response.json();
+
+          updatePage(data);
+        } catch (err) {
+          document.getElementById(
+            "page-number"
+          ).innerHTML = `<div class="app-error-container">${err}</div>`;
+        }
+      }
+
       function prevPage() {
         if (page == 1) return;
-        api.getTitlePageInfo(titleID, page - 1).then((data) => {
-          updatePage(data);
-        });
+
+        goPage(page - 1);
       }
+
       function nextPage() {
         if (page == pageCount) return;
-        api.getTitlePageInfo(titleID, page + 1).then((data) => {
-          updatePage(data);
-        });
+
+        goPage(page + 1);
       }
-      window.addEventListener("load", function () {
+
+      window.addEventListener("load", async function () {
         document.getElementById("main-image").onclick = (event) => {
           const pos = document
             .getElementById("main-image")
@@ -88,13 +120,27 @@
             nextPage();
           }
         };
-        api.getTitleInfo(titleID).then((data) => {
+
+        try {
+          let response = await fetch("/title/details", {
+            method: "POST",
+            body: JSON.stringify({ id: titleID }),
+          });
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          let data = await response.json();
+
           pageCount = data.pages.length || 0;
           document.getElementById("page-count").innerText = pageCount;
-          api.getTitlePageInfo(titleID, page).then((data) => {
-            updatePage(data);
-          });
-        });
+          goPage(page);
+        } catch (err) {
+          document.getElementById(
+            "page-number"
+          ).innerHTML = `<div class="app-error-container">${err}</div>`;
+        }
       });
 
       window.addEventListener("keydown", function (event) {
