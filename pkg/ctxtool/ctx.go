@@ -13,7 +13,6 @@ type contextKey struct {
 
 var (
 	requestIDKey = &contextKey{"requestIDKey"}
-	debugKey     = &contextKey{"debugKey"}
 )
 
 func NewSystemContext(parent context.Context, name string) context.Context {
@@ -37,20 +36,6 @@ func GetRequestID(ctx context.Context) string {
 	}
 
 	return id
-}
-
-// FIXME: удалить
-func IsDebug(ctx context.Context) bool {
-	v := ctx.Value(debugKey)
-	if v == nil {
-		return false
-	}
-
-	// Значение интересует только если истина;
-	// его отсутствие, неправильный формат, лож эквивалентны
-	debug, _ := v.(bool)
-
-	return debug
 }
 
 func hash(s string) string { return fmt.Sprintf("%x", md5.Sum([]byte(s)))[:6] }

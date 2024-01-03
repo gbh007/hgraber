@@ -28,13 +28,13 @@
         text-align: center;
       }
 
-      #title-list {
+      #book-list {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
         gap: 10px;
       }
 
-      .title {
+      .book {
         display: grid;
         grid-template-areas:
           "img name name name name"
@@ -45,11 +45,11 @@
         border-spacing: 0px;
       }
 
-      .title *[t="red"] {
+      .book *[t="red"] {
         color: red;
       }
 
-      .title *[t="bred"] {
+      .book *[t="bred"] {
         background: pink;
       }
 
@@ -61,6 +61,10 @@
         background: var(--app-secondary);
         display: inline-block;
         cursor: pointer;
+      }
+
+      span.page[separator="true"] {
+        background: var(--app-background);
       }
 
       span.page[current="true"] {
@@ -90,42 +94,44 @@
 
     <div class="app-body">
       <div id="paginator"></div>
-      <div id="title-list"></div>
+      <div id="book-list"></div>
     </div>
 
     <script>
-      let serverInfo = {};
       let countOnPage = getBookOnPageCount();
-      let totalPageCount = 1;
-      let currentPage = 1;
 
       function getBookOnPageCount() {
         let data = JSON.parse(localStorage.getItem("settings")) || {};
         return data.book_on_page || 12;
       }
 
-      async function loadBookList(pageNumber = 1) {
-        let tl = document.getElementById("title-list");
+      async function renderPages(pageNumber = 1) {
+        let tl = document.getElementById("book-list");
 
         try {
-          let response = await fetch("/title/list", {
+          let response = await fetch("/api/books", {
             method: "POST",
             body: JSON.stringify({
               count: countOnPage,
-              offset: (pageNumber - 1) * countOnPage,
+              page: pageNumber,
             }),
           });
-          let data = await response.json();
 
           if (!response.ok) {
             throw new Error(await response.text());
           }
 
+          let data = await response.json();
+
           tl.innerHTML = "";
 
           let builder = "";
 
-          data.map((info) => (builder += generateHTMLFromTitleInfo(info)));
+          data.books.map(
+            (info) => (builder += generateHTMLFromBookInfo(info))
+          );
+
+          renderPaginate(data.pages);
 
           tl.innerHTML = builder;
           refreshRates();
@@ -134,108 +140,80 @@
         }
       }
 
-      function renderPages(page) {
-        totalPageCount =
-          Math.floor(serverInfo.count / countOnPage) +
-          (serverInfo.count % countOnPage > 0 ? 1 : 0);
+      function renderPaginate(pages) {
         let paginator = document.getElementById("paginator");
         paginator.innerHTML = "";
-        for (let pn = 1; pn <= totalPageCount; pn++) {
+        pages.forEach((page) => {
           let pg = document.createElement("span");
-          pg.innerText = pn;
+          pg.innerText = page.is_separator ? "..." : page.value;
           pg.className = "page";
-          pg.setAttribute("current", pn == page ? "true" : "false");
+          pg.setAttribute("current", page.is_current ? "true" : "false");
+          pg.setAttribute("separator", page.is_separator ? "true" : "false");
           pg.onclick = () => {
-            const page = pn;
-            currentPage = page;
-            renderPages(page);
+            if (page.is_separator) return;
+            renderPages(page.value);
           };
           paginator.appendChild(pg);
-        }
-        loadBookList(page);
+        });
       }
 
       window.addEventListener("load", async function () {
         try {
-          let response = await fetch("/info", { method: "GET" });
-
-          if (!response.ok) {
-            throw new Error(await response.text());
-          }
-
-          let data = await response.json();
-          serverInfo = data;
-          renderPages(currentPage);
+          renderPages(1);
         } catch (err) {
           document.getElementById(
-            "title-list"
+            "book-list"
           ).innerHTML = `<div class="app-error-container">${err}</div>`;
         }
       });
 
-      function calcAvg(pages) {
-        if (!pages || !pages.length) {
-          return 0;
-        }
-        return (
-          Math.round(
-            (pages.filter((p) => p.success).length * 10000) / pages.length
-          ) / 100
-        );
-      }
-
-      function generateHTMLFromTitleInfo(titleData) {
+      function generateHTMLFromBookInfo(book) {
         return `<div class="app-container">
           <div
-            class="title"
-            t="${titleData.info.parsed.name ? "" : "bred"}"
+            class="book"
+            t="${book.parsed_name ? "" : "bred"}"
           >
             <a 
-              href="/details.html?title=${titleData.id}"
+              href="/details.html?book=${book.id}"
               style="grid-area: img;"
             >
               ${
-                !titleData.pages || !titleData.pages.length
+                !book.preview_url
                   ? ""
-                  : `<img style="max-width: 100%; max-height: 100%;" src="/file/${titleData.id}/1.${titleData.pages[0].ext}" />`
+                  : `<img style="max-width: 100%; max-height: 100%;" src="${book.preview_url}" />`
               }
             </a>
             <span
               style="grid-area: name;"
-              t="${titleData.info.parsed.name ? "" : "red"}"
-            >${titleData.info.name}</span>
+              t="${book.parsed_name ? "" : "red"}"
+            >${book.name}</span>
             <span style="grid-area: id;">
-              #${titleData.id}
+              #${book.id}
               <span
                 class="rate"
-                book="${titleData.id}"
-                rate="${titleData.info.rate}"
+                book="${book.id}"
+                rate="${book.rate}"
                 unprocessed
               ></span>
             </span>
             <span
               style="grid-area: pgc;"
-              t="${titleData.info.parsed.page ? "" : "red"}"
-            >Страниц: ${titleData.pages.length}</span>
+              t="${book.parsed_page ? "" : "red"}"
+            >Страниц: ${book.page_count}</span>
             <span
               style="grid-area: pgp;"
-              t="${calcAvg(titleData.pages) != 100.0 ? "red" : ""}"
-            >Загружено: ${calcAvg(titleData.pages)}%</span>
+              t="${book.page_loaded_percent != 100.0 ? "red" : ""}"
+            >Загружено: ${book.page_loaded_percent}%</span>
             <span style="grid-area: dt;">${new Date(
-              titleData.created
+              book.created
             ).toLocaleString()}</span>
 
-            <span style="grid-area: tag;">${(titleData.info.tags || [])
+            <span style="grid-area: tag;">${(book.tags || [])
               .map((tagname, ind) => {
-                if (ind >= 8) return "";
                 return `<span class="tag">${tagname}</span>`;
               })
               .join("")}
-            ${
-              titleData.info.tags && titleData.info.tags.length > 7
-                ? `<b>и больше!</b>`
-                : ""
-            } 
+            ${book.has_more_tags ? `<b>и больше!</b>` : ""} 
             </span>
           </div>
         </div>`;

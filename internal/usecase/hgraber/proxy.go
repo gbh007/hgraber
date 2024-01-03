@@ -21,10 +21,6 @@ func (uc *UseCase) GetPage(ctx context.Context, id int, page int) (*hgraber.Page
 	return uc.storage.GetPage(ctx, id, page)
 }
 
-func (uc *UseCase) GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book {
-	return uc.storage.GetBooks(ctx, filter)
-}
-
 func (uc *UseCase) UpdatePageRate(ctx context.Context, id int, page int, rate int) error {
 	return uc.storage.UpdatePageRate(ctx, id, page, rate)
 }

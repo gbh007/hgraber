@@ -21,7 +21,7 @@ type useCases interface {
 
 	GetBook(ctx context.Context, id int) (hgraber.Book, error)
 	GetPage(ctx context.Context, id int, page int) (*hgraber.Page, error)
-	GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book
+	GetBooks(ctx context.Context, filter hgraber.BookFilterOuter) hgraber.FilteredBooks
 
 	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
 	UpdateBookRate(ctx context.Context, id int, rate int) error
@@ -105,13 +105,16 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	mux.Handle("/auth/login", ws.routeLogin(ws.token))
 	mux.Handle("/info", tokenHandler(ws.token, ws.routeMainInfo()))
 	mux.Handle("/new", tokenHandler(ws.token, ws.routeNewTitle()))
-	mux.Handle("/title/list", tokenHandler(ws.token, ws.routeTitleList()))
+	// mux.Handle("/title/list", tokenHandler(ws.token, ws.routeTitleList()))
 	mux.Handle("/title/details", tokenHandler(ws.token, ws.routeTitleInfo()))
 	mux.Handle("/title/page", tokenHandler(ws.token, ws.routeTitlePage()))
 	mux.Handle("/to-zip", tokenHandler(ws.token, ws.routeSaveToZIP()))
 	mux.Handle("/app/info", tokenHandler(ws.token, ws.routeAppInfo()))
 	mux.Handle("/title/rate", tokenHandler(ws.token, ws.routeSetTitleRate()))
 	mux.Handle("/title/page/rate", tokenHandler(ws.token, ws.routeSetPageRate()))
+
+	// New API
+	mux.Handle("/api/books", tokenHandler(ws.token, ws.bookList()))
 
 	server := &http.Server{
 		Addr: ws.addr,
