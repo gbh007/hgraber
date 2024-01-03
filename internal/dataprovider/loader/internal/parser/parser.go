@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+var Prefixes = []string{
+	"https://imhentai.xxx/",
+	"https://www.3hentai1.buzz/",
+	"https://manga-online.biz/",
+	"https://doujins.com/",
+	"http://localhost",
+}
+
 type Requester interface {
 	RequestString(ctx context.Context, URL string) (string, error)
 }

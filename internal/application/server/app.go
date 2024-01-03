@@ -13,19 +13,15 @@ import (
 	"app/internal/usecase/agentserver"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
+	"app/pkg/ctxtool"
 	"context"
-	"fmt"
 )
 
-type App struct {
-	async *async.Controller
-}
+func Serve(ctx context.Context) {
+	ctx = ctxtool.NewSystemContext(ctx, "main")
+	logger := logger.New(false, false)
+	logger.Info(ctx, "Инициализация сервера")
 
-func New() *App {
-	return new(App)
-}
-
-func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	cfg := parseFlag()
 
 	debug := false // FIXME: получать из конфигурации
@@ -36,18 +32,22 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	}
 
 	webtool := web.New(logger, debug)
-	app.async = async.New(logger)
+	async := async.New(logger)
 
 	fileStorage := externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr, logger)
 	storage, err := postgresql.Connect(ctx, cfg.PGSource, logger)
 	if err != nil {
-		return fmt.Errorf("app: %w", err)
+		logger.Error(ctx, err)
+
+		return
 	}
 
 	if !cfg.ReadOnly {
 		err = storage.MigrateAll(ctx)
 		if err != nil {
-			return fmt.Errorf("app: %w", err)
+			logger.Error(ctx, err)
+
+			return
 		}
 	}
 
@@ -60,7 +60,7 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	if hasAgent && !cfg.ReadOnly {
 		agentUseCases := agentserver.New(logger, storage, tempStorage, fileStorage)
 		agentServer := hgraberagent.New(agentUseCases, cfg.ag.Addr, cfg.ag.Token, logger, webtool)
-		app.async.RegisterRunner(ctx, agentServer)
+		async.RegisterRunner(ctx, agentServer)
 	}
 
 	webServer := hgraberweb.New(hgraberweb.Config{
@@ -73,20 +73,20 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 		Webtool:       webtool,
 	})
 
-	app.async.RegisterRunner(ctx, webServer)
+	async.RegisterRunner(ctx, webServer)
 
 	if !cfg.ReadOnly {
-		app.async.RegisterRunner(ctx, worker)
+		async.RegisterRunner(ctx, worker)
 	}
 
-	return nil
-}
+	logger.Info(ctx, "Система запущена")
 
-func (app *App) Serve(ctx context.Context) error {
-	err := app.async.Serve(ctx)
+	err = async.Serve(ctx)
 	if err != nil {
-		return fmt.Errorf("app: %w", err)
+		logger.Error(ctx, err)
+
+		return
 	}
 
-	return nil
+	logger.Info(ctx, "Процессы завершены, выход")
 }

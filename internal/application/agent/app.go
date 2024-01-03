@@ -7,19 +7,15 @@ import (
 	"app/internal/dataprovider/loader"
 	"app/internal/dataprovider/logger"
 	agentUC "app/internal/usecase/agent"
+	"app/pkg/ctxtool"
 	"context"
-	"fmt"
 )
 
-type App struct {
-	async *async.Controller
-}
+func Serve(ctx context.Context) {
+	ctx = ctxtool.NewSystemContext(ctx, "main")
 
-func New() *App {
-	return new(App)
-}
-
-func (app *App) Init(ctx context.Context, logger *logger.Logger) {
+	logger := logger.New(false, false)
+	logger.Info(ctx, "Инициализация агента")
 	cfg := parseFlag()
 
 	debug := false // FIXME: брать из конфигурации
@@ -28,11 +24,11 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) {
 		logger.SetDebug(debug)
 	}
 
-	app.async = async.New(logger)
+	async := async.New(logger)
 	loader := loader.New(logger)
 
 	agentApi := agentapi.New(agentapi.Config{
-		Prefixes:     nil, // Обрабатываем все
+		Prefixes:     loader.Prefixes(),
 		Token:        cfg.Token,
 		AgentName:    cfg.Name,
 		Scheme:       cfg.Scheme,
@@ -43,14 +39,16 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) {
 	useCases := agentUC.New(logger, agentApi, loader)
 	controller := agent.New(logger, useCases)
 
-	app.async.RegisterRunner(ctx, controller)
-}
+	async.RegisterRunner(ctx, controller)
 
-func (app *App) Serve(ctx context.Context) error {
-	err := app.async.Serve(ctx)
+	logger.Info(ctx, "Система запущена")
+
+	err := async.Serve(ctx)
 	if err != nil {
-		return fmt.Errorf("app: %w", err)
+		logger.Error(ctx, err)
+
+		return
 	}
 
-	return nil
+	logger.Info(ctx, "Процессы завершены, выход")
 }

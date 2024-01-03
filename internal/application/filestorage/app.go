@@ -6,21 +6,16 @@ import (
 	"app/internal/dataprovider/fileStorage/filesystem"
 	"app/internal/dataprovider/logger"
 	"app/internal/usecase/web"
+	"app/pkg/ctxtool"
 	"context"
-	"fmt"
 )
 
-type App struct {
-	storage    *filesystem.Storage
-	controller *externalfile.Controller
-	async      *async.Controller
-}
+func Serve(ctx context.Context) {
+	ctx = ctxtool.NewSystemContext(ctx, "main")
 
-func New() *App {
-	return new(App)
-}
+	logger := logger.New(false, false)
 
-func (app *App) Init(ctx context.Context, logger *logger.Logger) {
+	logger.Info(ctx, "Инициализация сервера")
 	cfg := parseFlag()
 
 	debug := false // FIXME: управлять отладкой с конфигурации
@@ -30,25 +25,27 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) {
 	}
 
 	webtool := web.New(logger, debug)
+	storage := filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly, logger)
+	controller := externalfile.New(storage, cfg.Addr, cfg.Token, logger, webtool)
 
-	app.storage = filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly, logger)
+	async := async.New(logger)
+	async.RegisterRunner(ctx, controller)
 
-	app.controller = externalfile.New(app.storage, cfg.Addr, cfg.Token, logger, webtool)
-
-	app.async = async.New(logger)
-	app.async.RegisterRunner(ctx, app.controller)
-}
-
-func (app *App) Serve(ctx context.Context) error {
-	err := app.storage.Prepare(ctx)
+	err := storage.Prepare(ctx)
 	if err != nil {
-		return fmt.Errorf("app: %w", err)
+		logger.Error(ctx, err)
+
+		return
 	}
 
-	err = app.async.Serve(ctx)
+	logger.Info(ctx, "Система запущена")
+
+	err = async.Serve(ctx)
 	if err != nil {
-		return fmt.Errorf("app: %w", err)
+		logger.Error(ctx, err)
+
+		return
 	}
 
-	return nil
+	logger.Info(ctx, "Процессы завершены, выход")
 }

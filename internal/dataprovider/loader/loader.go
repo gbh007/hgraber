@@ -26,6 +26,10 @@ func New(logger logger) *Loader {
 	}
 }
 
+func (l *Loader) Prefixes() []string {
+	return parser.Prefixes
+}
+
 func (l *Loader) Parse(ctx context.Context, URL string) (hgraber.Parser, error) {
 	p, err := parser.Parse(ctx, URL)
 	if err != nil {

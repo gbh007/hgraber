@@ -11,19 +11,16 @@ import (
 	"app/internal/dataprovider/temp"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
+	"app/pkg/ctxtool"
 	"context"
 	"fmt"
 )
 
-type App struct {
-	async *async.Controller
-}
+func Serve(ctx context.Context) {
+	ctx = ctxtool.NewSystemContext(ctx, "main")
+	logger := logger.New(false, false)
+	logger.Info(ctx, "Инициализация сервера")
 
-func New() *App {
-	return new(App)
-}
-
-func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	cfg := parseFlag()
 
 	if cfg.Log.DebugMode {
@@ -32,12 +29,14 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 
 	webtool := web.New(logger, cfg.Log.DebugMode)
 
-	app.async = async.New(logger)
+	async := async.New(logger)
 	fileStorage := filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView, logger)
 
 	err := fileStorage.Prepare(ctx)
 	if err != nil {
-		return fmt.Errorf("app: %w", err)
+		logger.Error(ctx, err)
+
+		return
 	}
 
 	storage := jdb.Init(ctx, logger, &cfg.Base.DBFilePath)
@@ -45,11 +44,13 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	if !cfg.Base.OnlyView {
 		err = storage.Load(ctx, cfg.Base.DBFilePath)
 		if err != nil {
-			return fmt.Errorf("app: %w", err)
+			logger.Error(ctx, err)
+
+			return
 		}
 
-		app.async.RegisterRunner(ctx, storage)
-		app.async.RegisterAfterStop(ctx, func() {
+		async.RegisterRunner(ctx, storage)
+		async.RegisterAfterStop(ctx, func() {
 			if storage.Save(ctx, cfg.Base.DBFilePath, false) == nil {
 				logger.Info(ctx, "База сохранена")
 			} else {
@@ -74,20 +75,20 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 		Webtool:       webtool,
 	})
 
-	app.async.RegisterRunner(ctx, webServer)
+	async.RegisterRunner(ctx, webServer)
 
 	if !cfg.Base.OnlyView {
-		app.async.RegisterRunner(ctx, worker)
+		async.RegisterRunner(ctx, worker)
 	}
 
-	return nil
-}
+	logger.Info(ctx, "Система запущена")
 
-func (app *App) Serve(ctx context.Context) error {
-	err := app.async.Serve(ctx)
+	err = async.Serve(ctx)
 	if err != nil {
-		return fmt.Errorf("app: %w", err)
+		logger.Error(ctx, err)
+
+		return
 	}
 
-	return nil
+	logger.Info(ctx, "Процессы завершены, выход")
 }

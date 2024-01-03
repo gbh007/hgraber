@@ -8,6 +8,8 @@ type Config struct {
 	WebServer WebServerConfig
 	// Конфигурация логов приложения
 	Log LogConfig
+	// Агент сервер
+	Ag configAg
 }
 
 // WebServerConfig - конфигурация веб сервера.
@@ -36,6 +38,11 @@ type LogConfig struct {
 	EnableAppendFileErr bool
 }
 
+type configAg struct {
+	Addr  string
+	Token string
+}
+
 func parseFlag() Config {
 	// базовые опции
 	webPort := flag.Int("p", 8080, "порт веб сервера")
@@ -54,6 +61,10 @@ func parseFlag() Config {
 	debugMode := flag.Bool("debug", false, "активировать режим отладки (дебага)")
 	debugFullpathMode := flag.Bool("debug-fullpath", false, "включает длинные пути файлов в логах")
 
+	// агент сервер
+	agAddr := flag.String("ag-addr", "", "адрес агент сервера")
+	agToken := flag.String("ag-token", "", "токен для доступа к агент серверу")
+
 	flag.Parse()
 
 	return Config{
@@ -69,6 +80,10 @@ func parseFlag() Config {
 			Port:          *webPort,
 			Token:         *token,
 			StaticDirPath: *staticDirPath,
+		},
+		Ag: configAg{
+			Addr:  *agAddr,
+			Token: *agToken,
 		},
 	}
 }

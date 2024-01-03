@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"app/internal/controller/async"
+	"app/internal/controller/hgraberagent"
 	"app/internal/controller/hgraberweb"
 	"app/internal/controller/hgraberworker"
 	"app/internal/dataprovider/fileStorage/filememory"
@@ -9,39 +10,39 @@ import (
 	"app/internal/dataprovider/logger"
 	"app/internal/dataprovider/storage/jdb"
 	"app/internal/dataprovider/temp"
+	"app/internal/usecase/agentserver"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
+	"app/pkg/ctxtool"
 	"context"
 	"fmt"
 )
 
-type App struct {
-	async *async.Controller
-}
+func Serve(ctx context.Context) {
+	ctx = ctxtool.NewSystemContext(ctx, "main")
+	logger := logger.New(false, false)
+	logger.Info(ctx, "Инициализация")
 
-func New() *App {
-	return new(App)
-}
-
-func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	cfg := parseFlag()
 
 	if cfg.Log.DebugMode {
 		logger.SetDebug(cfg.Log.DebugMode)
 	}
 
+	hasAgent := cfg.Ag.Addr != ""
+
 	webtool := web.New(logger, cfg.Log.DebugMode)
 
-	app.async = async.New(logger)
+	async := async.New(logger)
 	fileStorage := filememory.New()
 
 	storage := jdb.Init(ctx, logger, nil)
 
 	loader := loader.New(logger)
 	tempStorage := temp.New()
-	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, false)
+	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, hasAgent)
 
-	worker := hgraberworker.New(useCases, logger, false)
+	worker := hgraberworker.New(useCases, logger, hasAgent)
 
 	webServer := hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,
@@ -53,17 +54,23 @@ func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 		Webtool:       webtool,
 	})
 
-	app.async.RegisterRunner(ctx, webServer)
-	app.async.RegisterRunner(ctx, worker)
-
-	return nil
-}
-
-func (app *App) Serve(ctx context.Context) error {
-	err := app.async.Serve(ctx)
-	if err != nil {
-		return fmt.Errorf("app: %w", err)
+	if hasAgent {
+		agentUseCases := agentserver.New(logger, storage, tempStorage, fileStorage)
+		agentServer := hgraberagent.New(agentUseCases, cfg.Ag.Addr, cfg.Ag.Token, logger, webtool)
+		async.RegisterRunner(ctx, agentServer)
 	}
 
-	return nil
+	async.RegisterRunner(ctx, webServer)
+	async.RegisterRunner(ctx, worker)
+
+	logger.Info(ctx, "Система запущена")
+
+	err := async.Serve(ctx)
+	if err != nil {
+		logger.Error(ctx, err)
+
+		return
+	}
+
+	logger.Info(ctx, "Процессы завершены, выход")
 }

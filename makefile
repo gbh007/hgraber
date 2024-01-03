@@ -23,7 +23,7 @@ debug: create_build_dir
 
 demo: create_build_dir
 	go build -trimpath -o ./_build/hgraber-bin  ./cmd/inmemory
-	./_build/hgraber-bin -debug -h 127.0.0.1 -p 8080 --access-token=local-debug
+	./_build/hgraber-bin -debug -h 127.0.0.1 -p 8080 --access-token=local-debug --ag-addr 127.0.0.1:8081 --ag-token agent-token
 
 fileserver: create_build_dir
 	go build -trimpath -o ./_build/hgraber-fileserver  ./cmd/fileserver
