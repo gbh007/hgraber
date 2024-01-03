@@ -106,7 +106,7 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	mux.Handle("/info", tokenHandler(ws.token, ws.routeMainInfo()))
 	mux.Handle("/new", tokenHandler(ws.token, ws.routeNewTitle()))
 	// mux.Handle("/title/list", tokenHandler(ws.token, ws.routeTitleList()))
-	mux.Handle("/title/details", tokenHandler(ws.token, ws.routeTitleInfo()))
+	// mux.Handle("/title/details", tokenHandler(ws.token, ws.routeTitleInfo()))
 	mux.Handle("/title/page", tokenHandler(ws.token, ws.routeTitlePage()))
 	mux.Handle("/to-zip", tokenHandler(ws.token, ws.routeSaveToZIP()))
 	mux.Handle("/app/info", tokenHandler(ws.token, ws.routeAppInfo()))
@@ -115,6 +115,7 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 
 	// New API
 	mux.Handle("/api/books", tokenHandler(ws.token, ws.bookList()))
+	mux.Handle("/api/book", tokenHandler(ws.token, ws.bookInfo()))
 
 	server := &http.Server{
 		Addr: ws.addr,

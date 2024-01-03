@@ -36,7 +36,7 @@
     </style>
     <div class="app-header">
       <a href="/">Главная</a>
-      <a href="/list.html">Список тайтлов</a>
+      <a href="/list.html">Список книг</a>
       <a href="/settings.html">Настройки</a>
     </div>
 
@@ -52,60 +52,40 @@
     </div>
 
     <script>
-      let page = 1;
-      let pageCount = 1;
+      let pageNumber = 1;
+      let pages = [];
 
-      const titleID = parseInt(
+      const bookID = parseInt(
         new URLSearchParams(window.location.search).get("book")
       );
-      page =
+      pageNumber =
         parseInt(new URLSearchParams(window.location.search).get("page")) || 1;
 
-      function updatePage(info) {
+      function updatePage(page) {
         document
           .getElementById("main-image")
-          .setAttribute(
-            "src",
-            `/file/${titleID}/${info.page_number}.${info.ext}`
-          );
-        page = info.page_number;
-        document.getElementById("page-number").innerText = page;
+          .setAttribute("src", page.preview_url);
+        document.getElementById("page-number").innerText = page.page_number;
         let rate = document.getElementById("rate");
-        rate.innerHTML = `<span class="rate" book="${titleID}" page="${page}" rate="${info.rate}" unprocessed></span>`;
+        rate.innerHTML = `<span class="rate" book="${bookID}" page="${page.page_number}" rate="${page.rate}" unprocessed></span>`;
         refreshRates();
       }
 
-      async function goPage(page) {
-        try {
-          let response = await fetch("/title/page", {
-            method: "POST",
-            body: JSON.stringify({ id: titleID, page: page }),
-          });
-
-          if (!response.ok) {
-            throw new Error(await response.text());
-          }
-
-          let data = await response.json();
-
-          updatePage(data);
-        } catch (err) {
-          document.getElementById(
-            "page-number"
-          ).innerHTML = `<div class="app-error-container">${err}</div>`;
-        }
+      async function goPage(pageNumberNew) {
+        updatePage(pages[pageNumberNew - 1]);
+        pageNumber = pageNumberNew;
       }
 
       function prevPage() {
-        if (page == 1) return;
+        if (pageNumber == 1) return;
 
-        goPage(page - 1);
+        goPage(pageNumber - 1);
       }
 
       function nextPage() {
-        if (page == pageCount) return;
+        if (pageNumber == pages.length) return;
 
-        goPage(page + 1);
+        goPage(pageNumber + 1);
       }
 
       window.addEventListener("load", async function () {
@@ -122,9 +102,9 @@
         };
 
         try {
-          let response = await fetch("/title/details", {
+          let response = await fetch("/api/book", {
             method: "POST",
-            body: JSON.stringify({ id: titleID }),
+            body: JSON.stringify({ id: bookID }),
           });
 
           if (!response.ok) {
@@ -133,9 +113,9 @@
 
           let data = await response.json();
 
-          pageCount = data.pages.length || 0;
-          document.getElementById("page-count").innerText = pageCount;
-          goPage(page);
+          pages = data.pages || [];
+          document.getElementById("page-count").innerText = pages.length;
+          goPage(pageNumber);
         } catch (err) {
           document.getElementById(
             "page-number"

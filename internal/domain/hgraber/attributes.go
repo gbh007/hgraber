@@ -3,13 +3,13 @@ package hgraber
 type Attribute string
 
 var AllAttributes = []Attribute{
-	AttrAuthor,
-	AttrCategory,
-	AttrCharacter,
-	AttrGroup,
-	AttrLanguage,
-	AttrParody,
 	AttrTag,
+	AttrAuthor,
+	AttrCharacter,
+	AttrLanguage,
+	AttrCategory,
+	AttrParody,
+	AttrGroup,
 }
 
 const (

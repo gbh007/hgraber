@@ -24,39 +24,22 @@
 
   <body>
     <style>
-      .title-details {
-        display: grid;
-        grid-template-areas:
-          "img name name name name"
-          "img id pgc pgp dt"
-          "img tag tag tag tag"
-          "img authors authors authors authors"
-          "img char char char char"
-          "img lang lang lang lang"
-          "img cat cat cat cat"
-          "img par par par par"
-          "img gr gr gr gr"
-          "img load load read read";
-        grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-        gap: 10px 10px;
+      .book-details {
+        display: flex;
       }
 
-      .title-details *[t="red"] {
+      .book-details *[t="red"] {
         color: red;
       }
 
-      .title-details *[t="bred"] {
+      .book-details *[t="bred"] {
         background: pink;
       }
 
-      .title-details a.read {
-        grid-area: read;
+      .book-details a.load,
+      .book-details a.read {
         text-align: center;
-      }
-
-      .title-details a.load {
-        grid-area: load;
-        text-align: center;
+        flex-grow: 1;
       }
 
       span.tag {
@@ -79,6 +62,11 @@
         align-items: center;
       }
 
+      img.main-preview {
+        max-width: 15vw;
+        max-height: 50vh;
+      }
+
       img.preview {
         max-width: 400px;
         max-height: 200px;
@@ -88,11 +76,29 @@
         margin: 5px;
         padding: 5px;
       }
+
+      div.book-info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex-grow: 1;
+        padding: 10px;
+      }
+
+      div.book-info-panel {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      div.bottom-buttons {
+        display: flex;
+        gap: 10px;
+      }
     </style>
 
     <div class="app-header">
       <a href="/">Главная</a>
-      <a href="/list.html">Список тайтлов</a>
+      <a href="/list.html">Список книг</a>
       <a href="/settings.html">Настройки</a>
     </div>
 
@@ -101,16 +107,16 @@
     </div>
 
     <script>
-      const titleID = parseInt(
+      const bookID = parseInt(
         new URLSearchParams(window.location.search).get("book")
       );
 
       window.addEventListener("load", async function () {
         let bookNode = document.getElementById("title");
         try {
-          let response = await fetch("/title/details", {
+          let response = await fetch("/api/book", {
             method: "POST",
-            body: JSON.stringify({ id: titleID }),
+            body: JSON.stringify({ id: bookID }),
           });
 
           if (!response.ok) {
@@ -119,15 +125,15 @@
 
           let data = await response.json();
 
-          bookNode.innerHTML = generateHTMLTItleDetailsFromTitleInfo(data);
+          bookNode.innerHTML = generateHTMLBookDetails(data);
           refreshRates();
         } catch (err) {
           bookNode.innerHTML = `<div class="app-error-container">${err}</div>`;
         }
       });
 
-      function generateHTMLTTagArea(tags, areaName, displayName) {
-        return `<span style="grid-area: ${areaName};">
+      function generateHTMLTagArea(tags, displayName) {
+        return `<span>
           <span>${displayName}: </span>
           ${(tags || [])
             .map((tagname, ind) => `<span class="tag">${tagname}</span>`)
@@ -135,75 +141,66 @@
         </span>`;
       }
 
-      function generateHTMLTItleDetailsFromTitleInfo(titleData) {
+      function generateHTMLBookDetails(book) {
         return `<div
-          class="app-container title-details"
-          t="${titleData.info.parsed.name ? "" : "bred"}"
+          class="app-container book-details"
+          t="${book.parsed_name ? "" : "bred"}"
         >
-          ${
-            !titleData.pages || !titleData.pages.length
-              ? `<span style="grid-area: img;"></span>`
-              : `<img style="max-width: 100%; max-height: 100%; grid-area: img;" src="/file/${titleData.id}/1.${titleData.pages[0].ext}" />`
-          }
-          <h1
-            style="grid-area: name;"
-            t="${titleData.info.parsed.name ? "" : "red"}"
-          >${titleData.info.name}</h1>
-          <span style="grid-area: id;">
-            #${titleData.id}
-            <span 
-              class="rate"
-              book="${titleData.id}"
-              rate="${titleData.info.rate}"
-              unprocessed
-            ></span>
-          </span>
-          <span
-            style="grid-area: pgc;"
-            t="${titleData.info.parsed.page ? "" : "red"}"
-          >Страниц: ${titleData.pages.length}</span>
-          <span
-            style="grid-area: pgp;"
-            t="${calcAvg(titleData.pages) != 100.0 ? "red" : ""}"
-          >Загружено: ${calcAvg(titleData.pages)}%</span>
-          <span style="grid-area: dt;">${new Date(
-            titleData.created
-          ).toLocaleString()}</span>
-          ${generateHTMLTTagArea(titleData.info.tags, "tag", "Тэги")}
-          ${generateHTMLTTagArea(titleData.info.authors, "authors", "Авторы")}
-          ${generateHTMLTTagArea(
-            titleData.info.characters,
-            "char",
-            "Персонажи"
-          )}
-          ${generateHTMLTTagArea(titleData.info.languages, "lang", "Языки")}
-          ${generateHTMLTTagArea(titleData.info.categories, "cat", "Категории")}
-          ${generateHTMLTTagArea(titleData.info.parodies, "par", "Пародии")}
-          ${generateHTMLTTagArea(titleData.info.groups, "gr", "Группы")}
-          <a class="app-button load" href="#">Скачать</a>
-          <a class="app-button read" href="/read.html?book=${
-            titleData.id
-          }">Читать</a>
+          <div>
+            ${
+              !book.preview_url
+                ? `<span></span>`
+                : `<img class="main-preview" src="${book.preview_url}"/>`
+            }
+          </div>
+          <div class="book-info">
+            <h1 
+              t="${book.parsed_name ? "" : "red"}"
+            >${book.name}</h1>
+            <div class="book-info-panel">
+              <span>
+                #${book.id}
+                <span 
+                  class="rate"
+                  book="${book.id}"
+                  rate="${book.rate}"
+                  unprocessed
+                ></span>
+              </span>
+              <span
+                t="${book.parsed_page ? "" : "red"}"
+              >Страниц: ${book.page_count}</span>
+              <span
+                t="${book.page_loaded_percent != 100.0 ? "red" : ""}"
+              >Загружено: ${book.page_loaded_percent}%</span>
+              <span>${new Date(book.created).toLocaleString()}</span>
+            </div>
+            ${book.attributes
+              .map((attr) => generateHTMLTagArea(attr.values, attr.name))
+              .join("\n")}
+            <div class="bottom-buttons">
+              <a class="app-button load" href="#">Скачать</a>
+              <a class="app-button read" href="/read.html?book=${
+                book.id
+              }">Читать</a>
+            </div>
+          </div>
         </div>
         ${
-          titleData.pages && titleData.pages.length
-            ? `<div class="preview">${titleData.pages
-                .map((element, index) => {
-                  if (!element.success) return "";
-
-                  const url = `/file/${titleData.id}/${index + 1}.${
-                    element.ext
-                  }`;
+          book.pages && book.pages.length
+            ? `<div class="preview">${book.pages
+                .map((page, index) => {
+                  if (!page.preview_url) return "";
 
                   return `<div class="app-container">
-                    <a href="/read.html?book=${titleData.id}&page=${index + 1}">
-                      <img class="preview" src="${url}"/>
+                    <a href="/read.html?book=${book.id}&page=${page.page_number}">
+                      <img class="preview" src="${page.preview_url}"/>
                     </a>
                     <span
                       class="rate"
-                      book="${titleData.id}"
-                      page="${index + 1}"
-                      rate="${element.rate}"
+                      book="${book.id}"
+                      page="${page.page_number}"
+                      rate="${page.rate}"
                       unprocessed
                     ></span>
                   </div>`;
@@ -211,17 +208,6 @@
                 .join("")}</div>`
             : ""
         }`;
-      }
-
-      function calcAvg(pages) {
-        if (!pages || !pages.length) {
-          return 0;
-        }
-        return (
-          Math.round(
-            (pages.filter((p) => p.success).length * 10000) / pages.length
-          ) / 100
-        );
       }
     </script>
   </body>

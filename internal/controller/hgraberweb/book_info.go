@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (ws *WebServer) routeTitleInfo() http.Handler {
+func (ws *WebServer) bookInfo() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
 			ID int `json:"id"`
@@ -24,6 +24,6 @@ func (ws *WebServer) routeTitleInfo() http.Handler {
 			return
 		}
 
-		ws.webtool.WriteJSON(ctx, w, http.StatusOK, rendering.TitleFromStorageWrap(ws.outerAddr)(data))
+		ws.webtool.WriteJSON(ctx, w, http.StatusOK, rendering.BookDetailInfoFromDomain(ws.outerAddr, data))
 	})
 }

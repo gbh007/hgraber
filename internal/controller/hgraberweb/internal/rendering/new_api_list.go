@@ -2,7 +2,6 @@ package rendering
 
 import (
 	"app/internal/domain/hgraber"
-	"fmt"
 	"math"
 	"time"
 )
@@ -36,16 +35,16 @@ type BookListResponse struct {
 	Pages []PageForPagination `json:"pages"`
 }
 
-func BookShortInfoFromDomain(addr string, book hgraber.Book) BookShortInfo {
+func BookShortInfoFromDomain(addr string, raw hgraber.Book) BookShortInfo {
 	previewURL := ""
 	pageCount := 0
 	pageLoadedPercent := 0.0
 
-	if len(book.Pages) > 0 {
-		firstPage := book.Pages[0]
-		pageCount = len(book.Pages)
+	if len(raw.Pages) > 0 {
+		firstPage := raw.Pages[0]
+		pageCount = len(raw.Pages)
 
-		for _, page := range book.Pages {
+		for _, page := range raw.Pages {
 			if page.Success {
 				pageLoadedPercent++
 			}
@@ -53,35 +52,35 @@ func BookShortInfoFromDomain(addr string, book hgraber.Book) BookShortInfo {
 
 		pageLoadedPercent = math.Round(pageLoadedPercent*10000/float64(pageCount)) / 100
 
-		previewURL = fmt.Sprintf("%s/file/%d/%d.%s", addr, firstPage.BookID, firstPage.PageNumber, firstPage.Ext)
+		previewURL = fileURL(addr, firstPage.BookID, firstPage.PageNumber, firstPage.Ext)
 	}
 
 	const renderTags = 8
 
 	tags := make([]string, renderTags)
-	tagCount := copy(tags, book.Data.Attributes[hgraber.AttrTag])
+	tagCount := copy(tags, raw.Data.Attributes[hgraber.AttrTag])
 	tags = tags[:tagCount]
-	hasMoreTags := len(book.Data.Attributes[hgraber.AttrTag]) > renderTags
+	hasMoreTags := len(raw.Data.Attributes[hgraber.AttrTag]) > renderTags
 
 	return BookShortInfo{
-		ID:                book.ID,
-		Created:           book.Created,
+		ID:                raw.ID,
+		Created:           raw.Created,
 		PreviewURL:        previewURL,
-		ParsedName:        book.Data.Parsed.Name,
-		Name:              book.Data.Name,
-		ParsedPage:        book.Data.Parsed.Page,
+		ParsedName:        raw.Data.Parsed.Name,
+		Name:              raw.Data.Name,
+		ParsedPage:        raw.Data.Parsed.Page,
 		PageCount:         pageCount,
 		PageLoadedPercent: pageLoadedPercent,
-		Rate:              book.Data.Rate,
+		Rate:              raw.Data.Rate,
 		Tags:              tags,
 		HasMoreTags:       hasMoreTags,
 	}
 }
 
-func BookShortInfosFromDomain(addr string, books []hgraber.Book) []BookShortInfo {
-	out := make([]BookShortInfo, len(books))
+func BookShortInfosFromDomain(addr string, raw []hgraber.Book) []BookShortInfo {
+	out := make([]BookShortInfo, len(raw))
 
-	convertSliceWithAddr(addr, out, books, BookShortInfoFromDomain)
+	convertSliceWithAddr(addr, out, raw, BookShortInfoFromDomain)
 
 	return out
 }
