@@ -2,15 +2,14 @@ package main
 
 import (
 	"app/internal/application/simple"
+	"app/internal/dataprovider/logger"
 	"app/pkg/ctxtool"
-	"app/pkg/logger"
 	"context"
 	"os/signal"
 	"syscall"
 )
 
 func main() {
-
 	notifyCtx, stop := signal.NotifyContext(
 		context.Background(),
 		syscall.SIGHUP,
@@ -22,14 +21,13 @@ func main() {
 
 	ctx := ctxtool.NewSystemContext(notifyCtx, "main")
 
-	// FIXME: сейчас 2 логгера
-	logger := logger.New(false)
+	logger := logger.New(false, false)
 
 	logger.Info(ctx, "Инициализация сервера")
 
 	app := simple.New()
 
-	err := app.Init(ctx)
+	err := app.Init(ctx, logger)
 	if err != nil {
 		logger.Error(ctx, err)
 

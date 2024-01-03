@@ -2,11 +2,17 @@ package converter
 
 import (
 	"app/internal/domain/hgraber"
-	"app/pkg/logger"
 	"context"
 	"errors"
 	"fmt"
 )
+
+type logger interface {
+	Debug(ctx context.Context, args ...any)
+	Error(ctx context.Context, err error)
+	Info(ctx context.Context, args ...any)
+	Warning(ctx context.Context, args ...any)
+}
 
 type storageFrom interface {
 	GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book
@@ -24,10 +30,10 @@ type Builder struct {
 	src storageFrom
 	dst storageTo
 
-	logger *logger.Logger
+	logger logger
 }
 
-func New(logger *logger.Logger) *Builder {
+func New(logger logger) *Builder {
 	return &Builder{
 		logger: logger,
 	}

@@ -4,18 +4,22 @@ import (
 	"app/internal/dataprovider/loader/internal/parser"
 	"app/internal/dataprovider/loader/internal/request"
 	"app/internal/domain/hgraber"
-	"app/pkg/logger"
 	"context"
 	"fmt"
 	"io"
 )
 
+type logger interface {
+	Error(ctx context.Context, err error)
+	IfErrFunc(ctx context.Context, f func() error)
+}
+
 type Loader struct {
-	logger    *logger.Logger
+	logger    logger
 	requester *request.Requester
 }
 
-func New(logger *logger.Logger) *Loader {
+func New(logger logger) *Loader {
 	return &Loader{
 		logger:    logger,
 		requester: request.New(logger),

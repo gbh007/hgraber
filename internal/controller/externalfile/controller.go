@@ -2,12 +2,18 @@ package externalfile
 
 import (
 	"app/internal/domain/externalfile"
-	"app/pkg/logger"
 	"context"
 	"io"
 	"net"
 	"net/http"
 )
+
+type logger interface {
+	Error(ctx context.Context, err error)
+	IfErr(ctx context.Context, err error)
+	IfErrFunc(ctx context.Context, f func() error)
+	Info(ctx context.Context, args ...any)
+}
 
 type fileStorage interface {
 	CreatePageFile(ctx context.Context, id, page int, ext string, body io.Reader) error
@@ -25,7 +31,7 @@ type webtool interface {
 }
 
 type Controller struct {
-	logger *logger.Logger
+	logger logger
 
 	fileStorage fileStorage
 	webtool     webtool
@@ -34,7 +40,7 @@ type Controller struct {
 	token string
 }
 
-func New(fileStorage fileStorage, addr string, token string, logger *logger.Logger, web webtool) *Controller {
+func New(fileStorage fileStorage, addr string, token string, logger logger, web webtool) *Controller {
 	return &Controller{
 		logger:      logger,
 		fileStorage: fileStorage,

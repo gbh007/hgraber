@@ -6,11 +6,11 @@ import (
 	"app/internal/controller/hgraberworker"
 	"app/internal/dataprovider/fileStorage/filememory"
 	"app/internal/dataprovider/loader"
+	"app/internal/dataprovider/logger"
 	"app/internal/dataprovider/storage/jdb"
 	"app/internal/dataprovider/temp"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
-	"app/pkg/logger"
 	"context"
 	"fmt"
 )
@@ -23,10 +23,13 @@ func New() *App {
 	return new(App)
 }
 
-func (app *App) Init(ctx context.Context) error {
+func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	cfg := parseFlag()
 
-	logger := logger.New(cfg.Log.DebugMode)
+	if cfg.Log.DebugMode {
+		logger.SetDebug(cfg.Log.DebugMode)
+	}
+
 	webtool := web.New(logger, cfg.Log.DebugMode)
 
 	app.async = async.New(logger)

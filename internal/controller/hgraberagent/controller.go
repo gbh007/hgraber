@@ -2,12 +2,17 @@ package hgraberagent
 
 import (
 	"app/internal/domain/agent"
-	"app/pkg/logger"
 	"context"
 	"io"
 	"net"
 	"net/http"
 )
+
+type logger interface {
+	Error(ctx context.Context, err error)
+	IfErr(ctx context.Context, err error)
+	Info(ctx context.Context, args ...any)
+}
 
 type useCases interface {
 	UnprocessedBooks(ctx context.Context, prefixes []string, limit int) ([]agent.BookToHandle, error)
@@ -27,7 +32,7 @@ type webtool interface {
 }
 
 type Controller struct {
-	logger *logger.Logger
+	logger logger
 
 	useCases useCases
 	webtool  webtool
@@ -36,7 +41,7 @@ type Controller struct {
 	token string
 }
 
-func New(useCases useCases, addr string, token string, logger *logger.Logger, web webtool) *Controller {
+func New(useCases useCases, addr string, token string, logger logger, web webtool) *Controller {
 	return &Controller{
 		logger:   logger,
 		useCases: useCases,

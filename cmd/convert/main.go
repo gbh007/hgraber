@@ -1,12 +1,13 @@
 package main
 
 import (
+	"app/internal/dataprovider/logger"
 	"app/internal/dataprovider/storage/jdb"
 	"app/internal/dataprovider/storage/postgresql"
 	"app/internal/usecase/converter"
-	"app/pkg/logger"
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -34,7 +35,7 @@ func main() {
 	)
 	defer stop()
 
-	logger := logger.New(true)
+	logger := logger.New(true, false)
 
 	builder := converter.New(logger)
 
@@ -55,7 +56,7 @@ func main() {
 	}
 
 	if fromConnector == nil || toConnector == nil {
-		logger.ErrorText(ctx, "nil connector")
+		logger.Error(ctx, fmt.Errorf("nil connector"))
 		os.Exit(1)
 	}
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"app/internal/application/inmemory"
+	"app/internal/dataprovider/logger"
 	"app/pkg/ctxtool"
-	"app/pkg/logger"
 	"context"
 	"os/signal"
 	"syscall"
@@ -21,12 +21,11 @@ func main() {
 
 	ctx := ctxtool.NewSystemContext(notifyCtx, "main")
 
-	// FIXME: сейчас 2 логгера
-	logger := logger.New(false)
+	logger := logger.New(false, false)
 
 	app := inmemory.New()
 
-	err := app.Init(ctx)
+	err := app.Init(ctx, logger)
 	if err != nil {
 		logger.Error(ctx, err)
 

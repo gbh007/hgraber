@@ -1,10 +1,13 @@
 package async
 
 import (
-	"app/pkg/logger"
 	"context"
 	"fmt"
 )
+
+type logger interface {
+	Error(ctx context.Context, err error)
+}
 
 type Runner interface {
 	Start(context.Context) (chan struct{}, error)
@@ -13,14 +16,14 @@ type Runner interface {
 
 type AfterStopHandler func()
 
-func New(logger *logger.Logger) *Controller {
+func New(logger logger) *Controller {
 	return &Controller{
 		logger: logger,
 	}
 }
 
 type Controller struct {
-	logger *logger.Logger
+	logger logger
 
 	runnerChannels []chan struct{}
 	runners        []Runner

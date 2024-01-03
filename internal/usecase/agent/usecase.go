@@ -3,7 +3,6 @@ package agent
 import (
 	"app/internal/domain/agent"
 	"app/internal/domain/hgraber"
-	"app/pkg/logger"
 	"context"
 	"io"
 )
@@ -12,6 +11,11 @@ const (
 	booksLimit = 30
 	pageLimit  = 50
 )
+
+type logger interface {
+	Error(ctx context.Context, err error)
+	IfErrFunc(ctx context.Context, f func() error)
+}
 
 type agentAPI interface {
 	UnprocessedBooks(ctx context.Context, limit int) ([]agent.BookToHandle, error)
@@ -27,14 +31,13 @@ type loader interface {
 }
 
 type UseCase struct {
-	logger *logger.Logger
+	logger logger
 
 	agentAPI agentAPI
 	loader   loader
 }
 
-func New(
-	logger *logger.Logger, agentAPI agentAPI, loader loader) *UseCase {
+func New(logger logger, agentAPI agentAPI, loader loader) *UseCase {
 	return &UseCase{
 		logger: logger,
 

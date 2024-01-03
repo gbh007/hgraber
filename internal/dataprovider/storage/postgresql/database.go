@@ -2,7 +2,6 @@ package postgresql
 
 import (
 	"app/internal/dataprovider/storage/postgresql/internal/migration"
-	"app/pkg/logger"
 	"context"
 	"database/sql"
 
@@ -12,14 +11,29 @@ import (
 	_ "github.com/lib/pq" // драйвер для PostgreSQL
 )
 
+type logger interface {
+	Error(ctx context.Context, err error)
+	IfErr(ctx context.Context, err error)
+	IfErrFunc(ctx context.Context, f func() error)
+	Info(ctx context.Context, args ...any)
+}
+
+type loggerWrapper struct {
+	logger
+}
+
+func (l *loggerWrapper) Info(ctx context.Context, message string) {
+	l.logger.Info(ctx, message)
+}
+
 type Database struct {
 	db *sqlx.DB
 
-	logger *logger.Logger
+	logger logger
 }
 
 // Connect - возвращает соединение с хранилищем данных
-func Connect(ctx context.Context, dataSourceName string, logger *logger.Logger) (*Database, error) {
+func Connect(ctx context.Context, dataSourceName string, logger logger) (*Database, error) {
 	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, err
@@ -34,7 +48,7 @@ func Connect(ctx context.Context, dataSourceName string, logger *logger.Logger) 
 func (storage *Database) MigrateAll(ctx context.Context) error {
 	return migrator.New().
 		WithFS(migration.Migrations).
-		WithLogger(storage.logger.WithCtx(ctx)).
+		WithCtxLogger(&loggerWrapper{logger: storage.logger}).
 		WithProvider(migrator.PostgreSQLProvider).
 		MigrateAll(ctx, storage.db, true)
 }

@@ -10,19 +10,19 @@ import (
 
 type Logger struct {
 	debug bool
-	trace bool // FIXME: инициализировать
+	trace bool
 }
 
-func New(
-	debug bool,
-) *Logger {
-	return &Logger{debug: debug}
+func New(debug bool, trace bool) *Logger {
+	return &Logger{debug: debug, trace: trace}
 }
 
-func (l *Logger) WithCtx(ctx context.Context) *CtxLogger {
-	return &CtxLogger{
-		innerCtx: ctx,
-	}
+func (l *Logger) SetDebug(debug bool) {
+	l.debug = debug
+}
+
+func (l *Logger) SetTrace(trace bool) {
+	l.trace = trace
 }
 
 func (l *Logger) IfErr(ctx context.Context, err error) {
@@ -44,10 +44,6 @@ func (l *Logger) IfErrFunc(ctx context.Context, f func() error) {
 
 func (l *Logger) Error(ctx context.Context, err error) {
 	l.print(ctx, logLevelError, err.Error())
-}
-
-func (l *Logger) ErrorText(ctx context.Context, args ...any) {
-	l.print(ctx, logLevelError, args...)
 }
 
 func (l *Logger) Info(ctx context.Context, args ...any) {

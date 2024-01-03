@@ -1,13 +1,17 @@
 package externalfile
 
 import (
-	"app/pkg/logger"
+	"context"
 	"net/http"
 	"net/url"
 	"time"
 )
 
 const storageName = "external file"
+
+type logger interface {
+	IfErrFunc(ctx context.Context, f func() error)
+}
 
 type Storage struct {
 	token string
@@ -17,10 +21,10 @@ type Storage struct {
 
 	client *http.Client
 
-	logger *logger.Logger
+	logger logger
 }
 
-func New(token string, scheme string, hostWithPort string, logger *logger.Logger) *Storage {
+func New(token string, scheme string, hostWithPort string, logger logger) *Storage {
 	return &Storage{
 		token:        token,
 		scheme:       scheme,

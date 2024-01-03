@@ -5,8 +5,8 @@ import (
 	"app/internal/controller/async"
 	"app/internal/dataprovider/agentapi"
 	"app/internal/dataprovider/loader"
+	"app/internal/dataprovider/logger"
 	agentUC "app/internal/usecase/agent"
-	"app/pkg/logger"
 	"context"
 	"fmt"
 )
@@ -19,10 +19,15 @@ func New() *App {
 	return new(App)
 }
 
-func (app *App) Init(ctx context.Context) {
+func (app *App) Init(ctx context.Context, logger *logger.Logger) {
 	cfg := parseFlag()
 
-	logger := logger.New(false) // FIXME: брать из конфигурации
+	debug := false // FIXME: брать из конфигурации
+
+	if debug {
+		logger.SetDebug(debug)
+	}
+
 	app.async = async.New(logger)
 	loader := loader.New(logger)
 

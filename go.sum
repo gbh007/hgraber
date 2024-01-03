@@ -6,5 +6,5 @@ github.com/lib/pq v1.2.0 h1:LXpIM/LZ5xGFhOpXAQUIMM1HdyqzVYM13zNdjCEEcA0=
 github.com/lib/pq v1.2.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/mattn/go-sqlite3 v1.14.6 h1:dNPt6NO46WmLVt2DLNpwczCmdV5boIZ6g/tlDrlRUbg=
 github.com/mattn/go-sqlite3 v1.14.6/go.mod h1:NyWgC/yNuGj7Q9rpYnZvas74GogHl5/Z4A/KQRfk6bU=
-gitlab.com/gbh007/go-sql-migrator v0.0.2 h1:aW140/yuX+1Z21eDE3oA9F1dSe4o+H1jubes7JoXDVA=
-gitlab.com/gbh007/go-sql-migrator v0.0.2/go.mod h1:5AA9kIx0KyibsEUUu2ERjv4ewi8TofgEGFvB/z0aDHM=
+gitlab.com/gbh007/go-sql-migrator v0.0.3 h1:PkjYLii4ha2zIEYoSne73lvlgvYbIaQ3vm6V2+H6qKc=
+gitlab.com/gbh007/go-sql-migrator v0.0.3/go.mod h1:5AA9kIx0KyibsEUUu2ERjv4ewi8TofgEGFvB/z0aDHM=

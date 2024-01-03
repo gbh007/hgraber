@@ -7,12 +7,12 @@ import (
 	"app/internal/controller/hgraberworker"
 	"app/internal/dataprovider/fileStorage/externalfile"
 	"app/internal/dataprovider/loader"
+	"app/internal/dataprovider/logger"
 	"app/internal/dataprovider/storage/postgresql"
 	"app/internal/dataprovider/temp"
 	"app/internal/usecase/agentserver"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
-	"app/pkg/logger"
 	"context"
 	"fmt"
 )
@@ -25,13 +25,16 @@ func New() *App {
 	return new(App)
 }
 
-func (app *App) Init(ctx context.Context) error {
+func (app *App) Init(ctx context.Context, logger *logger.Logger) error {
 	cfg := parseFlag()
 
 	debug := false // FIXME: получать из конфигурации
 	hasAgent := cfg.ag.Addr != ""
 
-	logger := logger.New(debug)
+	if debug {
+		logger.SetDebug(debug)
+	}
+
 	webtool := web.New(logger, debug)
 	app.async = async.New(logger)
 

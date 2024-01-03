@@ -1,13 +1,17 @@
 package worker
 
 import (
-	"app/pkg/logger"
 	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 )
+
+type logger interface {
+	Debug(ctx context.Context, args ...any)
+	Info(ctx context.Context, args ...any)
+}
 
 type Worker[T any] struct {
 	titleQueue         chan T
@@ -19,13 +23,13 @@ type Worker[T any] struct {
 	handler func(context.Context, T)
 	getter  func(context.Context) []T
 
-	logger *logger.Logger
+	logger logger
 }
 
 func New[T any](
 	queueSize int,
 	interval time.Duration,
-	logger *logger.Logger,
+	logger logger,
 	handler func(context.Context, T),
 	getter func(context.Context) []T,
 ) *Worker[T] {

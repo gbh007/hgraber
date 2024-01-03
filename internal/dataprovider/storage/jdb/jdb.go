@@ -3,7 +3,6 @@ package jdb
 import (
 	"app/internal/dataprovider/storage/jdb/internal/model"
 	"app/pkg/ctxtool"
-	"app/pkg/logger"
 	"context"
 	"encoding/json"
 	"errors"
@@ -11,6 +10,14 @@ import (
 	"strings"
 	"sync"
 )
+
+type logger interface {
+	Debug(ctx context.Context, args ...any)
+	Error(ctx context.Context, err error)
+	IfErrFunc(ctx context.Context, f func() error)
+	Info(ctx context.Context, args ...any)
+	Warning(ctx context.Context, args ...any)
+}
 
 type DatabaseData struct {
 	Titles map[int]model.RawTitle `json:"titles"`
@@ -25,10 +32,10 @@ type Database struct {
 	needSave    bool
 	filename    *string
 
-	logger *logger.Logger
+	logger logger
 }
 
-func Init(ctx context.Context, logger *logger.Logger, filename *string) *Database {
+func Init(ctx context.Context, logger logger, filename *string) *Database {
 	return &Database{
 		mutex: &sync.RWMutex{},
 		data: DatabaseData{

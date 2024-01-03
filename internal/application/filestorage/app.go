@@ -4,8 +4,8 @@ import (
 	"app/internal/controller/async"
 	"app/internal/controller/externalfile"
 	"app/internal/dataprovider/fileStorage/filesystem"
+	"app/internal/dataprovider/logger"
 	"app/internal/usecase/web"
-	"app/pkg/logger"
 	"context"
 	"fmt"
 )
@@ -20,12 +20,15 @@ func New() *App {
 	return new(App)
 }
 
-func (app *App) Init(ctx context.Context) {
+func (app *App) Init(ctx context.Context, logger *logger.Logger) {
 	cfg := parseFlag()
 
 	debug := false // FIXME: управлять отладкой с конфигурации
 
-	logger := logger.New(debug)
+	if debug {
+		logger.SetDebug(debug)
+	}
+
 	webtool := web.New(logger, debug)
 
 	app.storage = filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly, logger)

@@ -3,12 +3,18 @@ package hgraberweb
 import (
 	"app/internal/controller/hgraberweb/internal/static"
 	"app/internal/domain/hgraber"
-	"app/pkg/logger"
 	"context"
 	"io"
 	"net"
 	"net/http"
 )
+
+type logger interface {
+	Error(ctx context.Context, err error)
+	IfErr(ctx context.Context, err error)
+	IfErrFunc(ctx context.Context, f func() error)
+	Info(ctx context.Context, args ...any)
+}
 
 type useCases interface {
 	Info(ctx context.Context) (*hgraber.MainInfo, error)
@@ -46,7 +52,7 @@ type WebServer struct {
 	useCases useCases
 	monitor  monitor
 
-	logger  *logger.Logger
+	logger  logger
 	webtool webtool
 
 	addr      string
@@ -59,7 +65,7 @@ type Config struct {
 	UseCases useCases
 	Monitor  monitor
 
-	Logger  *logger.Logger
+	Logger  logger
 	Webtool webtool
 
 	Addr          string

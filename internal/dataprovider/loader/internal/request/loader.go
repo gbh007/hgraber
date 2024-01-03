@@ -1,7 +1,6 @@
 package request
 
 import (
-	"app/pkg/logger"
 	"bytes"
 	"context"
 	"fmt"
@@ -12,13 +11,18 @@ import (
 
 const defaultUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36"
 
+type logger interface {
+	Error(ctx context.Context, err error)
+	IfErrFunc(ctx context.Context, f func() error)
+}
+
 type Requester struct {
 	client *http.Client
 
-	logger *logger.Logger
+	logger logger
 }
 
-func New(logger *logger.Logger) *Requester {
+func New(logger logger) *Requester {
 	return &Requester{
 		client: &http.Client{
 			Timeout: time.Minute,

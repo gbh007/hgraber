@@ -1,7 +1,6 @@
 package filesystem
 
 import (
-	"app/pkg/logger"
 	"context"
 	"errors"
 	"fmt"
@@ -10,15 +9,19 @@ import (
 
 var readOnlyModeError = errors.New("read only mode")
 
+type logger interface {
+	IfErr(ctx context.Context, err error)
+}
+
 type Storage struct {
 	loadPath   string
 	exportPath string
 	readOnly   bool
 
-	logger *logger.Logger
+	logger logger
 }
 
-func New(load, export string, readOnly bool, logger *logger.Logger) *Storage {
+func New(load, export string, readOnly bool, logger logger) *Storage {
 	return &Storage{
 		loadPath:   load,
 		exportPath: export,

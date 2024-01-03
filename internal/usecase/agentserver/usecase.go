@@ -2,10 +2,13 @@ package agentserver
 
 import (
 	"app/internal/domain/hgraber"
-	"app/pkg/logger"
 	"context"
 	"io"
 )
+
+type logger interface {
+	Info(ctx context.Context, args ...any)
+}
 
 type storage interface {
 	GetUnloadedBooks(ctx context.Context) []hgraber.Book
@@ -37,13 +40,13 @@ type files interface {
 }
 
 type UseCase struct {
-	logger      *logger.Logger
+	logger      logger
 	storage     storage
 	tempStorage tempStorage
 	files       files
 }
 
-func New(logger *logger.Logger, storage storage, tempStorage tempStorage, files files) *UseCase {
+func New(logger logger, storage storage, tempStorage tempStorage, files files) *UseCase {
 	return &UseCase{
 		logger:      logger,
 		storage:     storage,
