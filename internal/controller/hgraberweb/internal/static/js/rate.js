@@ -15,19 +15,14 @@ class Rate {
   }
   async updateRate(rate) {
     try {
-      let response = this.pageNumber
-        ? await fetch("/title/page/rate", {
-            method: "POST",
-            body: JSON.stringify({
-              id: this.bookID,
-              page: this.pageNumber,
-              rate: rate,
-            }),
-          })
-        : await fetch("/title/rate", {
-            method: "POST",
-            body: JSON.stringify({ id: this.bookID, rate: rate }),
-          });
+      let response = await fetch("/api/rate", {
+        method: "POST",
+        body: JSON.stringify({
+          id: this.bookID,
+          page: this.pageNumber || 0,
+          rate: rate,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(await response.text());

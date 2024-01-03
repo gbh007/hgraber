@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (ws *WebServer) routeMainInfo() http.Handler {
+func (ws *WebServer) mainInfo() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 

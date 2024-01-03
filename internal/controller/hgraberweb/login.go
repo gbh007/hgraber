@@ -4,12 +4,13 @@ import (
 	"net/http"
 )
 
-func (ws *WebServer) routeLogin(token string) http.Handler {
+func (ws *WebServer) login(token string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
 		request := struct {
 			Token string `json:"token"`
 		}{}
-		ctx := r.Context()
 
 		err := ws.webtool.ParseJSON(r, &request)
 		if err != nil {
@@ -31,6 +32,8 @@ func (ws *WebServer) routeLogin(token string) http.Handler {
 			HttpOnly: true,
 		})
 
-		ws.webtool.WriteJSON(ctx, w, http.StatusOK, struct{}{})
+		ws.webtool.WriteJSON(ctx, w, http.StatusOK, map[string]any{
+			"token": token,
+		})
 	})
 }

@@ -101,21 +101,16 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	// обработчик файлов
 	mux.Handle("/file/", tokenHandler(ws.token, http.StripPrefix("/file/", ws.getFile())))
 
-	// API
-	mux.Handle("/auth/login", ws.routeLogin(ws.token))
-	mux.Handle("/info", tokenHandler(ws.token, ws.routeMainInfo()))
-	mux.Handle("/new", tokenHandler(ws.token, ws.routeNewTitle()))
-	// mux.Handle("/title/list", tokenHandler(ws.token, ws.routeTitleList()))
-	// mux.Handle("/title/details", tokenHandler(ws.token, ws.routeTitleInfo()))
-	mux.Handle("/title/page", tokenHandler(ws.token, ws.routeTitlePage()))
-	mux.Handle("/to-zip", tokenHandler(ws.token, ws.routeSaveToZIP()))
-	mux.Handle("/app/info", tokenHandler(ws.token, ws.routeAppInfo()))
-	mux.Handle("/title/rate", tokenHandler(ws.token, ws.routeSetTitleRate()))
-	mux.Handle("/title/page/rate", tokenHandler(ws.token, ws.routeSetPageRate()))
+	mux.Handle("/api/info", tokenHandler(ws.token, ws.mainInfo()))
+	mux.Handle("/api/login", ws.login(ws.token))
 
-	// New API
-	mux.Handle("/api/books", tokenHandler(ws.token, ws.bookList()))
 	mux.Handle("/api/book", tokenHandler(ws.token, ws.bookInfo()))
+	mux.Handle("/api/book/new", tokenHandler(ws.token, ws.bookNew()))
+
+	mux.Handle("/api/books", tokenHandler(ws.token, ws.bookList()))
+	mux.Handle("/api/books/export", tokenHandler(ws.token, ws.booksExport()))
+
+	mux.Handle("/api/rate", tokenHandler(ws.token, ws.rateUpdate()))
 
 	server := &http.Server{
 		Addr: ws.addr,

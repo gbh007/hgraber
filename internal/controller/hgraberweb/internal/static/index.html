@@ -44,11 +44,11 @@
             class="app"
             value=""
             placeholder="Загрузить новый тайтл"
-            id="new-title-url"
+            id="new-book-url"
           />
-          <span style="color: red" id="new-title-url-err"></span>
+          <span style="color: red" id="new-book-url-err"></span>
         </div>
-        <button class="app" onclick="loadTitle();">Загрузить</button>
+        <button class="app" onclick="loadBook();">Загрузить</button>
       </div>
 
       <div class="app-container" id="index-info"></div>
@@ -75,13 +75,13 @@
             rows="10"
             cols="50"
             value=""
-            placeholder="Загрузить новые тайтлы"
-            id="new-title-urls"
+            placeholder="Загрузить новые книги"
+            id="new-book-urls"
           ></textarea>
-          <button class="app" onclick="loadTitles();">Загрузить</button>
+          <button class="app" onclick="loadBooks();">Загрузить</button>
         </div>
         <div
-          id="new-title-urls-info"
+          id="new-book-urls-info"
           style="display: flex; flex-direction: column; margin-left: 10px"
         ></div>
       </div>
@@ -92,7 +92,7 @@
         let indexInfo = document.getElementById("index-info");
         let infoWorkers = document.getElementById("info-workers");
         try {
-          let response = await fetch("/info", { method: "GET" });
+          let response = await fetch("/api/info", { method: "GET" });
 
           if (!response.ok) {
             throw new Error(await response.text());
@@ -145,13 +145,13 @@
     </script>
 
     <script>
-      async function loadTitle() {
-        let urlInput = document.getElementById("new-title-url");
-        let errText = document.getElementById("new-title-url-err");
+      async function loadBook() {
+        let urlInput = document.getElementById("new-book-url");
+        let errText = document.getElementById("new-book-url-err");
         errText.innerText = "";
 
         try {
-          let response = await fetch("/new", {
+          let response = await fetch("/api/book/new", {
             method: "POST",
             body: JSON.stringify({ url: urlInput.value }),
           });
@@ -166,12 +166,12 @@
         }
       }
 
-      async function loadTitles() {
-        let urlsInput = document.getElementById("new-title-urls");
-        let loadedInfo = document.getElementById("new-title-urls-info");
+      async function loadBooks() {
+        let urlsInput = document.getElementById("new-book-urls");
+        let loadedInfo = document.getElementById("new-book-urls-info");
 
         try {
-          let response = await fetch("/new", {
+          let response = await fetch("/api/book/new", {
             method: "POST",
             body: JSON.stringify({ urls: urlsInput.value.split("\n") }),
           });
@@ -202,7 +202,7 @@
         errorBox.innerText = "";
 
         try {
-          let response = await fetch("/to-zip", {
+          let response = await fetch("/api/books/export", {
             method: "POST",
             body: JSON.stringify({
               from: parseInt(loadFrom.value),

@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (ws *WebServer) routeNewTitle() http.Handler {
+func (ws *WebServer) bookNew() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
 			URL  string   `json:"url,omitempty"`
