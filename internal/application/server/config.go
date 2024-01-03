@@ -8,7 +8,7 @@ import (
 type configRaw struct {
 	fs configFS
 	ws configWS
-	ag configWS
+	ag configAg
 
 	ReadOnly bool
 
@@ -21,10 +21,16 @@ type configFS struct {
 	Token  string
 }
 
+type configAg struct {
+	Addr  string
+	Token string
+}
+
 type configWS struct {
-	Addr   string
-	Token  string
-	Static string
+	Addr      string
+	OuterAddr string
+	Token     string
+	Static    string
 }
 
 func parseFlag() configRaw {
@@ -38,6 +44,7 @@ func parseFlag() configRaw {
 
 	// веб сервер
 	wsAddr := flag.String("ws-addr", ":8080", "адрес веб сервера")
+	wsOuterAddr := flag.String("ws-outer-addr", "http://localhost:8080", "Внешний адрес веб сервера")
 	wsToken := flag.String("ws-token", "", "токен для доступа к контенту")
 	wsStatic := flag.String("ws-static", "", "папка со статическими файлами")
 
@@ -54,11 +61,12 @@ func parseFlag() configRaw {
 			Token:  *fsToken,
 		},
 		ws: configWS{
-			Addr:   *wsAddr,
-			Token:  *wsToken,
-			Static: *wsStatic,
+			Addr:      *wsAddr,
+			Token:     *wsToken,
+			Static:    *wsStatic,
+			OuterAddr: *wsOuterAddr,
 		},
-		ag: configWS{
+		ag: configAg{
 			Addr:  *agAddr,
 			Token: *agToken,
 		},

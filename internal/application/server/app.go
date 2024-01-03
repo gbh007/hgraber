@@ -67,6 +67,7 @@ func Serve(ctx context.Context) {
 		UseCases:      useCases,
 		Monitor:       worker,
 		Addr:          cfg.ws.Addr,
+		OuterAddr:     cfg.ws.OuterAddr,
 		Token:         cfg.ws.Token,
 		StaticDirPath: cfg.ws.Static,
 		Logger:        logger,

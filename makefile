@@ -35,6 +35,11 @@ build-docker: create_build_dir
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ./_build/hgraber-docker-server  ./cmd/server
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o ./_build/hgraber-docker-agent  ./cmd/agent
 
+build-arm64: create_build_dir
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -o ./_build/hgraber-arm64-fileserver  ./cmd/fileserver
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -o ./_build/hgraber-arm64-server  ./cmd/server
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -o ./_build/hgraber-arm64-agent  ./cmd/agent
+
 local-up: build-docker
 	docker compose -f ./docker/docker-compose.local.yml up --build --remove-orphans
 
@@ -54,3 +59,7 @@ agent: create_build_dir
 
 mocksite:
 	go run cmd/mocksite/main.go -dir loads -addr localhost:8888
+
+build-serverpack: build-docker build-arm64
+	docker build -f docker/Dockerfile --build-arg "BINARY_PATH=_build/hgraber-docker-server" -t hgraber-server:latest .
+	docker image save -o hgraber-server.tar hgraber-server:latest

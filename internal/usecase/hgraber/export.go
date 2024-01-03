@@ -28,20 +28,25 @@ func (uc *UseCase) ExportBook(ctx context.Context, id int) error {
 
 	zipWriter := zip.NewWriter(zipFile)
 
-	for pageNumber, p := range titleInfo.Pages {
+	for _, p := range titleInfo.Pages {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 		}
 
-		pageReader, err := uc.files.OpenPageFile(ctx, id, pageNumber+1, p.Ext)
+		// Пропускаем не скачанные книги
+		if !p.Success {
+			continue
+		}
+
+		pageReader, err := uc.files.OpenPageFile(ctx, id, p.PageNumber, p.Ext)
 		if err != nil {
 			return fmt.Errorf("export book: %w", err)
 		}
 		defer uc.logger.IfErrFunc(ctx, pageReader.Close)
 
-		w, err := zipWriter.Create(fmt.Sprintf("%d.%s", pageNumber+1, p.Ext))
+		w, err := zipWriter.Create(fmt.Sprintf("%d.%s", p.PageNumber, p.Ext))
 		if err != nil {
 			return fmt.Errorf("export book: %w", err)
 		}

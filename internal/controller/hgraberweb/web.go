@@ -69,6 +69,7 @@ type Config struct {
 	Webtool webtool
 
 	Addr          string
+	OuterAddr     string
 	Token         string
 	StaticDirPath string
 }
@@ -82,7 +83,7 @@ func New(cfg Config) *WebServer {
 		webtool: cfg.Webtool,
 
 		addr:      cfg.Addr,
-		outerAddr: "http://" + cfg.Addr,
+		outerAddr: cfg.OuterAddr,
 		staticDir: cfg.StaticDirPath,
 		token:     cfg.Token,
 	}

@@ -13,7 +13,7 @@
 | Реализация | Файловое хранилище | БД           | Поддержка агента |
 | ---------- | ------------------ | ------------ | ---------------- |
 | Simple     | filesystem         | JDB          | ❌ - Отсутствует |
-| InMemory   | InMemory           | JDB (memory) | ❌ - Отсутствует |
+| InMemory   | InMemory           | JDB (memory) | ✅ - Отсутствует |
 | Server     | fileserver         | PostgreSQL   | ✅ - Есть        |
 
 ## Устройство
