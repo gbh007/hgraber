@@ -9,7 +9,7 @@ import (
 
 const (
 	exportWorkerInterval      = time.Second * 5
-	exportWorkerQueueSize     = 100
+	exportWorkerQueueSize     = 1000
 	exportWorkerHandlersCount = 3
 )
 
