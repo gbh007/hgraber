@@ -22,3 +22,24 @@ func attributeDisplayName(code hgraber.Attribute) string {
 		return string(code)
 	}
 }
+
+func attributeOrder(code hgraber.Attribute) int {
+	switch code {
+	case hgraber.AttrAuthor:
+		return 3
+	case hgraber.AttrCategory:
+		return 2
+	case hgraber.AttrCharacter:
+		return 4
+	case hgraber.AttrGroup:
+		return 5
+	case hgraber.AttrLanguage:
+		return 6
+	case hgraber.AttrParody:
+		return 7
+	case hgraber.AttrTag:
+		return 1
+	default:
+		return 999
+	}
+}

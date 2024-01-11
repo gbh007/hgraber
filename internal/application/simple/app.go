@@ -69,6 +69,7 @@ func Serve(ctx context.Context) {
 		UseCases:      useCases,
 		Monitor:       worker,
 		Addr:          fmt.Sprintf("%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),
+		OuterAddr:     fmt.Sprintf("http://%s:%d", cfg.WebServer.Host, cfg.WebServer.Port),
 		Token:         cfg.WebServer.Token,
 		StaticDirPath: cfg.WebServer.StaticDirPath,
 		Logger:        logger,

@@ -3,6 +3,7 @@ package rendering
 import (
 	"app/internal/domain/hgraber"
 	"math"
+	"slices"
 	"time"
 )
 
@@ -28,6 +29,7 @@ type BookDetailInfo struct {
 type BookDetailAttributeInfo struct {
 	Name   string   `json:"name"`
 	Values []string `json:"values"`
+	order  int      `json:"-"` // FIXME: не самое подходящая реализация
 }
 
 type BookDetailPagePreview struct {
@@ -78,8 +80,13 @@ func BookDetailInfoFromDomain(addr string, raw hgraber.Book) BookDetailInfo {
 		attrs = append(attrs, BookDetailAttributeInfo{
 			Name:   attributeDisplayName(code),
 			Values: values,
+			order:  attributeOrder(code),
 		})
 	}
+
+	slices.SortFunc(attrs, func(a, b BookDetailAttributeInfo) int {
+		return a.order - b.order
+	})
 
 	pages := make([]BookDetailPagePreview, len(raw.Pages))
 	convertSliceWithAddr(addr, pages, raw.Pages, BookDetailPagePreviewFromDomain)
