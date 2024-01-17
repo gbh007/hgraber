@@ -82,11 +82,11 @@ func (d *Database) UpdatePage(ctx context.Context, id int, page int, success boo
 	return nil
 }
 
-func (d *Database) UpdatePageRate(ctx context.Context, id int, page int, rate int) error {
+func (d *Database) UpdatePageRate(ctx context.Context, id int, page int, rating int) error {
 	res, err := d.db.ExecContext(
 		ctx,
 		`UPDATE pages SET rate = $1 WHERE book_id = $2 AND page_number = $3;`,
-		rate, id, page,
+		rating, id, page,
 	)
 	if err != nil {
 		return err
@@ -129,7 +129,7 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []hgraber.
 		_, err = tx.ExecContext(
 			ctx,
 			`INSERT INTO pages (book_id, page_number, ext, url, success, create_at, load_at, rate) VALUES($1, $2, $3, $4, $5, $6, $7, $8);`,
-			id, v.PageNumber, v.Ext, strings.TrimSpace(v.URL), v.Success, time.Now().UTC(), sql.NullTime{Time: v.LoadedAt.UTC(), Valid: !v.LoadedAt.IsZero()}, v.Rate,
+			id, v.PageNumber, v.Ext, strings.TrimSpace(v.URL), v.Success, time.Now().UTC(), sql.NullTime{Time: v.LoadedAt.UTC(), Valid: !v.LoadedAt.IsZero()}, v.Rating,
 		)
 		if err != nil {
 			d.logger.IfErrFunc(ctx, tx.Rollback)
@@ -165,6 +165,6 @@ func pageToDomain(ctx context.Context, in *Page) hgraber.Page {
 		Ext:        in.Ext,
 		Success:    in.Success,
 		LoadedAt:   in.LoadAt.Time,
-		Rate:       in.Rate,
+		Rating:     in.Rate,
 	}
 }

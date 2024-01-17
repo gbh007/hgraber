@@ -23,8 +23,8 @@ type useCases interface {
 	GetPage(ctx context.Context, id int, page int) (*hgraber.Page, error)
 	GetBooks(ctx context.Context, filter hgraber.BookFilterOuter) hgraber.FilteredBooks
 
-	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
-	UpdateBookRate(ctx context.Context, id int, rate int) error
+	UpdatePageRate(ctx context.Context, id int, page int, rating int) error
+	UpdateBookRate(ctx context.Context, id int, rating int) error
 
 	ExportBooksToZip(ctx context.Context, from, to int) error
 
@@ -111,7 +111,7 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	mux.Handle("/api/books", tokenHandler(ws.token, ws.bookList()))
 	mux.Handle("/api/books/export", tokenHandler(ws.token, ws.booksExport()))
 
-	mux.Handle("/api/rate", tokenHandler(ws.token, ws.rateUpdate()))
+	mux.Handle("/api/rate", tokenHandler(ws.token, ws.ratingUpdate()))
 
 	server := &http.Server{
 		Addr: ws.addr,

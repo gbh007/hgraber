@@ -62,8 +62,7 @@ func (db *Database) NewBook(ctx context.Context, name, URL string, loaded bool) 
 	return db.lastTitleID, nil
 }
 
-
-func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) error {
+func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rating int) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
@@ -78,7 +77,7 @@ func (db *Database) UpdatePageRate(ctx context.Context, id, page int, rate int) 
 		return hgraber.PageNotFoundError
 	}
 
-	title.Pages[page].Rate = rate
+	title.Pages[page].Rate = rating
 
 	db.data.Titles[id] = title
 	db.needSave = true
@@ -192,7 +191,7 @@ func (db *Database) UpdateBookPages(ctx context.Context, id int, pages []hgraber
 
 }
 
-func (db *Database) UpdateBookRate(ctx context.Context, id int, rate int) error {
+func (db *Database) UpdateBookRate(ctx context.Context, id int, rating int) error {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
@@ -201,7 +200,7 @@ func (db *Database) UpdateBookRate(ctx context.Context, id int, rate int) error 
 		return hgraber.BookNotFoundError
 	}
 
-	title.Data.Rate = rate
+	title.Data.Rate = rating
 
 	db.data.Titles[id] = title
 	db.needSave = true
@@ -233,6 +232,6 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*hgraber.Page, e
 		Ext:        p.Ext,
 		Success:    p.Success,
 		LoadedAt:   p.LoadedAt,
-		Rate:       p.Rate,
+		Rating:     p.Rate,
 	}, nil
 }

@@ -92,7 +92,7 @@ func TitleInfoFromStorage(raw hgraber.BookInfo) TitleInfo {
 	out := TitleInfo{
 		Parsed:     TitleInfoParsedFromStorage(raw.Parsed),
 		Name:       raw.Name,
-		Rate:       raw.Rate,
+		Rate:       raw.Rating,
 		Tags:       make([]string, len(raw.Attributes[hgraber.AttrTag])),
 		Authors:    make([]string, len(raw.Attributes[hgraber.AttrAuthor])),
 		Characters: make([]string, len(raw.Attributes[hgraber.AttrCharacter])),
@@ -121,7 +121,7 @@ func PageFromStorageWrap(raw hgraber.Page) Page {
 		Ext:        raw.Ext,
 		Success:    raw.Success,
 		LoadedAt:   raw.LoadedAt,
-		Rate:       raw.Rate,
+		Rate:       raw.Rating,
 	}
 }
 

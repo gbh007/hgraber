@@ -1,8 +1,13 @@
 package hgraberweb
 
-import "net/http"
+import (
+	"net/http"
+)
 
-const tokenCookieName = "hgraber-access-token"
+const (
+	tokenCookieName = "hgraber-access-token"
+	tokenHeaderName = "X-Token"
+)
 
 func tokenHandler(token string, next http.Handler) http.Handler {
 	// Нет токена, не обрабатываем
@@ -11,6 +16,14 @@ func tokenHandler(token string, next http.Handler) http.Handler {
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userToken := r.Header.Get(tokenHeaderName)
+
+		if userToken != "" && token == userToken {
+			next.ServeHTTP(w, r)
+
+			return
+		}
+
 		c, err := r.Cookie(tokenCookieName)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)

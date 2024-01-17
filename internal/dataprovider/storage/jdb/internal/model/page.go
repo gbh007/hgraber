@@ -31,7 +31,7 @@ func (p RawPage) Super(bookID, pageNumber int) hgraber.Page {
 		Ext:        p.Ext,
 		Success:    p.Success,
 		LoadedAt:   p.LoadedAt,
-		Rate:       p.Rate,
+		Rating:     p.Rate,
 	}
 }
 
@@ -41,7 +41,7 @@ func RawPageFromSuper(p hgraber.Page) RawPage {
 		Ext:      p.Ext,
 		Success:  p.Success,
 		LoadedAt: p.LoadedAt,
-		Rate:     p.Rate,
+		Rate:     p.Rating,
 	}
 }
 

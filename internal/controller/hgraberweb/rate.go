@@ -4,12 +4,12 @@ import (
 	"net/http"
 )
 
-func (ws *WebServer) rateUpdate() http.Handler {
+func (ws *WebServer) ratingUpdate() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		request := struct {
-			ID   int `json:"id"`
-			Page int `json:"page,omitempty"`
-			Rate int `json:"rate"`
+			ID     int `json:"id"`
+			Page   int `json:"page,omitempty"`
+			Rating int `json:"rating"`
 		}{}
 
 		ctx := r.Context()
@@ -22,9 +22,9 @@ func (ws *WebServer) rateUpdate() http.Handler {
 		}
 
 		if request.Page == 0 {
-			err = ws.useCases.UpdateBookRate(ctx, request.ID, request.Rate)
+			err = ws.useCases.UpdateBookRate(ctx, request.ID, request.Rating)
 		} else {
-			err = ws.useCases.UpdatePageRate(ctx, request.ID, request.Page, request.Rate)
+			err = ws.useCases.UpdatePageRate(ctx, request.ID, request.Page, request.Rating)
 		}
 
 		if err != nil {

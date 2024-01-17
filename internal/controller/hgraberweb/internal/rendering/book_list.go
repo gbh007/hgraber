@@ -19,7 +19,7 @@ type BookShortInfo struct {
 	PageCount         int     `json:"page_count"`
 	PageLoadedPercent float64 `json:"page_loaded_percent"`
 
-	Rate        int      `json:"rate"`
+	Rating      int      `json:"rating"`
 	Tags        []string `json:"tags,omitempty"`
 	HasMoreTags bool     `json:"has_more_tags"`
 }
@@ -71,7 +71,7 @@ func BookShortInfoFromDomain(addr string, raw hgraber.Book) BookShortInfo {
 		ParsedPage:        raw.Data.Parsed.Page,
 		PageCount:         pageCount,
 		PageLoadedPercent: pageLoadedPercent,
-		Rate:              raw.Data.Rate,
+		Rating:            raw.Data.Rating,
 		Tags:              tags,
 		HasMoreTags:       hasMoreTags,
 	}

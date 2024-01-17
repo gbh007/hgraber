@@ -102,7 +102,7 @@ func (ti RawTitleInfo) Super() hgraber.BookInfo {
 	c := hgraber.BookInfo{
 		Parsed:     ti.Parsed.Super(),
 		Name:       ti.Name,
-		Rate:       ti.Rate,
+		Rating:     ti.Rate,
 		Attributes: make(map[hgraber.Attribute][]string, len(hgraber.AllAttributes)),
 	}
 

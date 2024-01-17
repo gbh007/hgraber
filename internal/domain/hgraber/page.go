@@ -12,7 +12,7 @@ type Page struct {
 	Ext        string
 	Success    bool
 	LoadedAt   time.Time
-	Rate       int
+	Rating     int
 }
 
 func (info Page) Fullname() string {

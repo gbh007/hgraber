@@ -54,7 +54,7 @@ func (d *Database) GetBook(ctx context.Context, bookID int) (hgraber.Book, error
 				Attributes: map[hgraber.Attribute]bool{},
 			},
 			Name:       raw.Name.String,
-			Rate:       raw.Rate,
+			Rating:     raw.Rate,
 			Attributes: map[hgraber.Attribute][]string{},
 		},
 	}

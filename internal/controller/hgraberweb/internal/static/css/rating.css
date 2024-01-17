@@ -1,8 +1,8 @@
-.rate {
+.rating {
   white-space: nowrap;
 }
 
-.rate-select {
+.rating-select {
   display: inline-block;
   width: 8px;
   height: 8px;
@@ -13,22 +13,22 @@
   /* background: #b0c4de; */
 }
 
-span.rate-select[rate="1"] {
+span.rating-select[rating="1"] {
   background: #ff0000;
 }
 
-span.rate-select[rate="2"] {
+span.rating-select[rating="2"] {
   background: #ffa500;
 }
 
-span.rate-select[rate="3"] {
+span.rating-select[rating="3"] {
   background: #ffff00;
 }
 
-span.rate-select[rate="4"] {
+span.rating-select[rating="4"] {
   background: #90ee90;
 }
 
-span.rate-select[rate="5"] {
+span.rating-select[rating="5"] {
   background: #008000;
 }

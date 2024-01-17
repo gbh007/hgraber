@@ -21,7 +21,7 @@ type storageFrom interface {
 
 type storageTo interface {
 	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
-	UpdateBookRate(ctx context.Context, id int, rate int) error
+	UpdateBookRate(ctx context.Context, id int, rating int) error
 	UpdateBookPages(ctx context.Context, id int, pages []hgraber.Page) error
 	UpdateAttributes(ctx context.Context, id int, attr hgraber.Attribute, data []string) error
 }
@@ -89,7 +89,7 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 			return
 		}
 
-		err = b.dst.UpdateBookRate(ctx, id, book.Data.Rate)
+		err = b.dst.UpdateBookRate(ctx, id, book.Data.Rating)
 		if err != nil {
 			b.logger.Error(ctx, err)
 

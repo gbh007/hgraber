@@ -17,9 +17,9 @@
       rel="stylesheet"
       type="text/css"
       media="screen"
-      href="/css/rate.css"
+      href="/css/rating.css"
     />
-    <script src="/js/rate.js"></script>
+    <script src="/js/rating.js"></script>
   </head>
 
   <body>
@@ -44,7 +44,7 @@
       <div class="app-container">
         Страница <span id="page-number">1</span> из
         <span id="page-count">1</span>
-        <span id="rate"></span>
+        <span id="rating"></span>
       </div>
       <div class="view">
         <img src="" id="main-image" style="max-width: 100%; max-height: 100%" />
@@ -66,9 +66,9 @@
           .getElementById("main-image")
           .setAttribute("src", page.preview_url);
         document.getElementById("page-number").innerText = page.page_number;
-        let rate = document.getElementById("rate");
-        rate.innerHTML = `<span class="rate" book="${bookID}" page="${page.page_number}" rate="${page.rate}" unprocessed></span>`;
-        refreshRates();
+        let rating = document.getElementById("rating");
+        rating.innerHTML = `<span class="rating" book="${bookID}" page="${page.page_number}" rating="${page.rating}" unprocessed></span>`;
+        refreshRatings();
       }
 
       async function goPage(pageNumberNew) {

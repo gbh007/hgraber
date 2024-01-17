@@ -48,8 +48,8 @@ func (d *Database) UpdateBookName(ctx context.Context, id int, name string) erro
 	return nil
 }
 
-func (d *Database) UpdateBookRate(ctx context.Context, id int, rate int) error {
-	res, err := d.db.ExecContext(ctx, `UPDATE books SET rate = $1 WHERE id = $2;`, rate, id)
+func (d *Database) UpdateBookRate(ctx context.Context, id int, rating int) error {
+	res, err := d.db.ExecContext(ctx, `UPDATE books SET rate = $1 WHERE id = $2;`, rating, id)
 	if err != nil {
 		return err
 	}

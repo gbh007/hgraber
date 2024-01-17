@@ -20,7 +20,7 @@ type BookDetailInfo struct {
 	PageCount         int     `json:"page_count"`
 	PageLoadedPercent float64 `json:"page_loaded_percent"`
 
-	Rate int `json:"rate"`
+	Rating int `json:"rating"`
 
 	Attributes []BookDetailAttributeInfo `json:"attributes,omitempty"`
 	Pages      []BookDetailPagePreview   `json:"pages,omitempty"`
@@ -35,7 +35,7 @@ type BookDetailAttributeInfo struct {
 type BookDetailPagePreview struct {
 	PageNumber int    `json:"page_number"`
 	PreviewURL string `json:"preview_url,omitempty"`
-	Rate       int    `json:"rate"`
+	Rating     int    `json:"rating"`
 }
 
 func BookDetailPagePreviewFromDomain(addr string, raw hgraber.Page) BookDetailPagePreview {
@@ -48,7 +48,7 @@ func BookDetailPagePreviewFromDomain(addr string, raw hgraber.Page) BookDetailPa
 	return BookDetailPagePreview{
 		PageNumber: raw.PageNumber,
 		PreviewURL: previewURL,
-		Rate:       raw.Rate,
+		Rating:     raw.Rating,
 	}
 }
 
@@ -74,6 +74,10 @@ func BookDetailInfoFromDomain(addr string, raw hgraber.Book) BookDetailInfo {
 
 	attrs := make([]BookDetailAttributeInfo, 0, len(raw.Data.Attributes))
 	for code, attr := range raw.Data.Attributes {
+		if len(attr) < 1 {
+			continue
+		}
+
 		values := make([]string, len(attr))
 		copy(values, attr)
 
@@ -100,7 +104,7 @@ func BookDetailInfoFromDomain(addr string, raw hgraber.Book) BookDetailInfo {
 		ParsedPage:        raw.Data.Parsed.Page,
 		PageCount:         pageCount,
 		PageLoadedPercent: pageLoadedPercent,
-		Rate:              raw.Data.Rate,
+		Rating:            raw.Data.Rating,
 		Attributes:        attrs,
 		Pages:             pages,
 	}

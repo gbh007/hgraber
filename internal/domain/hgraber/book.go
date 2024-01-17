@@ -25,7 +25,7 @@ func (info BookInfoParsed) IsFullParsed(ctx context.Context) bool {
 type BookInfo struct {
 	Parsed BookInfoParsed
 	Name   string
-	Rate   int
+	Rating int
 
 	Attributes map[Attribute][]string
 }

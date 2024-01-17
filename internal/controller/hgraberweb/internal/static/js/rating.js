@@ -1,26 +1,26 @@
-class Rate {
+class Rating {
   constructor(node) {
     this.render = this.render.bind(this);
-    this.updateRate = this.updateRate.bind(this);
+    this.updateRating = this.updateRating.bind(this);
 
     document.createElement("span").getAttribute("");
 
     this.node = node;
 
     this.bookID = parseInt(this.node.getAttribute("book"));
-    this.rate = parseInt(this.node.getAttribute("rate") || "0");
+    this.rating = parseInt(this.node.getAttribute("rating") || "0");
     this.pageNumber = parseInt(this.node.getAttribute("page") || "0");
 
     this.render();
   }
-  async updateRate(rate) {
+  async updateRating(rating) {
     try {
       let response = await fetch("/api/rate", {
         method: "POST",
         body: JSON.stringify({
           id: this.bookID,
           page: this.pageNumber || 0,
-          rate: rate,
+          rating: rating,
         }),
       });
 
@@ -28,7 +28,7 @@ class Rate {
         throw new Error(await response.text());
       }
 
-      this.rate = rate;
+      this.rating = rating;
       this.render();
     } catch (e) {
       console.log(e);
@@ -39,23 +39,23 @@ class Rate {
 
     for (let index = 1; index < 6; index++) {
       let node = document.createElement("span");
-      node.className = "rate-select";
-      if (this.rate >= index) {
-        node.setAttribute("rate", this.rate);
+      node.className = "rating-select";
+      if (this.rating >= index) {
+        node.setAttribute("rating", this.rating);
       }
-      node.onclick = () => this.updateRate(index);
+      node.onclick = () => this.updateRating(index);
       this.node.appendChild(node);
     }
   }
 }
 
-function refreshRates() {
-  window.dispatchEvent(new Event("app-refresh-rates"));
+function refreshRatings() {
+  window.dispatchEvent(new Event("app-refresh-ratings"));
 }
 
-window.addEventListener("app-refresh-rates", function () {
-  document.querySelectorAll("span.rate[unprocessed]").forEach((node) => {
-    new Rate(node);
+window.addEventListener("app-refresh-ratings", function () {
+  document.querySelectorAll("span.rating[unprocessed]").forEach((node) => {
+    new Rating(node);
     node.removeAttribute("unprocessed");
   });
 });

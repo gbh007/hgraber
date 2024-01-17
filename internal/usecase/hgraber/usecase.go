@@ -33,8 +33,8 @@ type storage interface {
 
 	GetPage(ctx context.Context, id int, page int) (*hgraber.Page, error)
 	GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book
-	UpdatePageRate(ctx context.Context, id int, page int, rate int) error
-	UpdateBookRate(ctx context.Context, id int, rate int) error
+	UpdatePageRate(ctx context.Context, id int, page int, rating int) error
+	UpdateBookRate(ctx context.Context, id int, rating int) error
 }
 
 type tempStorage interface {

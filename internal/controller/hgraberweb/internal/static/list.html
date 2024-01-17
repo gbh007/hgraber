@@ -17,9 +17,9 @@
       rel="stylesheet"
       type="text/css"
       media="screen"
-      href="/css/rate.css"
+      href="/css/rating.css"
     />
-    <script src="/js/rate.js"></script>
+    <script src="/js/rating.js"></script>
   </head>
 
   <body>
@@ -132,7 +132,7 @@
           renderPaginate(data.pages);
 
           tl.innerHTML = builder;
-          refreshRates();
+          refreshRatings();
         } catch (err) {
           tl.innerHTML = `<div class="app-error-container">${err}</div>`;
         }
@@ -188,9 +188,9 @@
             <span style="grid-area: id;">
               #${book.id}
               <span
-                class="rate"
+                class="rating"
                 book="${book.id}"
-                rate="${book.rate}"
+                rating="${book.rating}"
                 unprocessed
               ></span>
             </span>
