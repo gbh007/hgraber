@@ -2,7 +2,7 @@ package agentserver
 
 import (
 	"app/internal/domain/agent"
-	hgDomain "app/internal/domain/hgraber"
+	"app/internal/domain/hgraber"
 	"context"
 	"fmt"
 	"strings"
@@ -19,7 +19,7 @@ func (uc *UseCase) UnprocessedPages(ctx context.Context, prefixes []string, limi
 		return nil, nil
 	}
 
-	books := make(map[int]hgDomain.Book)
+	books := make(map[int]hgraber.Book)
 	result := make([]agent.PageToHandle, 0, limit)
 
 	for _, page := range pages {
@@ -28,7 +28,7 @@ func (uc *UseCase) UnprocessedPages(ctx context.Context, prefixes []string, limi
 		}
 		var (
 			ok   bool
-			book hgDomain.Book
+			book hgraber.Book
 			err  error
 		)
 

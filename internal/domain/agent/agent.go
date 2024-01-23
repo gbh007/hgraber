@@ -45,3 +45,20 @@ type Attribute struct {
 	Parsed bool     `json:"parsed"`
 	Values []string `json:"values,omitempty"`
 }
+
+type CreateBookResult struct {
+	ID          int    `json:"id"`
+	URL         string `json:"url"`
+	IsDuplicate bool   `json:"is_duplicate"`
+	IsHandled   bool   `json:"is_handled"`
+	ErrorReason string `json:"error_reason"`
+}
+
+type CreateBooksResult struct {
+	TotalCount     int64              `json:"total_count"`
+	LoadedCount    int64              `json:"loaded_count"`
+	DuplicateCount int64              `json:"duplicate_count"`
+	ErrorCount     int64              `json:"error_count"`
+	NotHandled     []string           `json:"not_handled,omitempty"`
+	Details        []CreateBookResult `json:"details"`
+}

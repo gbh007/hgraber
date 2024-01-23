@@ -39,9 +39,12 @@ func (uc *UseCase) FirstHandle(ctx context.Context, u string) error {
 }
 
 func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*hgraber.FirstHandleMultipleResult, error) {
-	res := &hgraber.FirstHandleMultipleResult{}
+	res := &hgraber.FirstHandleMultipleResult{
+		NotHandled: make([]string, 0, len(data)),
+		Details:    make([]hgraber.BookHandleResult, len(data)),
+	}
 
-	for _, link := range data {
+	for i, link := range data {
 		res.TotalCount++
 
 		err := uc.FirstHandle(ctx, link)
@@ -49,20 +52,37 @@ func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*hgr
 		switch {
 		case errors.Is(err, hgraber.BookAlreadyExistsError):
 			res.DuplicateCount++
+			res.Details[i] = hgraber.BookHandleResult{
+				URL:         link,
+				IsDuplicate: true,
+				IsHandled:   true,
+			}
 
 		case errors.Is(err, hgraber.ErrInvalidLink):
 			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
+			res.Details[i] = hgraber.BookHandleResult{
+				URL:         link,
+				ErrorReason: err.Error(),
+			}
 
 			uc.logger.Warning(ctx, "не поддерживаемая ссылка", link)
 
 		case err != nil:
 			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
+			res.Details[i] = hgraber.BookHandleResult{
+				URL:         link,
+				ErrorReason: err.Error(),
+			}
 
 			uc.logger.Error(ctx, err)
 		default:
 			res.LoadedCount++
+			res.Details[i] = hgraber.BookHandleResult{
+				URL:       link,
+				IsHandled: true,
+			}
 		}
 	}
 

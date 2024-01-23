@@ -8,6 +8,8 @@ import (
 
 type logger interface {
 	Info(ctx context.Context, args ...any)
+	Warning(ctx context.Context, args ...any)
+	Error(ctx context.Context, err error)
 }
 
 type storage interface {
@@ -23,6 +25,8 @@ type storage interface {
 	UpdatePage(ctx context.Context, id int, page int, success bool, url string) error
 
 	GetBook(ctx context.Context, id int) (hgraber.Book, error)
+
+	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
 }
 
 type tempStorage interface {

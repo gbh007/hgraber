@@ -19,6 +19,8 @@ type useCases interface {
 	UnprocessedPages(ctx context.Context, prefixes []string, limit int) ([]agent.PageToHandle, error)
 	UpdateBook(ctx context.Context, book agent.BookToUpdate) error
 	UploadPage(ctx context.Context, info agent.PageInfoToUpload, body io.Reader) error
+
+	CreateMultipleBook(ctx context.Context, data []string) (*agent.CreateBooksResult, error)
 }
 
 type webtool interface {
@@ -57,6 +59,7 @@ func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 
 	mux.Handle(agent.EndpointBookUnprocessed, c.bookUnprocessed())
 	mux.Handle(agent.EndpointBookUpdate, c.bookUpdate())
+	mux.Handle(agent.EndpointBookCreate, c.createBooks())
 	mux.Handle(agent.EndpointPageUnprocessed, c.pageUnprocessed())
 	mux.Handle(agent.EndpointPageUpload, c.pageUpload())
 

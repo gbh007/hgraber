@@ -19,6 +19,7 @@ const (
 const (
 	EndpointBookUnprocessed = "/book/unprocessed"
 	EndpointBookUpdate      = "/book/update"
+	EndpointBookCreate      = "/book/create"
 
 	EndpointPageUnprocessed = "/page/unprocessed"
 	EndpointPageUpload      = "/page/upload"
@@ -31,4 +32,8 @@ type UnprocessedRequest struct {
 
 type UnprocessedResponse[T BookToHandle | PageToHandle] struct {
 	ToHandle []T `json:"to_handle,omitempty"`
+}
+
+type CreateBooksRequest struct {
+	URLs []string `json:"urls"`
 }
