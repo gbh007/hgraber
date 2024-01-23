@@ -25,6 +25,7 @@ type storage interface {
 	UpdatePage(ctx context.Context, id int, page int, success bool, url string) error
 
 	GetBook(ctx context.Context, id int) (hgraber.Book, error)
+	GetBookIDByURL(ctx context.Context, url string) (int, error)
 
 	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
 }

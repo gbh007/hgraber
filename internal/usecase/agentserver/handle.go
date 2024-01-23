@@ -25,6 +25,15 @@ func (uc *UseCase) firstHandle(ctx context.Context, u string) (int, error) {
 		return 0, fmt.Errorf("parse url: %w", err)
 	}
 
+	existsID, err := uc.storage.GetBookIDByURL(ctx, u)
+	if err == nil { // Книга уже существует, выходим с ИД и ошибкой для дальнейшей обработки
+		return existsID, hgraber.BookAlreadyExistsError
+	}
+
+	if err != nil && !errors.Is(err, hgraber.BookNotFoundError) {
+		return 0, fmt.Errorf("search url: %w", err)
+	}
+
 	id, err := uc.storage.NewBook(ctx, "", u, false)
 	if err != nil {
 		return 0, fmt.Errorf("create book: %w", err)
@@ -53,7 +62,6 @@ func (uc *UseCase) CreateMultipleBook(ctx context.Context, data []string) (*agen
 			res.DuplicateCount++
 			res.Details[i].IsDuplicate = true
 			res.Details[i].IsHandled = true
-			// res.Details[i].ID = 0 // FIXME: получать из данных
 
 		case errors.Is(err, hgraber.ErrInvalidLink):
 			res.NotHandled = append(res.NotHandled, link)

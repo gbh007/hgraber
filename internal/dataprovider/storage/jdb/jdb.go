@@ -26,7 +26,7 @@ type DatabaseData struct {
 type Database struct {
 	data        DatabaseData
 	lastTitleID int
-	uniqueURLs  map[string]struct{}
+	urlIndex    map[string]int
 	mutex       *sync.RWMutex
 	ctx         context.Context
 	needSave    bool
@@ -41,10 +41,10 @@ func Init(ctx context.Context, logger logger, filename *string) *Database {
 		data: DatabaseData{
 			Titles: make(map[int]model.RawTitle),
 		},
-		ctx:        ctxtool.NewSystemContext(ctx, "JBD"),
-		uniqueURLs: make(map[string]struct{}),
-		filename:   filename,
-		logger:     logger,
+		ctx:      ctxtool.NewSystemContext(ctx, "JBD"),
+		urlIndex: make(map[string]int),
+		filename: filename,
+		logger:   logger,
 	}
 }
 
@@ -74,14 +74,14 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	}
 
 	db.lastTitleID = 0
-	db.uniqueURLs = make(map[string]struct{})
+	db.urlIndex = make(map[string]int)
 
 	for id, title := range newData.Titles {
 		u := strings.TrimSpace(title.URL)
-		if _, found := db.uniqueURLs[u]; found {
+		if _, found := db.urlIndex[u]; found {
 			db.logger.Warning(ctx, "Дублирование ссылки при загрузке БД", u)
 		} else {
-			db.uniqueURLs[u] = struct{}{}
+			db.urlIndex[u] = id
 		}
 
 		if id > db.lastTitleID {

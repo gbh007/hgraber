@@ -20,6 +20,7 @@ const (
 	EndpointBookUnprocessed = "/book/unprocessed"
 	EndpointBookUpdate      = "/book/update"
 	EndpointBookCreate      = "/book/create"
+	EndpointBookSearch      = "/book/search"
 
 	EndpointPageUnprocessed = "/page/unprocessed"
 	EndpointPageUpload      = "/page/upload"
@@ -36,4 +37,13 @@ type UnprocessedResponse[T BookToHandle | PageToHandle] struct {
 
 type CreateBooksRequest struct {
 	URLs []string `json:"urls"`
+}
+
+type SearchBookIDByURLRequest struct {
+	URL string `json:"url"`
+}
+
+type SearchBookIDByURLResponse struct {
+	ID    int  `json:"id"`
+	Found bool `json:"found"`
 }

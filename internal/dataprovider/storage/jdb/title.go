@@ -31,7 +31,7 @@ func (db *Database) NewBook(ctx context.Context, name, URL string, loaded bool) 
 
 	URL = strings.TrimSpace(URL)
 
-	if _, found := db.uniqueURLs[URL]; found {
+	if _, found := db.urlIndex[URL]; found {
 		return 0, hgraber.BookAlreadyExistsError
 	}
 
@@ -57,7 +57,7 @@ func (db *Database) NewBook(ctx context.Context, name, URL string, loaded bool) 
 		},
 	}
 	db.needSave = true
-	db.uniqueURLs[URL] = struct{}{}
+	db.urlIndex[URL] = db.lastTitleID
 
 	return db.lastTitleID, nil
 }
@@ -234,4 +234,16 @@ func (db *Database) GetPage(ctx context.Context, id, page int) (*hgraber.Page, e
 		LoadedAt:   p.LoadedAt,
 		Rating:     p.Rate,
 	}, nil
+}
+
+func (db *Database) GetBookIDByURL(ctx context.Context, url string) (int, error) {
+	db.mutex.RLock()
+	defer db.mutex.RUnlock()
+
+	id, ok := db.urlIndex[url]
+	if !ok {
+		return 0, hgraber.BookNotFoundError
+	}
+
+	return id, nil
 }

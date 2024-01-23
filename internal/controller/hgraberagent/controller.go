@@ -21,6 +21,7 @@ type useCases interface {
 	UploadPage(ctx context.Context, info agent.PageInfoToUpload, body io.Reader) error
 
 	CreateMultipleBook(ctx context.Context, data []string) (*agent.CreateBooksResult, error)
+	SearchBook(ctx context.Context, u string) (int, bool, error)
 }
 
 type webtool interface {
@@ -59,7 +60,10 @@ func (c *Controller) makeServer(parentCtx context.Context) *http.Server {
 
 	mux.Handle(agent.EndpointBookUnprocessed, c.bookUnprocessed())
 	mux.Handle(agent.EndpointBookUpdate, c.bookUpdate())
+
 	mux.Handle(agent.EndpointBookCreate, c.createBooks())
+	mux.Handle(agent.EndpointBookSearch, c.searchBook())
+
 	mux.Handle(agent.EndpointPageUnprocessed, c.pageUnprocessed())
 	mux.Handle(agent.EndpointPageUpload, c.pageUpload())
 

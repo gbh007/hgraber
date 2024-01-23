@@ -114,3 +114,18 @@ func (d *Database) bookIDs(ctx context.Context, filter hgraber.BookFilter) ([]in
 
 	return ids, nil
 }
+
+func (d *Database) GetBookIDByURL(ctx context.Context, url string) (int, error) {
+	var id int
+
+	err := d.db.GetContext(ctx, &id, `SELECT id FROM books WHERE "url" = $1 LIMIT 1;`, url)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, fmt.Errorf("%w - %s", hgraber.BookNotFoundError, url)
+	}
+
+	if err != nil {
+		return 0, err
+	}
+
+	return id, nil
+}
