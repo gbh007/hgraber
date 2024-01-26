@@ -49,7 +49,7 @@ func (uc *UseCase) CreateMultipleBook(ctx context.Context, data []string) (*agen
 	}
 
 	for i, link := range data {
-		res.TotalCount++
+		res.Counts.Total++
 
 		bookID, err := uc.firstHandle(ctx, link)
 		res.Details[i] = agent.CreateBookResult{
@@ -59,25 +59,25 @@ func (uc *UseCase) CreateMultipleBook(ctx context.Context, data []string) (*agen
 
 		switch {
 		case errors.Is(err, hgraber.BookAlreadyExistsError):
-			res.DuplicateCount++
+			res.Counts.Duplicate++
 			res.Details[i].IsDuplicate = true
 			res.Details[i].IsHandled = true
 
 		case errors.Is(err, hgraber.ErrInvalidLink):
 			res.NotHandled = append(res.NotHandled, link)
-			res.ErrorCount++
+			res.Counts.Errors++
 			res.Details[i].ErrorReason = err.Error()
 
 			uc.logger.Warning(ctx, "не поддерживаемая ссылка", link)
 
 		case err != nil:
 			res.NotHandled = append(res.NotHandled, link)
-			res.ErrorCount++
+			res.Counts.Errors++
 			res.Details[i].ErrorReason = err.Error()
 
 			uc.logger.Error(ctx, err)
 		default:
-			res.LoadedCount++
+			res.Counts.Loaded++
 			res.Details[i].IsHandled = true
 		}
 	}

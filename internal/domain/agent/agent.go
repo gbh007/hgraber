@@ -55,10 +55,14 @@ type CreateBookResult struct {
 }
 
 type CreateBooksResult struct {
-	TotalCount     int64              `json:"total_count"`
-	LoadedCount    int64              `json:"loaded_count"`
-	DuplicateCount int64              `json:"duplicate_count"`
-	ErrorCount     int64              `json:"error_count"`
-	NotHandled     []string           `json:"not_handled,omitempty"`
-	Details        []CreateBookResult `json:"details"`
+	Counts     CreateBooksCounts  `json:"counts"`
+	NotHandled []string           `json:"not_handled,omitempty"`
+	Details    []CreateBookResult `json:"details"`
+}
+
+type CreateBooksCounts struct {
+	Total     int64 `json:"total"`
+	Loaded    int64 `json:"loaded"`
+	Duplicate int64 `json:"duplicate"`
+	Errors    int64 `json:"errors"`
 }
