@@ -1,4 +1,4 @@
-package model
+package modelV1
 
 import (
 	"app/internal/domain/hgraber"

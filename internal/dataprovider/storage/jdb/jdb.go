@@ -1,7 +1,7 @@
 package jdb
 
 import (
-	"app/internal/dataprovider/storage/jdb/internal/model"
+	"app/internal/dataprovider/storage/jdb/internal/fileModel"
 	"app/pkg/ctxtool"
 	"context"
 	"encoding/json"
@@ -19,28 +19,22 @@ type logger interface {
 	Warning(ctx context.Context, args ...any)
 }
 
-type DatabaseData struct {
-	Titles map[int]model.RawTitle `json:"titles"`
-}
-
 type Database struct {
-	data        DatabaseData
-	lastTitleID int
-	urlIndex    map[string]int
-	mutex       *sync.RWMutex
-	ctx         context.Context
-	needSave    bool
-	filename    *string
+	data       *fileModel.DatabaseData
+	lastBookID int
+	urlIndex   map[string]int
+	mutex      *sync.RWMutex
+	ctx        context.Context
+	needSave   bool
+	filename   *string
 
 	logger logger
 }
 
 func Init(ctx context.Context, logger logger, filename *string) *Database {
 	return &Database{
-		mutex: &sync.RWMutex{},
-		data: DatabaseData{
-			Titles: make(map[int]model.RawTitle),
-		},
+		mutex:    &sync.RWMutex{},
+		data:     fileModel.New(),
 		ctx:      ctxtool.NewSystemContext(ctx, "JBD"),
 		urlIndex: make(map[string]int),
 		filename: filename,
@@ -65,7 +59,7 @@ func (db *Database) Load(ctx context.Context, path string) error {
 
 	decoder := json.NewDecoder(file)
 
-	newData := DatabaseData{Titles: make(map[int]model.RawTitle)}
+	newData := fileModel.New()
 
 	err = decoder.Decode(&newData)
 	if err != nil {
@@ -73,19 +67,30 @@ func (db *Database) Load(ctx context.Context, path string) error {
 		return err
 	}
 
-	db.lastTitleID = 0
+	isMigrated, err := newData.Migrate()
+	if err != nil {
+		db.logger.Error(ctx, err)
+		return err
+	}
+
+	if isMigrated {
+		db.logger.Warning(ctx, "Произведена миграция")
+		db.needSave = true
+	}
+
+	db.lastBookID = 0
 	db.urlIndex = make(map[string]int)
 
-	for id, title := range newData.Titles {
-		u := strings.TrimSpace(title.URL)
+	for id, book := range newData.Data.Books {
+		u := strings.TrimSpace(book.Info.URL)
 		if _, found := db.urlIndex[u]; found {
 			db.logger.Warning(ctx, "Дублирование ссылки при загрузке БД", u)
 		} else {
 			db.urlIndex[u] = id
 		}
 
-		if id > db.lastTitleID {
-			db.lastTitleID = id
+		if id > db.lastBookID {
+			db.lastBookID = id
 		}
 	}
 

@@ -1,7 +1,6 @@
 package hgraber
 
 import (
-	"context"
 	"time"
 )
 
@@ -10,16 +9,6 @@ type BookInfoParsed struct {
 	Page bool
 
 	Attributes map[Attribute]bool
-}
-
-func (info BookInfoParsed) IsFullParsed(ctx context.Context) bool {
-	for _, parsed := range info.Attributes {
-		if !parsed {
-			return false
-		}
-	}
-
-	return info.Name && info.Page
 }
 
 type BookInfo struct {

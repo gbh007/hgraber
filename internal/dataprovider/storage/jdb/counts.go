@@ -8,7 +8,7 @@ func (db *Database) BooksCount(ctx context.Context) int {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
-	return len(db.data.Titles)
+	return len(db.data.Data.Books)
 }
 
 func (db *Database) UnloadedBooksCount(ctx context.Context) int {
@@ -17,8 +17,8 @@ func (db *Database) UnloadedBooksCount(ctx context.Context) int {
 
 	c := 0
 
-	for _, t := range db.data.Titles {
-		if !t.Data.Parsed.IsFullParsed() {
+	for _, t := range db.data.Data.Books {
+		if !t.IsFullParsed() {
 			c++
 		}
 	}
@@ -32,7 +32,7 @@ func (db *Database) PagesCount(ctx context.Context) int {
 
 	c := 0
 
-	for _, t := range db.data.Titles {
+	for _, t := range db.data.Data.Books {
 		c += len(t.Pages)
 	}
 
@@ -45,7 +45,7 @@ func (db *Database) UnloadedPagesCount(ctx context.Context) int {
 
 	c := 0
 
-	for _, t := range db.data.Titles {
+	for _, t := range db.data.Data.Books {
 		for _, p := range t.Pages {
 			if !p.Success {
 				c++

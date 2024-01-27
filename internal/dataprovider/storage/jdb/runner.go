@@ -37,6 +37,10 @@ func (db *Database) Start(parentCtx context.Context) (chan struct{}, error) {
 			case <-ctx.Done():
 				return
 			case <-timer.C:
+				if !db.needSave {
+					continue
+				}
+
 				if db.Save(ctx, filename, false) == nil {
 					db.logger.Debug(ctx, "Автосохранение прошло успешно")
 				}
