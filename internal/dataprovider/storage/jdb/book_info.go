@@ -36,6 +36,10 @@ func (db *Database) UpdateAttributes(ctx context.Context, id int, attr hgraber.A
 	values := make([]string, len(data))
 	copy(values, data)
 
+	if book.Attributes == nil {
+		book.Attributes = make(map[string]modelV2.RawAttribute)
+	}
+
 	book.Attributes[string(attr)] = modelV2.RawAttribute{
 		Parsed: true,
 		Values: values,
