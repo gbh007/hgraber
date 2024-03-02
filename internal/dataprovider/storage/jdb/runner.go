@@ -27,8 +27,8 @@ func (db *Database) Start(parentCtx context.Context) (chan struct{}, error) {
 
 		ctx := ctxtool.NewSystemContext(parentCtx, "DB-autosave")
 
-		db.logger.Info(ctx, "autosaveDB запущен")
-		defer db.logger.Info(ctx, "autosaveDB остановлен")
+		db.logger.InfoContext(ctx, "autosaveDB запущен")
+		defer db.logger.InfoContext(ctx, "autosaveDB остановлен")
 
 		timer := time.NewTicker(dbSaveInterval)
 
@@ -42,7 +42,7 @@ func (db *Database) Start(parentCtx context.Context) (chan struct{}, error) {
 				}
 
 				if db.Save(ctx, filename, false) == nil {
-					db.logger.Debug(ctx, "Автосохранение прошло успешно")
+					db.logger.DebugContext(ctx, "Автосохранение прошло успешно")
 				}
 			}
 		}

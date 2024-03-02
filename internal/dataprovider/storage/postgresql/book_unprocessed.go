@@ -11,7 +11,7 @@ func (d *Database) GetUnloadedBooks(ctx context.Context) []hgraber.Book {
 
 	ids, err := d.bookUnprocessedMap(ctx)
 	if err != nil {
-		d.logger.Error(ctx, err)
+		d.logger.ErrorContext(ctx, err.Error())
 
 		return out
 	}
@@ -19,7 +19,7 @@ func (d *Database) GetUnloadedBooks(ctx context.Context) []hgraber.Book {
 	for id := range ids {
 		book, err := d.GetBook(ctx, id)
 		if err != nil {
-			d.logger.Error(ctx, err)
+			d.logger.ErrorContext(ctx, err.Error())
 		} else {
 			out = append(out, book)
 		}

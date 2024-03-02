@@ -4,24 +4,21 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 )
 
 var readOnlyModeError = errors.New("read only mode")
-
-type logger interface {
-	IfErr(ctx context.Context, err error)
-}
 
 type Storage struct {
 	loadPath   string
 	exportPath string
 	readOnly   bool
 
-	logger logger
+	logger *slog.Logger
 }
 
-func New(load, export string, readOnly bool, logger logger) *Storage {
+func New(load, export string, readOnly bool, logger *slog.Logger) *Storage {
 	return &Storage{
 		loadPath:   load,
 		exportPath: export,
@@ -48,7 +45,7 @@ func (s *Storage) Prepare(ctx context.Context) error {
 	return nil
 }
 
-func createDir(ctx context.Context, dirPath string) error {
+func createDir(_ context.Context, dirPath string) error {
 	info, err := os.Stat(dirPath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err

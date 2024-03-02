@@ -15,7 +15,12 @@ func (s *Storage) post(ctx context.Context, request *http.Request) error {
 		return fmt.Errorf("%s: do: %w", storageName, err)
 	}
 
-	defer s.logger.IfErrFunc(ctx, response.Body.Close)
+	defer func() {
+		closeErr := response.Body.Close()
+		if closeErr != nil {
+			s.logger.ErrorContext(ctx, closeErr.Error())
+		}
+	}()
 
 	switch response.StatusCode {
 	case http.StatusOK, http.StatusNoContent:

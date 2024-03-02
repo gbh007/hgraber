@@ -30,7 +30,12 @@ func (s *Storage) OpenPageFile(ctx context.Context, id int, page int, ext string
 		return response.Body, nil
 	}
 
-	defer s.logger.IfErrFunc(ctx, response.Body.Close)
+	defer func() {
+		closeErr := response.Body.Close()
+		if closeErr != nil {
+			s.logger.ErrorContext(ctx, closeErr.Error())
+		}
+	}()
 
 	switch response.StatusCode {
 	case http.StatusUnauthorized:

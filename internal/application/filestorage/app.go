@@ -13,18 +13,13 @@ import (
 func Serve(ctx context.Context) {
 	ctx = ctxtool.NewSystemContext(ctx, "main")
 
-	logger := logger.New(false, false)
-
-	logger.Info(ctx, "Инициализация сервера")
 	cfg := parseFlag()
 
-	debug := false // FIXME: управлять отладкой с конфигурации
+	logger := logger.New(cfg.Debug, cfg.Trace)
 
-	if debug {
-		logger.SetDebug(debug)
-	}
+	logger.InfoContext(ctx, "Инициализация сервера")
 
-	webtool := web.New(logger, debug)
+	webtool := web.New(logger, cfg.Debug)
 	storage := filesystem.New(cfg.LoadPath, cfg.ExportPath, cfg.ReadOnly, logger)
 	controller := externalfile.New(storage, cfg.Addr, cfg.Token, logger, webtool)
 
@@ -33,19 +28,19 @@ func Serve(ctx context.Context) {
 
 	err := storage.Prepare(ctx)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
 
-	logger.Info(ctx, "Система запущена")
+	logger.InfoContext(ctx, "Система запущена")
 
 	err = async.Serve(ctx)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
 
-	logger.Info(ctx, "Процессы завершены, выход")
+	logger.InfoContext(ctx, "Процессы завершены, выход")
 }

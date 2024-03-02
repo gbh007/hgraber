@@ -6,18 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"os"
 	"strings"
 	"sync"
 )
-
-type logger interface {
-	Debug(ctx context.Context, args ...any)
-	Error(ctx context.Context, err error)
-	IfErrFunc(ctx context.Context, f func() error)
-	Info(ctx context.Context, args ...any)
-	Warning(ctx context.Context, args ...any)
-}
 
 type Database struct {
 	data       *fileModel.DatabaseData
@@ -28,10 +21,10 @@ type Database struct {
 	needSave   bool
 	filename   *string
 
-	logger logger
+	logger *slog.Logger
 }
 
-func Init(ctx context.Context, logger logger, filename *string) *Database {
+func Init(ctx context.Context, logger *slog.Logger, filename *string) *Database {
 	return &Database{
 		mutex:    &sync.RWMutex{},
 		data:     fileModel.New(),
@@ -49,13 +42,19 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			db.logger.Debug(ctx, "Файл базы данных отсутствует")
+			db.logger.DebugContext(ctx, "Файл базы данных отсутствует")
 			return nil
 		}
-		db.logger.Error(ctx, err)
+		db.logger.ErrorContext(ctx, err.Error())
 		return err
 	}
-	defer db.logger.IfErrFunc(ctx, file.Close)
+
+	defer func() {
+		closeErr := file.Close()
+		if closeErr != nil {
+			db.logger.ErrorContext(ctx, closeErr.Error())
+		}
+	}()
 
 	decoder := json.NewDecoder(file)
 
@@ -63,18 +62,18 @@ func (db *Database) Load(ctx context.Context, path string) error {
 
 	err = decoder.Decode(&newData)
 	if err != nil {
-		db.logger.Error(ctx, err)
+		db.logger.ErrorContext(ctx, err.Error())
 		return err
 	}
 
 	isMigrated, err := newData.Migrate()
 	if err != nil {
-		db.logger.Error(ctx, err)
+		db.logger.ErrorContext(ctx, err.Error())
 		return err
 	}
 
 	if isMigrated {
-		db.logger.Warning(ctx, "Произведена миграция")
+		db.logger.WarnContext(ctx, "Произведена миграция")
 		db.needSave = true
 	}
 
@@ -84,7 +83,7 @@ func (db *Database) Load(ctx context.Context, path string) error {
 	for id, book := range newData.Data.Books {
 		u := strings.TrimSpace(book.Info.URL)
 		if _, found := db.urlIndex[u]; found {
-			db.logger.Warning(ctx, "Дублирование ссылки при загрузке БД", u)
+			db.logger.WarnContext(ctx, "Дублирование ссылки при загрузке БД", slog.String("url", u))
 		} else {
 			db.urlIndex[u] = id
 		}
@@ -104,26 +103,31 @@ func (db *Database) Save(ctx context.Context, path string, force bool) error {
 	defer db.mutex.RUnlock()
 
 	if !db.needSave && !force {
-		db.logger.Debug(ctx, "Сохранение данных не требуется, пропускаю")
+		db.logger.DebugContext(ctx, "Сохранение данных не требуется, пропускаю")
 
 		return nil
 	}
 
 	file, err := os.Create(path)
 	if err != nil {
-		db.logger.Error(ctx, err)
+		db.logger.ErrorContext(ctx, err.Error())
 
 		return err
 	}
 
-	defer db.logger.IfErrFunc(ctx, file.Close)
+	defer func() {
+		closeErr := file.Close()
+		if closeErr != nil {
+			db.logger.ErrorContext(ctx, closeErr.Error())
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "\t")
 
 	err = encoder.Encode(db.data)
 	if err != nil {
-		db.logger.Error(ctx, err)
+		db.logger.ErrorContext(ctx, err.Error())
 		return err
 	}
 

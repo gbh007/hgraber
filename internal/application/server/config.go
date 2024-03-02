@@ -13,6 +13,8 @@ type configRaw struct {
 	ReadOnly bool
 
 	PGSource string
+
+	log configLog
 }
 
 type configFS struct {
@@ -31,6 +33,11 @@ type configWS struct {
 	OuterAddr string
 	Token     string
 	Static    string
+}
+
+type configLog struct {
+	Debug bool
+	Trace bool
 }
 
 func parseFlag() configRaw {
@@ -52,6 +59,10 @@ func parseFlag() configRaw {
 	agAddr := flag.String("ag-addr", "", "адрес агент сервера")
 	agToken := flag.String("ag-token", "", "токен для доступа к агент серверу")
 
+	// Отладка
+	debug := flag.Bool("debug", false, "Режим отладки")
+	debugTrace := flag.Bool("debug-trace", false, "Режим стектрейсов")
+
 	flag.Parse()
 
 	cfg := configRaw{
@@ -72,6 +83,10 @@ func parseFlag() configRaw {
 		},
 		PGSource: *pgSource,
 		ReadOnly: *onlyView,
+		log: configLog{
+			Debug: *debug,
+			Trace: *debugTrace,
+		},
 	}
 
 	if pgSource := os.Getenv("PG_SOURCE"); pgSource != "" {

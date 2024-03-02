@@ -5,14 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 )
-
-type logger interface {
-	Debug(ctx context.Context, args ...any)
-	Error(ctx context.Context, err error)
-	Info(ctx context.Context, args ...any)
-	Warning(ctx context.Context, args ...any)
-}
 
 type storageFrom interface {
 	GetBooks(ctx context.Context, filter hgraber.BookFilter) []hgraber.Book
@@ -30,10 +24,10 @@ type Builder struct {
 	src storageFrom
 	dst storageTo
 
-	logger logger
+	logger *slog.Logger
 }
 
-func New(logger logger) *Builder {
+func New(logger *slog.Logger) *Builder {
 	return &Builder{
 		logger: logger,
 	}
@@ -58,13 +52,13 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 	})
 
 	for _, book := range books {
-		b.logger.Info(ctx, "Начат", book.ID)
+		b.logger.InfoContext(ctx, "Начат", slog.Int("book_id", book.ID))
 
 		id, err := b.dst.NewBook(ctx, book.Data.Name, book.URL, book.Data.Parsed.Name)
 		if err != nil {
-			b.logger.Error(ctx, err)
+			b.logger.ErrorContext(ctx, err.Error())
 
-			b.logger.Debug(ctx, book)
+			b.logger.DebugContext(ctx, "book data", slog.Any("book", book))
 
 			if !notUniqWorkaround || !errors.Is(err, hgraber.BookAlreadyExistsError) {
 				return
@@ -72,26 +66,26 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 
 			id, err = b.dst.NewBook(ctx, book.Data.Name, fmt.Sprintf("err (%d): %s", book.ID, book.URL), book.Data.Parsed.Name)
 			if err != nil {
-				b.logger.Error(ctx, err)
+				b.logger.ErrorContext(ctx, err.Error())
 
 				return
 			}
 		}
 
 		if id != book.ID {
-			b.logger.Warning(ctx, fmt.Sprintf("ID %d изменился на %d", book.ID, id))
+			b.logger.WarnContext(ctx, fmt.Sprintf("ID %d изменился на %d", book.ID, id))
 		}
 
 		err = b.dst.UpdateBookPages(ctx, id, book.Pages)
 		if err != nil {
-			b.logger.Error(ctx, err)
+			b.logger.ErrorContext(ctx, err.Error())
 
 			return
 		}
 
 		err = b.dst.UpdateBookRate(ctx, id, book.Data.Rating)
 		if err != nil {
-			b.logger.Error(ctx, err)
+			b.logger.ErrorContext(ctx, err.Error())
 
 			return
 		}
@@ -99,7 +93,7 @@ func (b *Builder) Convert(ctx context.Context, offset int, notUniqWorkaround boo
 		for attr := range book.Data.Parsed.Attributes {
 			err = b.dst.UpdateAttributes(ctx, id, attr, book.Data.Attributes[attr])
 			if err != nil {
-				b.logger.Error(ctx, err)
+				b.logger.ErrorContext(ctx, err.Error())
 
 				return
 			}

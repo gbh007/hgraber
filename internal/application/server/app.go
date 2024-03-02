@@ -19,25 +19,20 @@ import (
 
 func Serve(ctx context.Context) {
 	ctx = ctxtool.NewSystemContext(ctx, "main")
-	logger := logger.New(false, false)
-	logger.Info(ctx, "Инициализация сервера")
-
 	cfg := parseFlag()
 
-	debug := false // FIXME: получать из конфигурации
+	logger := logger.New(cfg.log.Debug, cfg.log.Trace)
+	logger.InfoContext(ctx, "Инициализация сервера")
+
 	hasAgent := cfg.ag.Addr != ""
 
-	if debug {
-		logger.SetDebug(debug)
-	}
-
-	webtool := web.New(logger, debug)
+	webtool := web.New(logger, cfg.log.Debug)
 	async := async.New(logger)
 
 	fileStorage := externalfile.New(cfg.fs.Token, cfg.fs.Scheme, cfg.fs.Addr, logger)
 	storage, err := postgresql.Connect(ctx, cfg.PGSource, logger)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
@@ -45,7 +40,7 @@ func Serve(ctx context.Context) {
 	if !cfg.ReadOnly {
 		err = storage.MigrateAll(ctx)
 		if err != nil {
-			logger.Error(ctx, err)
+			logger.ErrorContext(ctx, err.Error())
 
 			return
 		}
@@ -80,14 +75,14 @@ func Serve(ctx context.Context) {
 		async.RegisterRunner(ctx, worker)
 	}
 
-	logger.Info(ctx, "Система запущена")
+	logger.InfoContext(ctx, "Система запущена")
 
 	err = async.Serve(ctx)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
 
-	logger.Info(ctx, "Процессы завершены, выход")
+	logger.InfoContext(ctx, "Процессы завершены, выход")
 }

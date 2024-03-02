@@ -3,14 +3,9 @@ package hgraberworker
 import (
 	"app/internal/domain/hgraber"
 	"context"
+	"log/slog"
 	"sync"
 )
-
-type logger interface {
-	Debug(ctx context.Context, args ...any)
-	Error(ctx context.Context, err error)
-	Info(ctx context.Context, args ...any)
-}
 
 type useCases interface {
 	GetUnsuccessPages(ctx context.Context) []hgraber.Page
@@ -30,10 +25,10 @@ type Controller struct {
 	hasAgent bool
 
 	useCases useCases
-	logger   logger
+	logger   *slog.Logger
 }
 
-func New(useCases useCases, logger logger, hasAgent bool) *Controller {
+func New(useCases useCases, logger *slog.Logger, hasAgent bool) *Controller {
 	return &Controller{
 		useCases: useCases,
 		logger:   logger,

@@ -16,7 +16,7 @@ type Handler struct {
 	printer Printer
 }
 
-func New(options ...handlerOption) *Handler {
+func New(options ...HandlerOption) *Handler {
 	cfg := &handlerConfig{
 		printer: stdoutPrinter,
 	}

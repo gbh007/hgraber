@@ -7,6 +7,9 @@ type configRaw struct {
 	Addr   string
 	Token  string
 	Name   string
+
+	Debug bool
+	Trace bool
 }
 
 func parseFlag() configRaw {
@@ -15,6 +18,10 @@ func parseFlag() configRaw {
 	hgToken := flag.String("token", "", "Токен для доступа к соединению с hgraber")
 	name := flag.String("name", "simple-agent", "Название агента")
 
+	// Отладка
+	debug := flag.Bool("debug", false, "Режим отладки")
+	debugTrace := flag.Bool("debug-trace", false, "Режим стектрейсов")
+
 	flag.Parse()
 
 	cfg := configRaw{
@@ -22,6 +29,9 @@ func parseFlag() configRaw {
 		Addr:   *hgAddr,
 		Token:  *hgToken,
 		Name:   *name,
+
+		Debug: *debug,
+		Trace: *debugTrace,
 	}
 
 	return cfg

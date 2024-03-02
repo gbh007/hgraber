@@ -21,24 +21,26 @@ func (c *Controller) Start(parentCtx context.Context) (chan struct{}, error) {
 	go func() {
 		defer close(done)
 
-		c.logger.Info(webCtx, "Запущен веб сервер")
-		defer c.logger.Info(webCtx, "Веб сервер остановлен")
+		c.logger.InfoContext(webCtx, "Запущен веб сервер")
+		defer c.logger.InfoContext(webCtx, "Веб сервер остановлен")
 
 		err := server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			c.logger.Error(webCtx, err)
+			c.logger.ErrorContext(webCtx, err.Error())
 		}
-
 	}()
 
 	go func() {
 		<-parentCtx.Done()
-		c.logger.Info(webCtx, "Остановка веб сервера")
+		c.logger.InfoContext(webCtx, "Остановка веб сервера")
 
 		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(webCtx), time.Second*10)
 		defer cancel()
 
-		c.logger.IfErr(webCtx, server.Shutdown(shutdownCtx))
+		err := server.Shutdown(shutdownCtx)
+		if err != nil {
+			c.logger.ErrorContext(webCtx, err.Error())
+		}
 	}()
 
 	return done, nil

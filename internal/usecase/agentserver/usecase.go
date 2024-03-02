@@ -4,13 +4,8 @@ import (
 	"app/internal/domain/hgraber"
 	"context"
 	"io"
+	"log/slog"
 )
-
-type logger interface {
-	Info(ctx context.Context, args ...any)
-	Warning(ctx context.Context, args ...any)
-	Error(ctx context.Context, err error)
-}
 
 type storage interface {
 	GetUnloadedBooks(ctx context.Context) []hgraber.Book
@@ -45,13 +40,13 @@ type files interface {
 }
 
 type UseCase struct {
-	logger      logger
+	logger      *slog.Logger
 	storage     storage
 	tempStorage tempStorage
 	files       files
 }
 
-func New(logger logger, storage storage, tempStorage tempStorage, files files) *UseCase {
+func New(logger *slog.Logger, storage storage, tempStorage tempStorage, files files) *UseCase {
 	return &UseCase{
 		logger:      logger,
 		storage:     storage,

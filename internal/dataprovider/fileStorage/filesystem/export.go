@@ -20,7 +20,10 @@ func (s *Storage) CreateExportFile(ctx context.Context, name string, body io.Rea
 
 	_, err = io.Copy(f, body)
 	if err != nil {
-		s.logger.IfErr(ctx, f.Close())
+		fileCloseErr := f.Close()
+		if fileCloseErr != nil {
+			s.logger.ErrorContext(ctx, fileCloseErr.Error())
+		}
 
 		return fmt.Errorf("export file: %w", err)
 	}

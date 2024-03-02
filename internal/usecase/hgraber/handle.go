@@ -4,13 +4,14 @@ import (
 	"app/internal/domain/hgraber"
 	"context"
 	"errors"
+	"log/slog"
 	"net/url"
 	"strings"
 )
 
 func (uc *UseCase) FirstHandle(ctx context.Context, u string) error {
-	uc.logger.Info(ctx, "начата обработка", u)
-	defer uc.logger.Info(ctx, "завершена обработка", u)
+	uc.logger.InfoContext(ctx, "начата обработка", slog.String("url", u))
+	defer uc.logger.InfoContext(ctx, "завершена обработка", slog.String("url", u))
 
 	u = strings.TrimSpace(u)
 
@@ -66,7 +67,7 @@ func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*hgr
 				ErrorReason: err.Error(),
 			}
 
-			uc.logger.Warning(ctx, "не поддерживаемая ссылка", link)
+			uc.logger.WarnContext(ctx, "не поддерживаемая ссылка", slog.String("link", link))
 
 		case err != nil:
 			res.NotHandled = append(res.NotHandled, link)
@@ -76,7 +77,7 @@ func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*hgr
 				ErrorReason: err.Error(),
 			}
 
-			uc.logger.Error(ctx, err)
+			uc.logger.ErrorContext(ctx, err.Error())
 		default:
 			res.LoadedCount++
 			res.Details[i] = hgraber.BookHandleResult{

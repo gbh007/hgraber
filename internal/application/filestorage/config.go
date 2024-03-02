@@ -10,6 +10,9 @@ type config struct {
 
 	Addr  string
 	Token string
+
+	Debug bool
+	Trace bool
 }
 
 func parseFlag() config {
@@ -23,6 +26,10 @@ func parseFlag() config {
 
 	readOnly := flag.Bool("read-only", false, "режим только просмотра")
 
+	// Отладка
+	debug := flag.Bool("debug", false, "Режим отладки")
+	debugTrace := flag.Bool("debug-trace", false, "Режим стектрейсов")
+
 	flag.Parse()
 
 	return config{
@@ -33,5 +40,8 @@ func parseFlag() config {
 
 		Addr:  *addr,
 		Token: *token,
+
+		Debug: *debug,
+		Trace: *debugTrace,
 	}
 }

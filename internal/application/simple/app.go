@@ -18,23 +18,19 @@ import (
 
 func Serve(ctx context.Context) {
 	ctx = ctxtool.NewSystemContext(ctx, "main")
-	logger := logger.New(false, false)
-	logger.Info(ctx, "Инициализация сервера")
-
 	cfg := parseFlag()
 
-	if cfg.Log.DebugMode {
-		logger.SetDebug(cfg.Log.DebugMode)
-	}
+	logger := logger.New(cfg.Log.Debug, cfg.Log.Trace)
+	logger.InfoContext(ctx, "Инициализация сервера")
 
-	webtool := web.New(logger, cfg.Log.DebugMode)
+	webtool := web.New(logger, cfg.Log.Debug)
 
 	async := async.New(logger)
 	fileStorage := filesystem.New(cfg.Base.FileStoragePath, cfg.Base.FileExportPath, cfg.Base.OnlyView, logger)
 
 	err := fileStorage.Prepare(ctx)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
@@ -44,7 +40,7 @@ func Serve(ctx context.Context) {
 	if !cfg.Base.OnlyView {
 		err = storage.Load(ctx, cfg.Base.DBFilePath)
 		if err != nil {
-			logger.Error(ctx, err)
+			logger.ErrorContext(ctx, err.Error())
 
 			return
 		}
@@ -52,9 +48,9 @@ func Serve(ctx context.Context) {
 		async.RegisterRunner(ctx, storage)
 		async.RegisterAfterStop(ctx, func() {
 			if storage.Save(ctx, cfg.Base.DBFilePath, false) == nil {
-				logger.Info(ctx, "База сохранена")
+				logger.InfoContext(ctx, "База сохранена")
 			} else {
-				logger.Warning(ctx, "База не сохранена")
+				logger.WarnContext(ctx, "База не сохранена")
 			}
 		})
 	}
@@ -82,14 +78,14 @@ func Serve(ctx context.Context) {
 		async.RegisterRunner(ctx, worker)
 	}
 
-	logger.Info(ctx, "Система запущена")
+	logger.InfoContext(ctx, "Система запущена")
 
 	err = async.Serve(ctx)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
 
-	logger.Info(ctx, "Процессы завершены, выход")
+	logger.InfoContext(ctx, "Процессы завершены, выход")
 }

@@ -12,7 +12,7 @@ import (
 func (uc *UseCase) ParseJSON(r *http.Request, data any) error {
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		uc.logger.Debug(r.Context(), err)
+		uc.logger.DebugContext(r.Context(), err.Error())
 	}
 
 	return err
@@ -37,7 +37,7 @@ func (uc *UseCase) WriteJSON(ctx context.Context, w http.ResponseWriter, statusC
 	}
 
 	if err := enc.Encode(data); err != nil {
-		uc.logger.Error(ctx, err)
+		uc.logger.ErrorContext(ctx, err.Error())
 	}
 
 }
@@ -51,5 +51,7 @@ func (uc *UseCase) WritePlain(ctx context.Context, w http.ResponseWriter, status
 	w.WriteHeader(statusCode)
 
 	_, err := io.WriteString(w, data)
-	uc.logger.IfErr(ctx, err)
+	if err != nil {
+		uc.logger.ErrorContext(ctx, err.Error())
+	}
 }

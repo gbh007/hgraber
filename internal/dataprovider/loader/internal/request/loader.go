@@ -5,24 +5,20 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 )
 
 const defaultUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36"
 
-type logger interface {
-	Error(ctx context.Context, err error)
-	IfErrFunc(ctx context.Context, f func() error)
-}
-
 type Requester struct {
 	client *http.Client
 
-	logger logger
+	logger *slog.Logger
 }
 
-func New(logger logger) *Requester {
+func New(logger *slog.Logger) *Requester {
 	return &Requester{
 		client: &http.Client{
 			Timeout: time.Minute,
@@ -37,7 +33,7 @@ func (r *Requester) requestBuffer(ctx context.Context, URL string) (*bytes.Buffe
 
 	req, err := http.NewRequest(http.MethodGet, URL, nil)
 	if err != nil {
-		r.logger.Error(ctx, err)
+		r.logger.ErrorContext(ctx, err.Error())
 		return buff, err
 	}
 
@@ -47,22 +43,27 @@ func (r *Requester) requestBuffer(ctx context.Context, URL string) (*bytes.Buffe
 	response, err := r.client.Do(req)
 
 	if err != nil {
-		r.logger.Error(ctx, err)
+		r.logger.ErrorContext(ctx, err.Error())
 		return buff, err
 	}
 
-	defer r.logger.IfErrFunc(ctx, response.Body.Close)
+	defer func() {
+		closeErr := response.Body.Close()
+		if closeErr != nil {
+			r.logger.ErrorContext(ctx, closeErr.Error())
+		}
+	}()
 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		err = fmt.Errorf("%s ошибка %s", URL, response.Status)
-		r.logger.Error(ctx, err)
+		r.logger.ErrorContext(ctx, err.Error())
 
 		return buff, err
 	}
 
 	_, err = buff.ReadFrom(response.Body)
 	if err != nil {
-		r.logger.Error(ctx, err)
+		r.logger.ErrorContext(ctx, err.Error())
 
 		return buff, err
 	}

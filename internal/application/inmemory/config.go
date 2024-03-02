@@ -26,16 +26,8 @@ type WebServerConfig struct {
 
 // LogConfig - конфигурация логов приложения.
 type LogConfig struct {
-	// Режим отладки
-	DebugMode bool
-	// Полные пути файлов в логах
-	DebugFullpathMode bool
-	// Отключить стандартный поток ошибок
-	DisableStdErr bool
-	// Отключить поток ошибок в файл
-	DisableFileErr bool
-	// Режим дозаписи файла потока ошибок
-	EnableAppendFileErr bool
+	Debug bool
+	Trace bool
 }
 
 type configAg struct {
@@ -49,17 +41,12 @@ func parseFlag() Config {
 	webHost := flag.String("h", "", "хост веб сервера")
 	token := flag.String("access-token", "", "токен для доступа к контенту")
 
-	// потоки логирования
-	disableStdErr := flag.Bool("no-stderr", false, "отключить стандартный поток ошибок")
-	disableFileErr := flag.Bool("no-stdfile", false, "отключить поток ошибок в файл")
-	enableAppendFileErr := flag.Bool("stdfile-append", false, "режим дозаписи файла потока ошибок")
-
 	// размещение данных
 	staticDirPath := flag.String("static", "", "папка со статическими файлами")
 
-	// отладка
-	debugMode := flag.Bool("debug", false, "активировать режим отладки (дебага)")
-	debugFullpathMode := flag.Bool("debug-fullpath", false, "включает длинные пути файлов в логах")
+	// Отладка
+	debug := flag.Bool("debug", false, "Режим отладки")
+	debugTrace := flag.Bool("debug-trace", false, "Режим стектрейсов")
 
 	// агент сервер
 	agAddr := flag.String("ag-addr", "", "адрес агент сервера")
@@ -69,11 +56,8 @@ func parseFlag() Config {
 
 	return Config{
 		Log: LogConfig{
-			DebugMode:           *debugMode,
-			DebugFullpathMode:   *debugFullpathMode,
-			DisableStdErr:       *disableStdErr,
-			DisableFileErr:      *disableFileErr,
-			EnableAppendFileErr: *enableAppendFileErr,
+			Debug: *debug,
+			Trace: *debugTrace,
 		},
 		WebServer: WebServerConfig{
 			Host:          *webHost,

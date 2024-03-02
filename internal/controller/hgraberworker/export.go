@@ -23,7 +23,7 @@ func (c *Controller) serveExportWorker(ctx context.Context) {
 		func(ctx context.Context, bookID int) {
 			err := c.useCases.ExportBook(ctx, bookID)
 			if err != nil {
-				c.logger.Error(ctx, err)
+				c.logger.ErrorContext(ctx, err.Error())
 			}
 		},
 		c.useCases.ExportList,

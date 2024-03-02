@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 )
 
@@ -12,7 +13,7 @@ func (uc *UseCase) PanicDefender(next http.Handler) http.Handler {
 		defer func() {
 			p := recover()
 			if p != nil {
-				uc.logger.Warning(r.Context(), "обнаружена паника", p)
+				uc.logger.WarnContext(r.Context(), "обнаружена паника", slog.Any("panic_data", p))
 
 				uc.WriteJSON(r.Context(), w, http.StatusInternalServerError, errPanicDetected)
 			}

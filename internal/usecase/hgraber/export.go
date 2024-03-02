@@ -44,7 +44,13 @@ func (uc *UseCase) ExportBook(ctx context.Context, id int) error {
 		if err != nil {
 			return fmt.Errorf("export book: %w", err)
 		}
-		defer uc.logger.IfErrFunc(ctx, pageReader.Close)
+
+		defer func() {
+			closeErr := pageReader.Close()
+			if closeErr != nil {
+				uc.logger.ErrorContext(ctx, closeErr.Error())
+			}
+		}()
 
 		w, err := zipWriter.Create(fmt.Sprintf("%d.%s", p.PageNumber, p.Ext))
 		if err != nil {

@@ -42,21 +42,30 @@ func (d *Database) UpdateAttributes(ctx context.Context, id int, attr hgraber.At
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM book_attributes WHERE book_id = $1 AND attr = $2;`, id, attrCode)
 	if err != nil {
-		d.logger.IfErrFunc(ctx, tx.Rollback)
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			d.logger.ErrorContext(ctx, rollbackErr.Error())
+		}
 
 		return err
 	}
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM book_attributes_parsed WHERE book_id = $1 AND attr = $2;`, id, attrCode)
 	if err != nil {
-		d.logger.IfErrFunc(ctx, tx.Rollback)
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			d.logger.ErrorContext(ctx, rollbackErr.Error())
+		}
 
 		return err
 	}
 
 	_, err = tx.ExecContext(ctx, `INSERT INTO book_attributes_parsed (book_id, attr, parsed) VALUES($1, $2, $3);`, id, attrCode, true)
 	if err != nil {
-		d.logger.IfErrFunc(ctx, tx.Rollback)
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			d.logger.ErrorContext(ctx, rollbackErr.Error())
+		}
 
 		return err
 	}
@@ -68,7 +77,10 @@ func (d *Database) UpdateAttributes(ctx context.Context, id int, attr hgraber.At
 			id, attrCode, v,
 		)
 		if err != nil {
-			d.logger.IfErrFunc(ctx, tx.Rollback)
+			rollbackErr := tx.Rollback()
+			if rollbackErr != nil {
+				d.logger.ErrorContext(ctx, rollbackErr.Error())
+			}
 
 			return err
 		}

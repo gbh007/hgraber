@@ -9,7 +9,7 @@ import (
 func (uc *UseCase) Pages(ctx context.Context) []agent.PageToHandle {
 	pages, err := uc.agentAPI.UnprocessedPages(ctx, pageLimit)
 	if err != nil {
-		uc.logger.Error(ctx, err)
+		uc.logger.ErrorContext(ctx, err.Error())
 	}
 
 	return pages
@@ -18,7 +18,7 @@ func (uc *UseCase) Pages(ctx context.Context) []agent.PageToHandle {
 func (uc *UseCase) PageHandle(ctx context.Context, page agent.PageToHandle) {
 	err := uc.pageHandle(ctx, page)
 	if err != nil {
-		uc.logger.Error(ctx, err)
+		uc.logger.ErrorContext(ctx, err.Error())
 	}
 }
 
@@ -29,7 +29,12 @@ func (uc *UseCase) pageHandle(ctx context.Context, page agent.PageToHandle) erro
 		return fmt.Errorf("page handle: download: %w", err)
 	}
 
-	defer uc.logger.IfErrFunc(ctx, body.Close)
+	defer func() {
+		bodyCloseErr := body.Close()
+		if bodyCloseErr != nil {
+			uc.logger.ErrorContext(ctx, bodyCloseErr.Error())
+		}
+	}()
 
 	err = uc.agentAPI.UploadPage(
 		ctx,

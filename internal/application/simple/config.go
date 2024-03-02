@@ -1,6 +1,5 @@
 package simple
 
-
 import "flag"
 
 // Config - конфигурация приложения.
@@ -39,16 +38,8 @@ type BaseConfig struct {
 
 // LogConfig - конфигурация логов приложения.
 type LogConfig struct {
-	// Режим отладки
-	DebugMode bool
-	// Полные пути файлов в логах
-	DebugFullpathMode bool
-	// Отключить стандартный поток ошибок
-	DisableStdErr bool
-	// Отключить поток ошибок в файл
-	DisableFileErr bool
-	// Режим дозаписи файла потока ошибок
-	EnableAppendFileErr bool
+	Debug bool
+	Trace bool
 }
 
 func parseFlag() Config {
@@ -58,20 +49,15 @@ func parseFlag() Config {
 	onlyView := flag.Bool("v", false, "режим только просмотра")
 	token := flag.String("access-token", "", "токен для доступа к контенту")
 
-	// потоки логирования
-	disableStdErr := flag.Bool("no-stderr", false, "отключить стандартный поток ошибок")
-	disableFileErr := flag.Bool("no-stdfile", false, "отключить поток ошибок в файл")
-	enableAppendFileErr := flag.Bool("stdfile-append", false, "режим дозаписи файла потока ошибок")
-
 	// размещение данных
 	fileStoragePath := flag.String("fs", "loads", "директория для данных")
 	fileExportPath := flag.String("fe", "exported", "директория для экспорта файлов")
 	dbFilePath := flag.String("db", "db.json", "файл базы")
 	staticDirPath := flag.String("static", "", "папка со статическими файлами")
 
-	// отладка
-	debugMode := flag.Bool("debug", false, "активировать режим отладки (дебага)")
-	debugFullpathMode := flag.Bool("debug-fullpath", false, "включает длинные пути файлов в логах")
+	// Отладка
+	debug := flag.Bool("debug", false, "Режим отладки")
+	debugTrace := flag.Bool("debug-trace", false, "Режим стектрейсов")
 
 	flag.Parse()
 
@@ -83,11 +69,8 @@ func parseFlag() Config {
 			DBFilePath:      *dbFilePath,
 		},
 		Log: LogConfig{
-			DebugMode:           *debugMode,
-			DebugFullpathMode:   *debugFullpathMode,
-			DisableStdErr:       *disableStdErr,
-			DisableFileErr:      *disableFileErr,
-			EnableAppendFileErr: *enableAppendFileErr,
+			Debug: *debug,
+			Trace: *debugTrace,
 		},
 		WebServer: WebServerConfig{
 			Host:          *webHost,

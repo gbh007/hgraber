@@ -1,88 +1,68 @@
 package logger
 
 import (
+	"app/internal/dataprovider/slogHandler"
 	"app/pkg/ctxtool"
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"time"
 )
 
-type Logger struct {
-	debug bool
-	trace bool
-}
+func New(debug bool, trace bool) *slog.Logger {
+	opts := []slogHandler.HandlerOption{}
 
-func New(debug bool, trace bool) *Logger {
-	return &Logger{debug: debug, trace: trace}
-}
-
-func (l *Logger) SetDebug(debug bool) {
-	l.debug = debug
-}
-
-func (l *Logger) SetTrace(trace bool) {
-	l.trace = trace
-}
-
-func (l *Logger) IfErr(ctx context.Context, err error) {
-	if err == nil {
-		return
+	if debug {
+		opts = append(opts, slogHandler.WithDebug())
 	}
 
-	l.print(ctx, logLevelError, err.Error())
-}
-
-func (l *Logger) IfErrFunc(ctx context.Context, f func() error) {
-	err := f()
-	if err == nil {
-		return
+	if trace {
+		opts = append(opts, slogHandler.WithPrinter(printWithTrace))
+	} else {
+		opts = append(opts, slogHandler.WithPrinter(print))
 	}
 
-	l.print(ctx, logLevelError, err.Error())
+	return slog.New(slogHandler.New(opts...))
 }
 
-func (l *Logger) Error(ctx context.Context, err error) {
-	l.print(ctx, logLevelError, err.Error())
-}
-
-func (l *Logger) Info(ctx context.Context, args ...any) {
-	l.print(ctx, logLevelInfo, args...)
-}
-
-func (l *Logger) Warning(ctx context.Context, args ...any) {
-	l.print(ctx, logLevelWarning, args...)
-}
-
-func (l *Logger) Debug(ctx context.Context, args ...any) {
-	if !l.debug {
-		return
+func attrsToString(attrs []slog.Attr) string {
+	if len(attrs) == 0 {
+		return ""
 	}
 
-	l.print(ctx, logLevelDebug, args...)
+	return " " + fmt.Sprint(attrs)
 }
 
-func (l *Logger) print(ctx context.Context, level string, args ...any) {
-	if !l.trace {
-		fmt.Fprintf(
-			os.Stderr,
-			"[%s] [%s] %s - %s",
-			level,
-			ctxtool.GetRequestID(ctx),
-			time.Now().Format(timeFormat),
-			fmt.Sprintln(args...),
-		)
+func print(ctx context.Context, t time.Time, msg string, lv slog.Level, attrs []slog.Attr) error {
+	attrsToPrint := attrsToString(attrs)
 
-		return
-	}
-
-	fmt.Fprintf(
+	_, err := fmt.Fprintf(
 		os.Stderr,
 		"[%s] [%s] %s - %s%s\n",
-		level,
+		lv.String(),
 		ctxtool.GetRequestID(ctx),
-		time.Now().Format(timeFormat),
-		fmt.Sprintln(args...),
-		simpleTrace(4, 5),
+		t.Format(timeFormat),
+		msg,
+		attrsToPrint,
 	)
+
+	return err
+}
+
+func printWithTrace(ctx context.Context, t time.Time, msg string, lv slog.Level, attrs []slog.Attr) error {
+	attrsToPrint := attrsToString(attrs)
+
+	_, err := fmt.Fprintf(
+		os.Stderr,
+		"[%s] [%s] %s - %s%s\n%s\n",
+		lv.String(),
+		ctxtool.GetRequestID(ctx),
+		t.Format(timeFormat),
+		msg,
+		attrsToPrint,
+		simpleTrace(6, 4),
+	)
+
+	return err
 }

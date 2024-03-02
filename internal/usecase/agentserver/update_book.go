@@ -5,6 +5,7 @@ import (
 	"app/internal/domain/hgraber"
 	"context"
 	"fmt"
+	"log/slog"
 	"slices"
 )
 
@@ -48,7 +49,7 @@ func (uc *UseCase) UpdateBook(ctx context.Context, book agent.BookToUpdate) erro
 		}
 	}
 
-	uc.logger.Info(ctx, "Обновлена книга", book.ID)
+	uc.logger.InfoContext(ctx, "Обновлена книга", slog.Int("book_id", book.ID))
 
 	uc.tempStorage.UnLockBookHandle(ctx, book.ID)
 

@@ -6,7 +6,7 @@ type handlerConfig struct {
 	printer Printer
 }
 
-type handlerOption interface {
+type HandlerOption interface {
 	apply(*handlerConfig)
 }
 

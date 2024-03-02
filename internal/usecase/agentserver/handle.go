@@ -6,13 +6,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"strings"
 )
 
 func (uc *UseCase) firstHandle(ctx context.Context, u string) (int, error) {
-	uc.logger.Info(ctx, "начата обработка", u)
-	defer uc.logger.Info(ctx, "завершена обработка", u)
+	uc.logger.InfoContext(ctx, "начата обработка", slog.String("url", u))
+	defer uc.logger.InfoContext(ctx, "завершена обработка", slog.String("url", u))
 
 	u = strings.TrimSpace(u)
 
@@ -30,7 +31,7 @@ func (uc *UseCase) firstHandle(ctx context.Context, u string) (int, error) {
 		return existsID, hgraber.BookAlreadyExistsError
 	}
 
-	if err != nil && !errors.Is(err, hgraber.BookNotFoundError) {
+	if !errors.Is(err, hgraber.BookNotFoundError) {
 		return 0, fmt.Errorf("search url: %w", err)
 	}
 
@@ -68,14 +69,14 @@ func (uc *UseCase) CreateMultipleBook(ctx context.Context, data []string) (*agen
 			res.Counts.Errors++
 			res.Details[i].ErrorReason = err.Error()
 
-			uc.logger.Warning(ctx, "не поддерживаемая ссылка", link)
+			uc.logger.WarnContext(ctx, "не поддерживаемая ссылка", slog.String("link", link))
 
 		case err != nil:
 			res.NotHandled = append(res.NotHandled, link)
 			res.Counts.Errors++
 			res.Details[i].ErrorReason = err.Error()
 
-			uc.logger.Error(ctx, err)
+			uc.logger.ErrorContext(ctx, err.Error())
 		default:
 			res.Counts.Loaded++
 			res.Details[i].IsHandled = true

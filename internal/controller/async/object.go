@@ -3,11 +3,8 @@ package async
 import (
 	"context"
 	"fmt"
+	"log/slog"
 )
-
-type logger interface {
-	Error(ctx context.Context, err error)
-}
 
 type Runner interface {
 	Start(context.Context) (chan struct{}, error)
@@ -16,14 +13,14 @@ type Runner interface {
 
 type AfterStopHandler func()
 
-func New(logger logger) *Controller {
+func New(logger *slog.Logger) *Controller {
 	return &Controller{
 		logger: logger,
 	}
 }
 
 type Controller struct {
-	logger logger
+	logger *slog.Logger
 
 	runnerChannels []chan struct{}
 	runners        []Runner
@@ -47,7 +44,7 @@ func (c *Controller) Serve(parentCtx context.Context) error {
 		if err != nil {
 			err = fmt.Errorf("start %s: %w", r.Name(), err)
 
-			c.logger.Error(ctx, err)
+			c.logger.ErrorContext(ctx, err.Error())
 
 			return err
 		}

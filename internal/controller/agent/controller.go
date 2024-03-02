@@ -3,12 +3,8 @@ package agent
 import (
 	"app/internal/domain/agent"
 	"context"
+	"log/slog"
 )
-
-type logger interface {
-	Debug(ctx context.Context, args ...any)
-	Info(ctx context.Context, args ...any)
-}
 
 type useCases interface {
 	Books(ctx context.Context) []agent.BookToHandle
@@ -19,12 +15,12 @@ type useCases interface {
 }
 
 type Controller struct {
-	logger logger
+	logger *slog.Logger
 
 	useCases useCases
 }
 
-func New(logger logger, useCases useCases) *Controller {
+func New(logger *slog.Logger, useCases useCases) *Controller {
 	return &Controller{
 		logger:   logger,
 		useCases: useCases,

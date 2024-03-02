@@ -28,7 +28,12 @@ func (uc *UseCase) downloadPageImage(ctx context.Context, id, page int, URL, ext
 		return fmt.Errorf("download page image: %w", err)
 	}
 
-	defer uc.logger.IfErrFunc(ctx, body.Close)
+	defer func() {
+		closeErr := body.Close()
+		if closeErr != nil {
+			uc.logger.ErrorContext(ctx, closeErr.Error())
+		}
+	}()
 
 	// создаем файл и загружаем туда изображение
 	err = uc.files.CreatePageFile(ctx, id, page, ext, body)

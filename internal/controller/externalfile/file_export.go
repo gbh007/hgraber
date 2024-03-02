@@ -13,7 +13,7 @@ func (c *Controller) fileExport() http.Handler {
 
 		err := c.fileStorage.CreateExportFile(ctx, filename, r.Body)
 		if err != nil {
-			c.logger.Error(ctx, err)
+			c.logger.ErrorContext(ctx, err.Error())
 
 			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 

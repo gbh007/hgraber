@@ -24,7 +24,7 @@ func (c *Controller) servePageWorker(ctx context.Context) {
 		func(ctx context.Context, page hgraber.Page) {
 			err := c.useCases.LoadPageWithUpdate(ctx, page)
 			if err != nil {
-				c.logger.Error(ctx, err)
+				c.logger.ErrorContext(ctx, err.Error())
 			}
 		},
 		c.useCases.GetUnsuccessPages,

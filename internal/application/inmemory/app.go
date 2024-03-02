@@ -20,18 +20,14 @@ import (
 
 func Serve(ctx context.Context) {
 	ctx = ctxtool.NewSystemContext(ctx, "main")
-	logger := logger.New(false, false)
-	logger.Info(ctx, "Инициализация")
-
 	cfg := parseFlag()
 
-	if cfg.Log.DebugMode {
-		logger.SetDebug(cfg.Log.DebugMode)
-	}
+	logger := logger.New(cfg.Log.Debug, cfg.Log.Trace)
+	logger.InfoContext(ctx, "Инициализация")
 
 	hasAgent := cfg.Ag.Addr != ""
 
-	webtool := web.New(logger, cfg.Log.DebugMode)
+	webtool := web.New(logger, cfg.Log.Debug)
 
 	async := async.New(logger)
 	fileStorage := filememory.New()
@@ -64,14 +60,14 @@ func Serve(ctx context.Context) {
 	async.RegisterRunner(ctx, webServer)
 	async.RegisterRunner(ctx, worker)
 
-	logger.Info(ctx, "Система запущена")
+	logger.InfoContext(ctx, "Система запущена")
 
 	err := async.Serve(ctx)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
 
-	logger.Info(ctx, "Процессы завершены, выход")
+	logger.InfoContext(ctx, "Процессы завершены, выход")
 }

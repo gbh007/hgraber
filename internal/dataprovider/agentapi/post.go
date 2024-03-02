@@ -18,7 +18,12 @@ func (api *API) post(ctx context.Context, request *http.Request, dataToUnmarshal
 		return fmt.Errorf("%s: do: %w", apiName, err)
 	}
 
-	defer api.logger.IfErrFunc(ctx, response.Body.Close)
+	defer func() {
+		bodyCloseErr := response.Body.Close()
+		if bodyCloseErr != nil {
+			api.logger.ErrorContext(ctx, bodyCloseErr.Error())
+		}
+	}()
 
 	switch response.StatusCode {
 	case http.StatusNoContent:

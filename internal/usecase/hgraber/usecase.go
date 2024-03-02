@@ -4,14 +4,8 @@ import (
 	"app/internal/domain/hgraber"
 	"context"
 	"io"
+	"log/slog"
 )
-
-type logger interface {
-	Error(ctx context.Context, err error)
-	IfErrFunc(ctx context.Context, f func() error)
-	Info(ctx context.Context, args ...any)
-	Warning(ctx context.Context, args ...any)
-}
 
 type storage interface {
 	PagesCount(ctx context.Context) int
@@ -55,7 +49,7 @@ type loader interface {
 }
 
 type UseCase struct {
-	logger logger
+	logger *slog.Logger
 
 	storage storage
 	files   files
@@ -66,7 +60,7 @@ type UseCase struct {
 	tempStorage tempStorage
 }
 
-func New(storage storage, logger logger, loader loader, files files, tempStorage tempStorage, hasAgent bool) *UseCase {
+func New(storage storage, logger *slog.Logger, loader loader, files files, tempStorage tempStorage, hasAgent bool) *UseCase {
 	return &UseCase{
 		storage:     storage,
 		logger:      logger,

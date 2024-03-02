@@ -35,7 +35,7 @@ func (d *Database) GetUnsuccessPages(ctx context.Context) []hgraber.Page {
 
 	err := d.db.SelectContext(ctx, &raw, `SELECT * FROM pages WHERE success = FALSE;`)
 	if err != nil {
-		d.logger.Error(ctx, err)
+		d.logger.ErrorContext(ctx, err.Error())
 
 		return []hgraber.Page{}
 	}
@@ -107,20 +107,29 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []hgraber.
 
 	res, err := tx.ExecContext(ctx, `UPDATE books SET page_count = $1 WHERE id = $2;`, len(pages), id)
 	if err != nil {
-		d.logger.IfErrFunc(ctx, tx.Rollback)
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			d.logger.ErrorContext(ctx, rollbackErr.Error())
+		}
 
 		return err
 	}
 
 	if !d.isApply(ctx, res) {
-		d.logger.IfErrFunc(ctx, tx.Rollback)
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			d.logger.ErrorContext(ctx, rollbackErr.Error())
+		}
 
 		return hgraber.BookNotFoundError
 	}
 
 	_, err = tx.ExecContext(ctx, `DELETE FROM pages WHERE book_id = $1;`, id)
 	if err != nil {
-		d.logger.IfErrFunc(ctx, tx.Rollback)
+		rollbackErr := tx.Rollback()
+		if rollbackErr != nil {
+			d.logger.ErrorContext(ctx, rollbackErr.Error())
+		}
 
 		return err
 	}
@@ -132,7 +141,10 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []hgraber.
 			id, v.PageNumber, v.Ext, strings.TrimSpace(v.URL), v.Success, time.Now().UTC(), sql.NullTime{Time: v.LoadedAt.UTC(), Valid: !v.LoadedAt.IsZero()}, v.Rating,
 		)
 		if err != nil {
-			d.logger.IfErrFunc(ctx, tx.Rollback)
+			rollbackErr := tx.Rollback()
+			if rollbackErr != nil {
+				d.logger.ErrorContext(ctx, rollbackErr.Error())
+			}
 
 			return err
 		}
@@ -157,7 +169,7 @@ func (d *Database) getBookPages(ctx context.Context, bookID int) ([]*Page, error
 	return raw, nil
 }
 
-func pageToDomain(ctx context.Context, in *Page) hgraber.Page {
+func pageToDomain(_ context.Context, in *Page) hgraber.Page {
 	return hgraber.Page{
 		BookID:     in.BookID,
 		PageNumber: in.PageNumber,

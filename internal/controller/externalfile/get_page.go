@@ -37,7 +37,12 @@ func (c *Controller) getPage() http.Handler {
 			return
 		}
 
-		defer c.logger.IfErrFunc(ctx, rawFile.Close)
+		defer func() {
+			closeErr := rawFile.Close()
+			if closeErr != nil {
+				c.logger.ErrorContext(ctx, closeErr.Error())
+			}
+		}()
 
 		rawData, err := io.ReadAll(rawFile)
 		if err != nil {

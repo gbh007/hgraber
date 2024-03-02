@@ -1,7 +1,7 @@
 package agentapi
 
 import (
-	"context"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -11,10 +11,6 @@ const (
 	apiName    = "agent"
 )
 
-type logger interface {
-	IfErrFunc(ctx context.Context, f func() error)
-}
-
 type Config struct {
 	Prefixes  []string
 	Token     string
@@ -23,7 +19,7 @@ type Config struct {
 	Scheme       string
 	HostWithPort string
 
-	Logger logger
+	Logger *slog.Logger
 }
 
 type API struct {
@@ -36,7 +32,7 @@ type API struct {
 
 	client *http.Client
 
-	logger logger
+	logger *slog.Logger
 }
 
 func New(cfg Config) *API {

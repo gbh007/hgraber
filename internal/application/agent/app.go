@@ -14,15 +14,10 @@ import (
 func Serve(ctx context.Context) {
 	ctx = ctxtool.NewSystemContext(ctx, "main")
 
-	logger := logger.New(false, false)
-	logger.Info(ctx, "Инициализация агента")
 	cfg := parseFlag()
 
-	debug := false // FIXME: брать из конфигурации
-
-	if debug {
-		logger.SetDebug(debug)
-	}
+	logger := logger.New(cfg.Debug, cfg.Trace)
+	logger.InfoContext(ctx, "Инициализация агента")
 
 	async := async.New(logger)
 	loader := loader.New(logger)
@@ -41,14 +36,14 @@ func Serve(ctx context.Context) {
 
 	async.RegisterRunner(ctx, controller)
 
-	logger.Info(ctx, "Система запущена")
+	logger.InfoContext(ctx, "Система запущена")
 
 	err := async.Serve(ctx)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		return
 	}
 
-	logger.Info(ctx, "Процессы завершены, выход")
+	logger.InfoContext(ctx, "Процессы завершены, выход")
 }

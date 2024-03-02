@@ -7,19 +7,15 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 )
 
-type logger interface {
-	Error(ctx context.Context, err error)
-	IfErrFunc(ctx context.Context, f func() error)
-}
-
 type Loader struct {
-	logger    logger
+	logger    *slog.Logger
 	requester *request.Requester
 }
 
-func New(logger logger) *Loader {
+func New(logger *slog.Logger) *Loader {
 	return &Loader{
 		logger:    logger,
 		requester: request.New(logger),

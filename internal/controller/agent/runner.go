@@ -31,8 +31,8 @@ func (c *Controller) Start(parentCtx context.Context) (chan struct{}, error) {
 	go func() {
 		defer close(done)
 
-		c.logger.Info(ctx, "Запущен воркер")
-		defer c.logger.Info(ctx, "Воркер остановлен")
+		c.logger.InfoContext(ctx, "Запущен воркер")
+		defer c.logger.InfoContext(ctx, "Воркер остановлен")
 
 		wg.Wait()
 

@@ -7,13 +7,13 @@ import (
 	"app/internal/usecase/converter"
 	"context"
 	"flag"
-	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 )
 
-type connector func(ctx context.Context, logger *logger.Logger, builder *converter.Builder, path string, from bool) error
+type connector func(ctx context.Context, logger *slog.Logger, builder *converter.Builder, path string, from bool) error
 
 func main() {
 	dbFromFilePath := flag.String("from", "db.json", "файл базы")
@@ -23,6 +23,10 @@ func main() {
 	dbToType := flag.String("to-type", "sqlite", "Тип БД: jdb, pg")
 
 	offset := flag.Int("offset", 0, "Пропустить количество")
+
+	// Отладка
+	debug := flag.Bool("debug", false, "Режим отладки")
+	debugTrace := flag.Bool("debug-trace", false, "Режим стектрейсов")
 
 	flag.Parse()
 
@@ -35,7 +39,7 @@ func main() {
 	)
 	defer stop()
 
-	logger := logger.New(true, false)
+	logger := logger.New(*debug, *debugTrace)
 
 	builder := converter.New(logger)
 
@@ -56,20 +60,20 @@ func main() {
 	}
 
 	if fromConnector == nil || toConnector == nil {
-		logger.Error(ctx, fmt.Errorf("nil connector"))
+		logger.ErrorContext(ctx, "nil connector")
 		os.Exit(1)
 	}
 
 	err := fromConnector(ctx, logger, builder, *dbFromFilePath, true)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		os.Exit(1)
 	}
 
 	err = toConnector(ctx, logger, builder, *dbToFilePath, false)
 	if err != nil {
-		logger.Error(ctx, err)
+		logger.ErrorContext(ctx, err.Error())
 
 		os.Exit(1)
 	}
@@ -77,7 +81,7 @@ func main() {
 	builder.Convert(ctx, *offset, true)
 }
 
-func jdbConnect(ctx context.Context, logger *logger.Logger, builder *converter.Builder, path string, from bool) error {
+func jdbConnect(ctx context.Context, logger *slog.Logger, builder *converter.Builder, path string, from bool) error {
 	storageJDB := jdb.Init(ctx, logger, nil)
 	err := storageJDB.Load(ctx, path)
 	if err != nil {
@@ -93,7 +97,7 @@ func jdbConnect(ctx context.Context, logger *logger.Logger, builder *converter.B
 	return nil
 }
 
-func pgConnect(ctx context.Context, logger *logger.Logger, builder *converter.Builder, path string, from bool) error {
+func pgConnect(ctx context.Context, logger *slog.Logger, builder *converter.Builder, path string, from bool) error {
 	postgresql, err := postgresql.Connect(ctx, path, logger)
 	if err != nil {
 		return err

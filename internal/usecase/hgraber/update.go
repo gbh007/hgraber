@@ -4,19 +4,20 @@ import (
 	"app/internal/domain/hgraber"
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 )
 
 func (uc *UseCase) ParseWithUpdate(ctx context.Context, book hgraber.Book) {
 	err := uc.parseWithUpdate(ctx, book)
 	if err != nil {
-		uc.logger.Error(ctx, err)
+		uc.logger.ErrorContext(ctx, err.Error())
 	}
 }
 
 func (uc *UseCase) parseWithUpdate(ctx context.Context, book hgraber.Book) error {
-	uc.logger.Info(ctx, "начата обработка", book.ID, book.URL)
-	defer uc.logger.Info(ctx, "завершена обработка", book.ID, book.URL)
+	uc.logger.InfoContext(ctx, "начата обработка", slog.Int("book_id", book.ID), slog.String("url", book.URL))
+	defer uc.logger.InfoContext(ctx, "завершена обработка", slog.Int("book_id", book.ID), slog.String("url", book.URL))
 
 	p, err := uc.loader.Load(ctx, strings.TrimSpace(book.URL))
 	if err != nil {
@@ -29,7 +30,7 @@ func (uc *UseCase) parseWithUpdate(ctx context.Context, book hgraber.Book) error
 			return fmt.Errorf("parse with update: %w", err)
 		}
 
-		uc.logger.Info(ctx, "обновлено название", book.ID, book.URL)
+		uc.logger.InfoContext(ctx, "обновлено название", slog.Int("book_id", book.ID), slog.String("url", book.URL))
 	}
 
 	for _, attr := range hgraber.AllAttributes {
@@ -42,7 +43,7 @@ func (uc *UseCase) parseWithUpdate(ctx context.Context, book hgraber.Book) error
 			return fmt.Errorf("parse with update: %w", err)
 		}
 
-		uc.logger.Info(ctx, "обновлен аттрибут "+string(attr), book.ID, book.URL)
+		uc.logger.InfoContext(ctx, "обновлен аттрибут "+string(attr), slog.Int("book_id", book.ID), slog.String("url", book.URL))
 	}
 
 	if !book.Data.Parsed.Page {
@@ -64,7 +65,7 @@ func (uc *UseCase) parseWithUpdate(ctx context.Context, book hgraber.Book) error
 				return fmt.Errorf("parse with update: %w", err)
 			}
 
-			uc.logger.Info(ctx, "обновлены страницы", book.ID, book.URL)
+			uc.logger.InfoContext(ctx, "обновлены страницы", slog.Int("book_id", book.ID), slog.String("url", book.URL))
 		}
 	}
 

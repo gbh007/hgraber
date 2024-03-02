@@ -26,7 +26,10 @@ func (s *Storage) CreatePageFile(ctx context.Context, id, page int, ext string, 
 
 	_, err = io.Copy(f, body)
 	if err != nil {
-		s.logger.IfErr(ctx, f.Close())
+		fileCloseErr := f.Close()
+		if fileCloseErr != nil {
+			s.logger.ErrorContext(ctx, fileCloseErr.Error())
+		}
 
 		return fmt.Errorf("create page file: %w", err)
 	}

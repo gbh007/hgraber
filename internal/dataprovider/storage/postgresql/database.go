@@ -4,6 +4,7 @@ import (
 	"app/internal/dataprovider/storage/postgresql/internal/migration"
 	"context"
 	"database/sql"
+	"log/slog"
 
 	migrator "gitlab.com/gbh007/go-sql-migrator"
 
@@ -11,29 +12,26 @@ import (
 	_ "github.com/lib/pq" // драйвер для PostgreSQL
 )
 
-type logger interface {
-	Error(ctx context.Context, err error)
-	IfErr(ctx context.Context, err error)
-	IfErrFunc(ctx context.Context, f func() error)
-	Info(ctx context.Context, args ...any)
-}
-
-type loggerWrapper struct {
-	logger
+type loggerWrapper struct { // FIXME: добавить адаптер slog в мигратор
+	logger *slog.Logger
 }
 
 func (l *loggerWrapper) Info(ctx context.Context, message string) {
-	l.logger.Info(ctx, message)
+	l.logger.InfoContext(ctx, message)
+}
+
+func (l *loggerWrapper) Error(ctx context.Context, err error) {
+	l.logger.ErrorContext(ctx, err.Error())
 }
 
 type Database struct {
 	db *sqlx.DB
 
-	logger logger
+	logger *slog.Logger
 }
 
 // Connect - возвращает соединение с хранилищем данных
-func Connect(ctx context.Context, dataSourceName string, logger logger) (*Database, error) {
+func Connect(ctx context.Context, dataSourceName string, logger *slog.Logger) (*Database, error) {
 	db, err := sqlx.Open("postgres", dataSourceName)
 	if err != nil {
 		return nil, err
@@ -65,7 +63,9 @@ func isApplyWithErr(r sql.Result) (bool, error) {
 func (storage *Database) isApply(ctx context.Context, r sql.Result) bool {
 	apply, err := isApplyWithErr(r)
 
-	storage.logger.IfErr(ctx, err)
+	if err != nil {
+		storage.logger.ErrorContext(ctx, err.Error())
+	}
 
 	return apply
 }
