@@ -12,6 +12,7 @@ func (c *Controller) pageUpload() http.Handler {
 
 		bookID, err := strconv.Atoi(r.Header.Get(agent.HeaderBookID))
 		if err != nil {
+			c.logger.DebugContext(ctx, err.Error())
 			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
@@ -19,6 +20,7 @@ func (c *Controller) pageUpload() http.Handler {
 
 		page, err := strconv.Atoi(r.Header.Get(agent.HeaderPageNumber))
 		if err != nil {
+			c.logger.DebugContext(ctx, err.Error())
 			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return
@@ -38,6 +40,7 @@ func (c *Controller) pageUpload() http.Handler {
 			r.Body,
 		)
 		if err != nil {
+			c.logger.DebugContext(ctx, err.Error())
 			c.webtool.WritePlain(ctx, w, http.StatusBadRequest, err.Error())
 
 			return

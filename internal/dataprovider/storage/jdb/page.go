@@ -25,6 +25,8 @@ func (db *Database) UpdatePageSuccess(ctx context.Context, id, pageNumber int, s
 
 			db.data.Data.Books[id] = book
 			db.needSave = true
+
+			return nil
 		}
 	}
 
@@ -50,6 +52,8 @@ func (db *Database) UpdatePage(ctx context.Context, id int, pageNumber int, succ
 
 			db.data.Data.Books[id] = book
 			db.needSave = true
+
+			return nil
 		}
 	}
 

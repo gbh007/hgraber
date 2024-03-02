@@ -10,7 +10,7 @@ import (
 func (uc *UseCase) UploadPage(ctx context.Context, info agent.PageInfoToUpload, body io.Reader) error {
 	err := uc.files.CreatePageFile(ctx, info.BookID, info.PageNumber, info.Ext, body)
 	if err != nil {
-		return fmt.Errorf("upload page: %w", err)
+		return fmt.Errorf("upload page: create file: %w", err)
 	}
 
 	if info.URL == "" {
@@ -20,7 +20,7 @@ func (uc *UseCase) UploadPage(ctx context.Context, info agent.PageInfoToUpload, 
 	}
 
 	if err != nil {
-		return fmt.Errorf("upload page: %w", err)
+		return fmt.Errorf("upload page: update info: %w", err)
 	}
 
 	uc.tempStorage.UnLockPageHandle(ctx, info.BookID, info.PageNumber)
