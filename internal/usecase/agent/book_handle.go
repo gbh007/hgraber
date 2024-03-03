@@ -14,21 +14,35 @@ func (uc *UseCase) bookHandle(ctx context.Context, book agent.BookToHandle) erro
 		return fmt.Errorf("book handle: %w", err)
 	}
 
+	name, err := p.Name(ctx)
+	if err != nil {
+		return fmt.Errorf("book handle: name: %w", err)
+	}
+
 	toUpdate := agent.BookToUpdate{
 		ID:         book.ID,
-		Name:       p.ParseName(ctx),
+		Name:       name,
 		Attributes: make([]agent.Attribute, 0, len(hgraber.AllAttributes)),
 	}
 
 	for _, attrCode := range hgraber.AllAttributes {
+		values, err := hgraber.ParseBookAttr(ctx, p, attrCode)
+		if err != nil {
+			return fmt.Errorf("book handle: attributes(%s): %w", string(attrCode), err)
+		}
+
 		toUpdate.Attributes = append(toUpdate.Attributes, agent.Attribute{
 			Code:   string(attrCode),
 			Parsed: true,
-			Values: hgraber.ParseAttr(ctx, p, attrCode),
+			Values: values,
 		})
 	}
 
-	pages := p.ParsePages(ctx)
+	pages, err := p.Pages(ctx)
+	if err != nil {
+		return fmt.Errorf("book handle: pages: %w", err)
+	}
+
 	if len(pages) > 0 {
 		pagesToUpdate := make([]agent.PageToUpdate, len(pages))
 

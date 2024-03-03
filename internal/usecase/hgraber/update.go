@@ -25,7 +25,12 @@ func (uc *UseCase) parseWithUpdate(ctx context.Context, book hgraber.Book) error
 	}
 
 	if !book.Data.Parsed.Name {
-		err = uc.storage.UpdateBookName(ctx, book.ID, p.ParseName(ctx))
+		name, err := p.Name(ctx)
+		if err != nil {
+			return fmt.Errorf("parse with update: name: %w", err)
+		}
+
+		err = uc.storage.UpdateBookName(ctx, book.ID, name)
 		if err != nil {
 			return fmt.Errorf("parse with update: %w", err)
 		}
@@ -37,8 +42,12 @@ func (uc *UseCase) parseWithUpdate(ctx context.Context, book hgraber.Book) error
 		if book.Data.Parsed.Attributes[attr] {
 			continue
 		}
+		values, err := hgraber.ParseBookAttr(ctx, p, attr)
+		if err != nil {
+			return fmt.Errorf("parse with update: attributes(%s): %w", string(attr), err)
+		}
 
-		err = uc.storage.UpdateAttributes(ctx, book.ID, attr, hgraber.ParseAttr(ctx, p, attr))
+		err = uc.storage.UpdateAttributes(ctx, book.ID, attr, values)
 		if err != nil {
 			return fmt.Errorf("parse with update: %w", err)
 		}
@@ -47,7 +56,10 @@ func (uc *UseCase) parseWithUpdate(ctx context.Context, book hgraber.Book) error
 	}
 
 	if !book.Data.Parsed.Page {
-		pages := p.ParsePages(ctx)
+		pages, err := p.Pages(ctx)
+		if err != nil {
+			return fmt.Errorf("parse with update: pages: %w", err)
+		}
 		if len(pages) > 0 {
 			pagesDB := make([]hgraber.Page, len(pages))
 

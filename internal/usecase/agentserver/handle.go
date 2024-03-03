@@ -18,7 +18,7 @@ func (uc *UseCase) firstHandle(ctx context.Context, u string) (int, error) {
 	u = strings.TrimSpace(u)
 
 	if u == "" {
-		return 0, hgraber.ErrInvalidLink
+		return 0, hgraber.InvalidLinkError
 	}
 
 	_, err := url.Parse(u)
@@ -64,7 +64,7 @@ func (uc *UseCase) CreateMultipleBook(ctx context.Context, data []string) (*agen
 			res.Details[i].IsDuplicate = true
 			res.Details[i].IsHandled = true
 
-		case errors.Is(err, hgraber.ErrInvalidLink):
+		case errors.Is(err, hgraber.InvalidLinkError):
 			res.NotHandled = append(res.NotHandled, link)
 			res.Counts.Errors++
 			res.Details[i].ErrorReason = err.Error()

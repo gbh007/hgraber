@@ -4,6 +4,7 @@ import (
 	"app/internal/domain/hgraber"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/url"
 	"strings"
@@ -16,24 +17,40 @@ func (uc *UseCase) FirstHandle(ctx context.Context, u string) error {
 	u = strings.TrimSpace(u)
 
 	if u == "" {
-		return hgraber.ErrInvalidLink
+		return hgraber.InvalidLinkError
 	}
-
-	var err error
 
 	if uc.hasAgent { // Для обработки агентом может быть любой валидный адрес
-		_, err = url.Parse(u)
+		_, err := url.Parse(u)
+		if err != nil {
+			return fmt.Errorf("handle: agent: %w", err)
+		}
 	} else {
-		_, err = uc.loader.Parse(ctx, u)
+		collisions, err := uc.loader.Collisions(ctx, u)
+		if err != nil {
+			return fmt.Errorf("handle: loader: collisions: %w", err)
+		}
+
+		for _, u := range collisions {
+			u = strings.TrimSpace(u)
+			_, err := uc.storage.GetBookIDByURL(ctx, u)
+
+			if errors.Is(err, hgraber.BookNotFoundError) {
+				continue
+			}
+
+			if err != nil {
+				return fmt.Errorf("handle: collisions: storage: %w", err)
+			}
+
+			// Найдена коллизия
+			return fmt.Errorf("%w: found collision", hgraber.BookAlreadyExistsError)
+		}
 	}
 
+	_, err := uc.storage.NewBook(ctx, "", u, false)
 	if err != nil {
-		return err
-	}
-
-	_, err = uc.storage.NewBook(ctx, "", u, false)
-	if err != nil {
-		return err
+		return fmt.Errorf("handle: storage: %w", err)
 	}
 
 	return nil
@@ -59,7 +76,7 @@ func (uc *UseCase) FirstHandleMultiple(ctx context.Context, data []string) (*hgr
 				IsHandled:   true,
 			}
 
-		case errors.Is(err, hgraber.ErrInvalidLink):
+		case errors.Is(err, hgraber.InvalidLinkError):
 			res.NotHandled = append(res.NotHandled, link)
 			res.ErrorCount++
 			res.Details[i] = hgraber.BookHandleResult{

@@ -5,44 +5,54 @@ import (
 	"errors"
 )
 
-var ErrInvalidLink = errors.New("invalid link")
+var (
+	InvalidLinkError      = errors.New("invalid link")
+	UnknownAttributeError = errors.New("unknown attribute")
+)
 
+// Parser интерфейс для реализации парсеров для различных сайтов
 type Parser interface {
-	ParseName(ctx context.Context) string
-	ParsePages(ctx context.Context) []Page
-	ParseTags(ctx context.Context) []string
-	ParseAuthors(ctx context.Context) []string
-	ParseCharacters(ctx context.Context) []string
-	ParseLanguages(ctx context.Context) []string
-	ParseCategories(ctx context.Context) []string
-	ParseParodies(ctx context.Context) []string
-	ParseGroups(ctx context.Context) []string
+	Load(ctx context.Context, u string) (BookParser, error)
+	Prefixes() []string
+	Collisions() map[string][]string
 }
 
-func ParseAttr(ctx context.Context, p Parser, attr Attribute) []string {
+type BookParser interface {
+	Name(ctx context.Context) (string, error)
+	Pages(ctx context.Context) ([]Page, error)
+	Tags(ctx context.Context) ([]string, error)
+	Authors(ctx context.Context) ([]string, error)
+	Characters(ctx context.Context) ([]string, error)
+	Languages(ctx context.Context) ([]string, error)
+	Categories(ctx context.Context) ([]string, error)
+	Parodies(ctx context.Context) ([]string, error)
+	Groups(ctx context.Context) ([]string, error)
+}
+
+func ParseBookAttr(ctx context.Context, p BookParser, attr Attribute) ([]string, error) {
 	switch attr {
 	case AttrAuthor:
-		return p.ParseAuthors(ctx)
+		return p.Authors(ctx)
 
 	case AttrCategory:
-		return p.ParseCategories(ctx)
+		return p.Categories(ctx)
 
 	case AttrCharacter:
-		return p.ParseCharacters(ctx)
+		return p.Characters(ctx)
 
 	case AttrGroup:
-		return p.ParseGroups(ctx)
+		return p.Groups(ctx)
 
 	case AttrLanguage:
-		return p.ParseLanguages(ctx)
+		return p.Languages(ctx)
 
 	case AttrParody:
-		return p.ParseParodies(ctx)
+		return p.Parodies(ctx)
 
 	case AttrTag:
-		return p.ParseTags(ctx)
+		return p.Tags(ctx)
 
 	default:
-		return []string{}
+		return []string{}, UnknownAttributeError
 	}
 }

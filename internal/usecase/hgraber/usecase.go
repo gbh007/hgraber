@@ -16,6 +16,8 @@ type storage interface {
 	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
 	GetBook(ctx context.Context, id int) (hgraber.Book, error)
 
+	GetBookIDByURL(ctx context.Context, url string) (int, error)
+
 	GetUnloadedBooks(ctx context.Context) []hgraber.Book
 
 	UpdateBookPages(ctx context.Context, id int, pages []hgraber.Page) error
@@ -43,9 +45,9 @@ type files interface {
 }
 
 type loader interface {
-	Parse(ctx context.Context, URL string) (hgraber.Parser, error)
-	Load(ctx context.Context, URL string) (hgraber.Parser, error)
-	LoadImage(ctx context.Context, URL string) (io.ReadCloser, error)
+	Collisions(ctx context.Context, u string) ([]string, error)
+	Load(ctx context.Context, u string) (hgraber.BookParser, error)
+	LoadImage(ctx context.Context, u string) (io.ReadCloser, error)
 }
 
 type UseCase struct {

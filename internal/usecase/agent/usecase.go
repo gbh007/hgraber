@@ -21,8 +21,7 @@ type agentAPI interface {
 }
 
 type loader interface {
-	Parse(ctx context.Context, URL string) (hgraber.Parser, error)
-	Load(ctx context.Context, URL string) (hgraber.Parser, error)
+	Load(ctx context.Context, URL string) (hgraber.BookParser, error)
 	LoadImage(ctx context.Context, URL string) (io.ReadCloser, error)
 }
 
