@@ -55,3 +55,18 @@ func (db *Database) UnloadedPagesCount(ctx context.Context) int {
 
 	return c
 }
+
+func (db *Database) PagesSize(ctx context.Context) (c int64) {
+	db.mutex.RLock()
+	defer db.mutex.RUnlock()
+
+	for _, t := range db.data.Data.Books {
+		for _, p := range t.Pages {
+			if p.Size > 0 {
+				c += p.Size
+			}
+		}
+	}
+
+	return c
+}

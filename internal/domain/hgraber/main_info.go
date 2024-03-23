@@ -5,4 +5,6 @@ type MainInfo struct {
 	NotLoadBookCount int
 	PageCount        int
 	NotLoadPageCount int
+
+	PagesSize int64
 }

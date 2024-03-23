@@ -13,6 +13,9 @@ type Page struct {
 	Success    bool
 	LoadedAt   time.Time
 	Rating     int
+
+	Hash string
+	Size int64
 }
 
 func (info Page) Fullname() string {

@@ -8,7 +8,8 @@ import (
 
 const (
 	version1_0     = "v1.0"
-	currentVersion = version1_0
+	version1_1     = "v1.1"
+	currentVersion = version1_1
 )
 
 type DatabaseData struct {
@@ -43,6 +44,11 @@ func (dbd *DatabaseData) Migrate() (bool, error) {
 		if err != nil {
 			return false, fmt.Errorf("migrate: %w", err)
 		}
+	}
+
+	// С 1.0 до 1.1 изменений не требуется, просто появляются новые опциональные поля
+	if dbd.Version == version1_0 {
+		dbd.Version = version1_1
 	}
 
 	dbd.Version = currentVersion

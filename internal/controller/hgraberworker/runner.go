@@ -31,10 +31,14 @@ func (c *Controller) Start(parentCtx context.Context) (chan struct{}, error) {
 		}()
 	}
 
-	wg.Add(1)
+	wg.Add(2)
 	go func() {
 		defer wg.Done()
 		c.serveExportWorker(ctx)
+	}()
+	go func() {
+		defer wg.Done()
+		c.servePageHasher(ctx)
 	}()
 
 	go func() {

@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-type useCases interface {
+type hgraberUseCases interface {
 	GetUnsuccessPages(ctx context.Context) []hgraber.Page
 	LoadPageWithUpdate(ctx context.Context, page hgraber.Page) error
 
@@ -18,20 +18,27 @@ type useCases interface {
 	ExportList(ctx context.Context) []int
 }
 
+type hasherUseCases interface {
+	UnHashedPages(ctx context.Context) []hgraber.Page
+	HandlePage(ctx context.Context, page hgraber.Page) error
+}
+
 type Controller struct {
 	workers map[string]hgraber.WorkerStat
 	mutex   *sync.RWMutex
 
 	hasAgent bool
 
-	useCases useCases
-	logger   *slog.Logger
+	hgraberUseCases hgraberUseCases
+	hasherUseCases  hasherUseCases
+	logger          *slog.Logger
 }
 
-func New(useCases useCases, logger *slog.Logger, hasAgent bool) *Controller {
+func New(useCases hgraberUseCases, hasherUseCases hasherUseCases, logger *slog.Logger, hasAgent bool) *Controller {
 	return &Controller{
-		useCases: useCases,
-		logger:   logger,
+		hgraberUseCases: useCases,
+		hasherUseCases:  hasherUseCases,
+		logger:          logger,
 
 		hasAgent: hasAgent,
 

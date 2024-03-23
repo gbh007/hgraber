@@ -21,12 +21,12 @@ func (c *Controller) serveExportWorker(ctx context.Context) {
 		exportWorkerInterval,
 		c.logger,
 		func(ctx context.Context, bookID int) {
-			err := c.useCases.ExportBook(ctx, bookID)
+			err := c.hgraberUseCases.ExportBook(ctx, bookID)
 			if err != nil {
 				c.logger.ErrorContext(ctx, err.Error())
 			}
 		},
-		c.useCases.ExportList,
+		c.hgraberUseCases.ExportList,
 	)
 
 	c.register("export", w)

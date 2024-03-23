@@ -12,6 +12,7 @@ type storage interface {
 	BooksCount(ctx context.Context) int
 	UnloadedPagesCount(ctx context.Context) int
 	UnloadedBooksCount(ctx context.Context) int
+	PagesSize(ctx context.Context) int64
 
 	NewBook(ctx context.Context, name string, URL string, loaded bool) (int, error)
 	GetBook(ctx context.Context, id int) (hgraber.Book, error)

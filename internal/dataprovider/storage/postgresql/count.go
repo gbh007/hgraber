@@ -39,3 +39,12 @@ func (d *Database) UnloadedBooksCount(ctx context.Context) int {
 
 	return len(m)
 }
+
+func (d *Database) PagesSize(ctx context.Context) (c int64) {
+	err := d.db.GetContext(ctx, &c, `SELECT SUM("size") FROM pages WHERE "size" IS NOT NULL;`)
+	if err != nil {
+		d.logger.ErrorContext(ctx, err.Error())
+	}
+
+	return
+}

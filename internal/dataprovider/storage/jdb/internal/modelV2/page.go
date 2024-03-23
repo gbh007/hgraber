@@ -12,6 +12,9 @@ type RawPage struct {
 	Success    bool      `json:"success"`
 	LoadAt     time.Time `json:"load_at"`
 	Rating     int       `json:"rating,omitempty"`
+
+	Hash string `json:"hash,omitempty"`
+	Size int64  `json:"size,omitempty"`
 }
 
 func (p RawPage) Copy() RawPage {
@@ -22,6 +25,8 @@ func (p RawPage) Copy() RawPage {
 		Success:    p.Success,
 		LoadAt:     p.LoadAt,
 		Rating:     p.Rating,
+		Hash:       p.Hash,
+		Size:       p.Size,
 	}
 }
 
@@ -34,6 +39,8 @@ func (p RawPage) Super(bookID int) hgraber.Page {
 		Success:    p.Success,
 		LoadedAt:   p.LoadAt,
 		Rating:     p.Rating,
+		Hash:       p.Hash,
+		Size:       p.Size,
 	}
 }
 
@@ -45,6 +52,8 @@ func RawPageFromSuper(p hgraber.Page) RawPage {
 		Success:    p.Success,
 		LoadAt:     p.LoadedAt,
 		Rating:     p.Rating,
+		Hash:       p.Hash,
+		Size:       p.Size,
 	}
 }
 

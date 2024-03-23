@@ -11,6 +11,7 @@ func (uc *UseCase) Info(ctx context.Context) (*hgraber.MainInfo, error) {
 		NotLoadBookCount: uc.storage.UnloadedBooksCount(ctx),
 		PageCount:        uc.storage.PagesCount(ctx),
 		NotLoadPageCount: uc.storage.UnloadedPagesCount(ctx),
+		PagesSize:        uc.storage.PagesSize(ctx),
 	}
 
 	return info, nil

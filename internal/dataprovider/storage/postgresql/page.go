@@ -137,8 +137,9 @@ func (d *Database) UpdateBookPages(ctx context.Context, id int, pages []hgraber.
 	for _, v := range pages {
 		_, err = tx.ExecContext(
 			ctx,
-			`INSERT INTO pages (book_id, page_number, ext, url, success, create_at, load_at, rate) VALUES($1, $2, $3, $4, $5, $6, $7, $8);`,
+			`INSERT INTO pages (book_id, page_number, ext, url, success, create_at, load_at, rate, "hash", "size") VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
 			id, v.PageNumber, v.Ext, strings.TrimSpace(v.URL), v.Success, time.Now().UTC(), sql.NullTime{Time: v.LoadedAt.UTC(), Valid: !v.LoadedAt.IsZero()}, v.Rating,
+			sql.NullString{String: v.Hash, Valid: v.Hash != ""}, sql.NullInt64{Int64: v.Size, Valid: v.Size > 0},
 		)
 		if err != nil {
 			rollbackErr := tx.Rollback()
@@ -178,5 +179,8 @@ func pageToDomain(_ context.Context, in *Page) hgraber.Page {
 		Success:    in.Success,
 		LoadedAt:   in.LoadAt.Time,
 		Rating:     in.Rate,
+
+		Hash: in.Hash.String,
+		Size: in.Size.Int64,
 	}
 }

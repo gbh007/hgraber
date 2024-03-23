@@ -9,6 +9,7 @@ import (
 	"app/internal/dataprovider/logger"
 	"app/internal/dataprovider/storage/jdb"
 	"app/internal/dataprovider/temp"
+	"app/internal/usecase/hasher"
 	"app/internal/usecase/hgraber"
 	"app/internal/usecase/web"
 	"app/pkg/ctxtool"
@@ -58,8 +59,9 @@ func Serve(ctx context.Context) {
 	loader := loader.New(logger)
 	tempStorage := temp.New()
 	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, false)
+	hasherUC := hasher.New(storage, fileStorage)
 
-	worker := hgraberworker.New(useCases, logger, false)
+	worker := hgraberworker.New(useCases, hasherUC, logger, false)
 
 	webServer := hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,

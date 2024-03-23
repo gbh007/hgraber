@@ -89,16 +89,9 @@ func (db *Database) GetUnsuccessPages(ctx context.Context) []hgraber.Page {
 	res := []hgraber.Page{}
 
 	for _, t := range db.data.Data.Books {
-		for i, p := range t.Pages {
+		for _, p := range t.Pages {
 			if !p.Success {
-				res = append(res, hgraber.Page{
-					BookID:     t.ID,
-					PageNumber: i + 1,
-					URL:        p.URL,
-					Ext:        p.Ext,
-					Success:    p.Success,
-					LoadedAt:   p.LoadAt,
-				})
+				res = append(res, p.Super(t.ID))
 			}
 		}
 	}

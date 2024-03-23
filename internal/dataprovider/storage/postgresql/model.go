@@ -23,6 +23,9 @@ type Page struct {
 	CreateAt   time.Time    `db:"create_at"`
 	LoadAt     sql.NullTime `db:"load_at"`
 	Rate       int          `db:"rate"`
+
+	Hash sql.NullString `db:"hash"`
+	Size sql.NullInt64  `db:"size"`
 }
 
 type Attribute struct {

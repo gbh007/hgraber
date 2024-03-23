@@ -8,24 +8,24 @@ import (
 	"time"
 )
 
-const (
-	bookWorkerInterval      = time.Second * 15
-	bookWorkerQueueSize     = 10000
-	bookWorkerHandlersCount = 10
-)
-
 func (c *Controller) serveBookWorker(ctx context.Context) {
+	const (
+		interval      = time.Second * 15
+		queueSize     = 10000
+		handlersCount = 10
+	)
+
 	ctx = ctxtool.NewSystemContext(ctx, "worker-book")
 
 	w := worker.New[hgraber.Book](
-		bookWorkerQueueSize,
-		bookWorkerInterval,
+		queueSize,
+		interval,
 		c.logger,
-		c.useCases.ParseWithUpdate,
-		c.useCases.GetUnloadedBooks,
+		c.hgraberUseCases.ParseWithUpdate,
+		c.hgraberUseCases.GetUnloadedBooks,
 	)
 
 	c.register("book", w)
 
-	w.Serve(ctx, bookWorkerHandlersCount)
+	w.Serve(ctx, handlersCount)
 }
