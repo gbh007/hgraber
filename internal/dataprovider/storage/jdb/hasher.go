@@ -13,6 +13,10 @@ func (db *Database) GetUnHashedPages(ctx context.Context) []hgraber.Page {
 
 	for _, t := range db.data.Data.Books {
 		for _, p := range t.Pages {
+			if !p.Success {
+				continue
+			}
+
 			if p.Hash == "" || p.Size < 1 {
 				res = append(res, p.Super(t.ID))
 			}

@@ -9,7 +9,7 @@ import (
 func (d *Database) GetUnHashedPages(ctx context.Context) []hgraber.Page {
 	raw := make([]*Page, 0)
 
-	err := d.db.SelectContext(ctx, &raw, `SELECT * FROM pages WHERE "hash" IS NULL OR "size" IS NULL;`)
+	err := d.db.SelectContext(ctx, &raw, `SELECT * FROM pages WHERE success = TRUE AND ("hash" IS NULL OR "size" IS NULL);`)
 	if err != nil {
 		d.logger.ErrorContext(ctx, err.Error())
 
