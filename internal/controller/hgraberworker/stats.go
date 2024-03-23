@@ -5,22 +5,12 @@ import (
 	"slices"
 )
 
-func (c *Controller) register(name string, worker hgraber.WorkerStat) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	c.workers[name] = worker
-}
-
 func (c *Controller) Info() []hgraber.MonitorStat {
-	c.mutex.RLock()
-	defer c.mutex.RUnlock()
+	res := make([]hgraber.MonitorStat, 0, len(c.workerUnits))
 
-	res := make([]hgraber.MonitorStat, 0, len(c.workers))
-
-	for name, worker := range c.workers {
+	for _, worker := range c.workerUnits {
 		res = append(res, hgraber.MonitorStat{
-			Name:         name,
+			Name:         worker.Name(),
 			InQueueCount: worker.InQueueCount(),
 			InWorkCount:  worker.InWorkCount(),
 			RunnersCount: worker.RunnersCount(),

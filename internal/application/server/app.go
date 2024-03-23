@@ -52,7 +52,20 @@ func Serve(ctx context.Context) {
 	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, hasAgent)
 	hasherUC := hasher.New(storage, fileStorage)
 
-	worker := hgraberworker.New(useCases, hasherUC, logger, hasAgent)
+	workerUnits := []hgraberworker.WorkerUnit{
+		hgraberworker.NewExportWorkerUnit(useCases, logger),
+		hgraberworker.NewHashWorkerUnit(hasherUC, logger),
+	}
+
+	if !hasAgent {
+		workerUnits = append(
+			workerUnits,
+			hgraberworker.NewBookWorkerUnit(useCases, logger),
+			hgraberworker.NewPageWorkerUnit(useCases, logger),
+		)
+	}
+
+	worker := hgraberworker.New(logger, workerUnits)
 
 	if hasAgent && !cfg.ReadOnly {
 		agentUseCases := agentserver.New(logger, storage, tempStorage, fileStorage)

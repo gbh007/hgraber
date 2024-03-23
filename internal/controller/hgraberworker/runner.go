@@ -17,29 +17,14 @@ func (c *Controller) Start(parentCtx context.Context) (chan struct{}, error) {
 
 	wg := new(sync.WaitGroup)
 
-	if !c.hasAgent {
-		wg.Add(2)
-
-		go func() {
+	wg.Add(len(c.workerUnits))
+	for _, w := range c.workerUnits {
+		go func(ctx context.Context, w WorkerUnit) {
 			defer wg.Done()
-			c.servePageWorker(ctx)
-		}()
-
-		go func() {
-			defer wg.Done()
-			c.serveBookWorker(ctx)
-		}()
+			ctx = ctxtool.NewSystemContext(ctx, "worker-"+w.Name())
+			w.Serve(ctx)
+		}(ctx, w)
 	}
-
-	wg.Add(2)
-	go func() {
-		defer wg.Done()
-		c.serveExportWorker(ctx)
-	}()
-	go func() {
-		defer wg.Done()
-		c.servePageHasher(ctx)
-	}()
 
 	go func() {
 		defer close(done)

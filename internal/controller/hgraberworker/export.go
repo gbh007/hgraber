@@ -2,34 +2,57 @@ package hgraberworker
 
 import (
 	"app/internal/controller/internal/worker"
-	"app/pkg/ctxtool"
 	"context"
+	"log/slog"
 	"time"
 )
 
-const (
-	exportWorkerInterval      = time.Second * 5
-	exportWorkerQueueSize     = 1000
-	exportWorkerHandlersCount = 3
-)
+type exportWorkerUnitUseCases interface {
+	ExportBook(ctx context.Context, id int) error
+	ExportList(ctx context.Context) []int
+}
 
-func (c *Controller) serveExportWorker(ctx context.Context) {
-	ctx = ctxtool.NewSystemContext(ctx, "worker-export")
+type ExportWorkerUnit struct {
+	*worker.Worker[int]
 
-	w := worker.New[int](
-		exportWorkerQueueSize,
-		exportWorkerInterval,
-		c.logger,
+	useCases exportWorkerUnitUseCases
+
+	interval      time.Duration
+	queueSize     int
+	handlersCount int
+
+	logger *slog.Logger
+}
+
+func NewExportWorkerUnit(useCases exportWorkerUnitUseCases, logger *slog.Logger) *ExportWorkerUnit {
+	w := &ExportWorkerUnit{
+		useCases:      useCases,
+		interval:      time.Second * 5,
+		queueSize:     1000,
+		handlersCount: 3,
+		logger:        logger,
+	}
+
+	w.Worker = worker.New[int](
+		w.queueSize,
+		w.interval,
+		w.logger,
 		func(ctx context.Context, bookID int) {
-			err := c.hgraberUseCases.ExportBook(ctx, bookID)
+			err := w.useCases.ExportBook(ctx, bookID)
 			if err != nil {
-				c.logger.ErrorContext(ctx, err.Error())
+				w.logger.ErrorContext(ctx, err.Error())
 			}
 		},
-		c.hgraberUseCases.ExportList,
+		w.useCases.ExportList,
 	)
 
-	c.register("export", w)
+	return w
+}
 
-	w.Serve(ctx, exportWorkerHandlersCount)
+func (w *ExportWorkerUnit) Serve(ctx context.Context) {
+	w.Worker.Serve(ctx, w.handlersCount)
+}
+
+func (w *ExportWorkerUnit) Name() string {
+	return "export"
 }

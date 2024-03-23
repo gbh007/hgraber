@@ -61,7 +61,14 @@ func Serve(ctx context.Context) {
 	useCases := hgraber.New(storage, logger, loader, fileStorage, tempStorage, false)
 	hasherUC := hasher.New(storage, fileStorage)
 
-	worker := hgraberworker.New(useCases, hasherUC, logger, false)
+	workerUnits := []hgraberworker.WorkerUnit{
+		hgraberworker.NewExportWorkerUnit(useCases, logger),
+		hgraberworker.NewHashWorkerUnit(hasherUC, logger),
+		hgraberworker.NewBookWorkerUnit(useCases, logger),
+		hgraberworker.NewPageWorkerUnit(useCases, logger),
+	}
+
+	worker := hgraberworker.New(logger, workerUnits)
 
 	webServer := hgraberweb.New(hgraberweb.Config{
 		UseCases:      useCases,

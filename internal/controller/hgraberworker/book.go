@@ -3,29 +3,52 @@ package hgraberworker
 import (
 	"app/internal/controller/internal/worker"
 	"app/internal/domain/hgraber"
-	"app/pkg/ctxtool"
 	"context"
+	"log/slog"
 	"time"
 )
 
-func (c *Controller) serveBookWorker(ctx context.Context) {
-	const (
-		interval      = time.Second * 15
-		queueSize     = 10000
-		handlersCount = 10
+type bookWorkerUnitUseCases interface {
+	ParseWithUpdate(ctx context.Context, book hgraber.Book)
+	GetUnloadedBooks(ctx context.Context) []hgraber.Book
+}
+
+type BookWorkerUnit struct {
+	*worker.Worker[hgraber.Book]
+
+	useCases bookWorkerUnitUseCases
+
+	interval      time.Duration
+	queueSize     int
+	handlersCount int
+
+	logger *slog.Logger
+}
+
+func NewBookWorkerUnit(useCases bookWorkerUnitUseCases, logger *slog.Logger) *BookWorkerUnit {
+	w := &BookWorkerUnit{
+		useCases:      useCases,
+		interval:      time.Second * 15,
+		queueSize:     10000,
+		handlersCount: 10,
+		logger:        logger,
+	}
+
+	w.Worker = worker.New[hgraber.Book](
+		w.queueSize,
+		w.interval,
+		w.logger,
+		w.useCases.ParseWithUpdate,
+		w.useCases.GetUnloadedBooks,
 	)
 
-	ctx = ctxtool.NewSystemContext(ctx, "worker-book")
+	return w
+}
 
-	w := worker.New[hgraber.Book](
-		queueSize,
-		interval,
-		c.logger,
-		c.hgraberUseCases.ParseWithUpdate,
-		c.hgraberUseCases.GetUnloadedBooks,
-	)
+func (w *BookWorkerUnit) Serve(ctx context.Context) {
+	w.Worker.Serve(ctx, w.handlersCount)
+}
 
-	c.register("book", w)
-
-	w.Serve(ctx, handlersCount)
+func (w *BookWorkerUnit) Name() string {
+	return "book"
 }

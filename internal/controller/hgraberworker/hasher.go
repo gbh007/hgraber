@@ -3,34 +3,57 @@ package hgraberworker
 import (
 	"app/internal/controller/internal/worker"
 	"app/internal/domain/hgraber"
-	"app/pkg/ctxtool"
 	"context"
+	"log/slog"
 	"time"
 )
 
-func (c *Controller) servePageHasher(ctx context.Context) {
-	const (
-		interval      = time.Second * 15
-		queueSize     = 10000
-		handlersCount = 10
-	)
+type hashWorkerUnitUseCases interface {
+	UnHashedPages(ctx context.Context) []hgraber.Page
+	HandlePage(ctx context.Context, page hgraber.Page) error
+}
 
-	ctx = ctxtool.NewSystemContext(ctx, "worker-hasher")
+type HashWorkerUnit struct {
+	*worker.Worker[hgraber.Page]
 
-	w := worker.New[hgraber.Page](
-		queueSize,
-		interval,
-		c.logger,
+	useCases hashWorkerUnitUseCases
+
+	interval      time.Duration
+	queueSize     int
+	handlersCount int
+
+	logger *slog.Logger
+}
+
+func NewHashWorkerUnit(useCases hashWorkerUnitUseCases, logger *slog.Logger) *HashWorkerUnit {
+	w := &HashWorkerUnit{
+		useCases:      useCases,
+		interval:      time.Second * 15,
+		queueSize:     10000,
+		handlersCount: 10,
+		logger:        logger,
+	}
+
+	w.Worker = worker.New[hgraber.Page](
+		w.queueSize,
+		w.interval,
+		w.logger,
 		func(ctx context.Context, page hgraber.Page) {
-			err := c.hasherUseCases.HandlePage(ctx, page)
+			err := w.useCases.HandlePage(ctx, page)
 			if err != nil {
-				c.logger.ErrorContext(ctx, err.Error())
+				w.logger.ErrorContext(ctx, err.Error())
 			}
 		},
-		c.hasherUseCases.UnHashedPages,
+		w.useCases.UnHashedPages,
 	)
 
-	c.register("hasher", w)
+	return w
+}
 
-	w.Serve(ctx, handlersCount)
+func (w *HashWorkerUnit) Serve(ctx context.Context) {
+	w.Worker.Serve(ctx, w.handlersCount)
+}
+
+func (w *HashWorkerUnit) Name() string {
+	return "hasher"
 }
