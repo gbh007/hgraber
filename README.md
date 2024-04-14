@@ -10,8 +10,8 @@
 
 ## Связанные проекты
 
-- [HGraber UI](https://gitlab.com/gbh007/hgraber_ui) - пользовательский интерфейс написанный на flutter (поддерживает не 100% функционала)
-- [HGraber tools](https://gitlab.com/gbh007/hgraber-tools) - прикладные утилиты для проекта (в основном для реализации `Server`)
+- HGraber UI [Github](https://github.com/gbh007/hgraber-flutter-ui)/[Gitlab](https://gitlab.com/gbh007/hgraber_ui) - пользовательский интерфейс написанный на flutter (поддерживает не 100% функционала)
+- HGraber tools [Github](https://github.com/gbh007/hgraber-tools)/[Gitlab](https://gitlab.com/gbh007/hgraber-tools) - прикладные утилиты для проекта (в основном для реализации `Server`)
 
 ## Запуск
 
