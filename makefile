@@ -11,7 +11,7 @@ build: create_build_dir
 
 run: create_build_dir
 	go build -o ./_build/hgraber-bin  ./cmd/simple
-	./_build/hgraber-bin -p 8081
+	./_build/hgraber-bin -h 127.0.0.1 -p 8081
 	
 view: create_build_dir
 	go build -o ./_build/hgraber-bin  ./cmd/simple

@@ -53,6 +53,7 @@ func (d *Database) GetBook(ctx context.Context, bookID int) (hgraber.Book, error
 				Page:       raw.PageCount.Valid,
 				Attributes: map[hgraber.Attribute]bool{},
 			},
+			PageCount:  int(raw.PageCount.Int32),
 			Name:       raw.Name.String,
 			Rating:     raw.Rate,
 			Attributes: map[hgraber.Attribute][]string{},

@@ -179,7 +179,9 @@
               .map((attr) => generateHTMLTagArea(attr.values, attr.name))
               .join("\n")}
             <div class="bottom-buttons">
-              <a class="app-button load" href="#">Скачать</a>
+              <a class="app-button load" target="_blank" href="/api/book/download?id=${
+                book.id
+              }">Скачать</a>
               <a class="app-button read" href="/read.html?book=${
                 book.id
               }">Читать</a>

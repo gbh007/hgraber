@@ -26,6 +26,8 @@ type useCases interface {
 	FirstHandleMultiple(ctx context.Context, data []string) (*hgraber.FirstHandleMultipleResult, error)
 
 	PageWithBody(ctx context.Context, bookID int, pageNumber int) (*hgraber.Page, io.ReadCloser, error)
+
+	Archive(ctx context.Context, id int) (io.Reader, error)
 }
 
 type webtool interface {
@@ -100,7 +102,9 @@ func makeServer(parentCtx context.Context, ws *WebServer) *http.Server {
 	mux.Handle("/api/login", ws.login(ws.token))
 
 	mux.Handle("/api/book", tokenHandler(ws.token, ws.bookInfo()))
+	mux.Handle("/api/book/download", tokenHandler(ws.token, ws.downloadBook()))
 	mux.Handle("/api/book/new", tokenHandler(ws.token, ws.bookNew()))
+	mux.Handle("/api/book/v5-info", tokenHandler(ws.token, ws.v5Info()))
 
 	mux.Handle("/api/books", tokenHandler(ws.token, ws.bookList()))
 	mux.Handle("/api/books/export", tokenHandler(ws.token, ws.booksExport()))
